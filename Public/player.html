@@ -1,0 +1,2220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Màn Hình Thí Sinh - Đường Đến Vinh Quang</title>
+    <script src="designer-runtime.js"></script>
+    <script src="media-preloader.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #cddceb;
+            user-select: none;
+        }
+
+        /* Top Bar - Header thông tin thí sinh */
+        .top-player-bar {
+            height: 42px;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 100;
+        }
+
+        .player-info-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .player-tag {
+            background: #f59e0b;
+            color: #ffffff;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .score-pill {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #fef08a;
+        }
+
+        .network-status-pill {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.85);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        /* Ẩn thanh mép trên khi truy cập bằng link thí sinh cụ thể */
+        .has-fixed-player-link .top-player-bar {
+            display: none !important;
+        }
+
+        /* Container chứa các Scene */
+        .player-viewport {
+            width: 100vw;
+            height: calc(100vh - 42px);
+            position: relative;
+            background: linear-gradient(to bottom, #dbe6f6, #c5d8f0);
+        }
+
+        .has-fixed-player-link .player-viewport {
+            height: 100vh;
+        }
+
+        .scene-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .scene-container.active {
+            display: flex;
+        }
+
+        /* Common Header for Scenes */
+        .scene-header {
+            height: 18vh;
+            padding: 15px 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .section-label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .scene-title {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #e54b4b;
+            font-style: italic;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .clock-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .timer-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #e54b4b;
+            line-height: 1;
+        }
+
+        .score-box-s1 {
+            position: absolute;
+            top: 66%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .score-label-s1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            font-style: italic;
+        }
+
+        .score-value-s1 {
+            font-size: 3.2rem;
+            font-weight: bold;
+            color: #e54b4b;
+        }
+
+        /* Phần điểm thí sinh đối xứng trục với đồng hồ vòng thi */
+        .player-score-header {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-start;
+        }
+
+        .player-score-label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            max-width: 28vw;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: right;
+        }
+
+        .player-score-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .player-score-prefix {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            font-style: italic;
+            line-height: 1;
+        }
+
+        .player-score-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #e54b4b;
+            line-height: 1;
+            text-align: right;
+        }
+
+        /* Common Main Content for Scenes */
+        .scene-main {
+            height: 82vh;
+            border-top: 1px solid #99b3cd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-area {
+            padding: 12px 30px 0 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row-label {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .black-box {
+            width: 100%;
+            height: 220px;
+            background-color: #000000;
+            color: #ffffff;
+            padding: 18px 24px;
+            font-size: 1.45rem;
+            line-height: 1.45;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.15);
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .black-box img, .black-box video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        /* Common Answer Area */
+        .answer-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 15px 0;
+        }
+
+        .input-group {
+            width: 55%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-size: 1.05rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .answer-input {
+            width: 100%;
+            height: 46px;
+            border: 2px solid #3b82f6;
+            border-radius: 4px;
+            padding: 0 14px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            outline: none;
+            background-color: #ffffff;
+            color: #1e3a8a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+        }
+
+        .answer-input:disabled {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status-group {
+            width: 55%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .status-label {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .status-bar {
+            width: 100%;
+            height: 42px;
+            background-color: #d87093;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            padding: 0 12px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+
+        .status-bar.submitted {
+            background-color: #16a34a;
+        }
+
+        .btn-cnv {
+            margin-top: 5px;
+            width: 280px;
+            height: 48px;
+            background-color: #e9ecef;
+            border: 2px solid #7a98b3;
+            border-radius: 4px;
+            color: #222;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        .btn-cnv:hover {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border-color: #1d4ed8;
+        }
+
+        .btn-cnv:active {
+            transform: translateY(1px);
+        }
+
+        /* Action Area cho Bell / Nút bấm */
+        .action-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-bell {
+            width: 340px;
+            height: 75px;
+            background: linear-gradient(to bottom, #ef4444, #dc2626);
+            border: 3px solid #b91c1c;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 6px 15px rgba(220, 38, 38, 0.4), inset 0 2px 4px rgba(255,255,255,0.3);
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-bell:hover {
+            background: linear-gradient(to bottom, #f87171, #ef4444);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.5);
+        }
+
+        .btn-bell:active, .btn-bell.pressed {
+            transform: translateY(2px);
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.6);
+            background: #991b1b;
+        }
+
+        .bell-feedback {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #16a34a;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: #dcfce7;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #86efac;
+        }
+
+        /* Modal Đăng nhập / Chọn Thí sinh */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 440px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            border: 2px solid #3b82f6;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .auth-header {
+            text-align: center;
+        }
+
+        .auth-header h2 {
+            font-size: 20px;
+            color: #1e3a8a;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .auth-header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .auth-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .auth-form-group label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: #2563eb;
+        }
+
+        .contestant-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .contestant-btn {
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .contestant-btn:hover {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        .contestant-btn.selected {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-submit-auth {
+            padding: 12px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(22, 163, 74, 0.25);
+            transition: background 0.2s;
+        }
+
+        .btn-submit-auth:hover {
+            background: #15803d;
+        }
+
+        .auth-error-msg {
+            color: #dc2626;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        (function () {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var qTs = parseInt(params.get('slot') || params.get('ts') || params.get('contestant') || params.get('id') || '0', 10);
+                var hasFixedId = (typeof window.FIXED_CONTESTANT_ID !== 'undefined' && parseInt(window.FIXED_CONTESTANT_ID, 10) >= 1 && parseInt(window.FIXED_CONTESTANT_ID, 10) <= 4);
+                var isPathSlot = /player[1-4](?:\.html)?$/i.test(window.location.pathname);
+                if ((qTs >= 1 && qTs <= 4) || hasFixedId || isPathSlot) {
+                    document.documentElement.classList.add('has-fixed-player-link');
+                    document.body.classList.add('has-fixed-player-link');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <!-- TOP PLAYER INFORMATION BAR -->
+    <div class="top-player-bar">
+        <div class="player-info-badge">
+            <span class="player-tag" id="top_player_tag">TS1</span>
+            <span id="top_player_name">Thí sinh 1</span>
+            <span class="score-pill">Điểm: <strong id="top_player_score" style="font-size: 15px; color: #ffffff;">0</strong></span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="network-status-pill">
+                <span id="top_network_status" class="network-status-badge">🟢 Trực tuyến</span>
+                <span id="top_room_badge" style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; font-weight: bold;">Mã phòng: DDVQ2026</span>
+            </div>
+            <button class="btn-logout" onclick="logoutPlayer()">Đổi Thí Sinh</button>
+        </div>
+    </div>
+
+    <!-- MAIN VIEWPORT CONTAINING 5 PLAYER SCENES -->
+    <div class="player-viewport">
+
+        <!-- SCENE 1: XUẤT PHÁT -->
+        <div class="scene-container active" id="scene-1">
+            <div class="scene-header">
+                <div class="section-label">Xuất phát</div>
+                <div class="scene-title">VÒNG THI XUẤT PHÁT</div>
+
+                <div class="score-box-s1">
+                    <span class="score-label-s1">Số câu đúng:</span>
+                    <span class="score-value-s1" id="s1_correct_count">0/0</span>
+                </div>
+
+                <div class="timer-box">
+                    <span class="clock-icon">⏰</span>
+                    <span class="timer-value" id="s1_timer">60</span>
+                </div>
+
+                <div class="player-score-header">
+                    <div class="player-score-label js-player-score-label" id="s1_player_label">TS1 - Thí sinh 1</div>
+                    <div class="player-score-box">
+                        <span class="player-score-prefix">Điểm:</span>
+                        <span class="player-score-value js-player-score-value" id="s1_player_score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scene-main">
+                <div class="question-area">
+                    <div class="row-label" id="s1_q_label">Câu hỏi Xuất Phát</div>
+                    <div class="black-box" id="s1_q_text" style="height: 220px; font-size: 1.6rem;">Đang chờ bắt đầu lượt thi Xuất Phát...</div>
+                </div>
+
+                <div class="answer-area">
+                    <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px; justify-content: center;">
+                        <button class="btn-bell" id="s1_random_btn" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px; background: #475569; border-color: #64748b;" onclick="triggerRandomDeFromPlayer()" disabled>
+                            CHƯA BẮT ĐẦU LƯỢT THI 
+                        </button>
+                    </div>
+
+                    <div class="action-area" id="s1_action_area" style="display: none; margin-top: 15px; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                        <button class="btn-bell" id="s1_btn_bell" onclick="ringBell('KD')">
+                            GIÀNH QUYỀN TRẢ LỜI
+                        </button>
+                        <div class="bell-feedback" id="s1_bell_feedback">
+                             ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 2: RA KHƠI -->
+        <div class="scene-container" id="scene-2">
+            <div class="scene-header">
+                <div class="section-label">Ra khơi</div>
+                <div class="scene-title">RA KHƠI</div>
+
+                <div class="timer-box">
+                    <span class="clock-icon">⏰</span>
+                    <span class="timer-value" id="s2_timer">30</span>
+                </div>
+
+                <div class="player-score-header">
+                    <div class="player-score-label js-player-score-label" id="s2_player_label">TS1 - Thí sinh 1</div>
+                    <div class="player-score-box">
+                        <span class="player-score-prefix">Điểm:</span>
+                        <span class="player-score-value js-player-score-value" id="s2_player_score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scene-main">
+                <div class="question-area">
+                    <div class="row-label" id="s2_row_label">Câu hỏi Ra khơi</div>
+                    <div class="black-box" id="s2_q_text" style="height: 240px;"></div>
+                </div>
+
+                <div class="answer-area">
+                    <div class="input-group">
+                        <input type="text" id="s2_ans_input" class="answer-input" placeholder="" disabled autocomplete="off" oninput="onPlayerAnswerTyping('RA_KHOI')">
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-label"> </div>
+                        <div class="status-bar" id="s2_status_bar">---</div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px;">
+                        <button class="btn-bell" id="s2_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="submitPlayerAnswer('RA_KHOI')">GỬI ĐÁP ÁN RA KHƠI</button>
+                    </div>
+                    <div class="bell-feedback" id="s2_bell_feedback" style="display: none; margin-top: 6px;">
+                        ✅ ĐÃ GỬI ĐÁP ÁN RA KHƠI!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 3: VƯỢT SÓNG -->
+        <div class="scene-container" id="scene-3">
+            <div class="scene-header">
+                <div class="section-label">Vượt sóng</div>
+                <div class="scene-title">VƯỢT SÓNG</div>
+
+                <div class="timer-box">
+                    <span class="clock-icon">⏰</span>
+                    <span class="timer-value" id="s3_timer">15</span>
+                </div>
+
+                <div class="player-score-header">
+                    <div class="player-score-label js-player-score-label" id="s3_player_label">TS1 - Thí sinh 1</div>
+                    <div class="player-score-box">
+                        <span class="player-score-prefix">Điểm:</span>
+                        <span class="player-score-value js-player-score-value" id="s3_player_score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scene-main">
+                <div class="question-area">
+                    <div class="row-label" id="s3_row_label">Hàng ngang số 1</div>
+                    <div class="black-box" id="s3_q_text"></div>
+                </div>
+
+                <div class="answer-area">
+                    <div class="input-group">
+                        <input type="text" id="s3_ans_input" class="answer-input" placeholder="" disabled autocomplete="off" oninput="onPlayerAnswerTyping('VUOT_SONG')">
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-label"> </div>
+                        <div class="status-bar" id="s3_status_bar">---</div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px;">
+                        <button class="btn-bell" id="s3_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="ringBell('VUOT_SONG')">TRẢ LỜI ĐÁP ÁN VÒNG THI</button>
+                    </div>
+                    <div class="bell-feedback" id="s3_bell_feedback" style="display: none; margin-top: 6px;">
+                        ĐÃ BẤM CHUÔNG TRẢ LỜI ĐÁP ÁN VÒNG THI!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 4: VINH QUANG -->
+        <div class="scene-container" id="scene-4">
+            <div class="scene-header">
+                <div class="section-label">Vinh quang</div>
+                <div class="scene-title">VINH QUANG</div>
+
+                <div class="timer-box">
+                    <span class="clock-icon">⏰</span>
+                    <span class="timer-value" id="s4_timer">25</span>
+                </div>
+
+                <div class="player-score-header">
+                    <div class="player-score-label js-player-score-label" id="s4_player_label">TS1 - Thí sinh 1</div>
+                    <div class="player-score-box">
+                        <span class="player-score-prefix">Điểm:</span>
+                        <span class="player-score-value js-player-score-value" id="s4_player_score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scene-main">
+                <div class="question-area">
+                    <div class="row-label" id="s4_row_label">Câu hỏi Vinh quang</div>
+                    <div class="black-box" id="s4_q_text" style="height: 240px;"></div>
+                </div>
+
+                <div class="answer-area">
+                    <div class="input-group">
+                        <input type="text" id="s4_ans_input" class="answer-input" placeholder="Đang khóa (Chỉ mở khi bấm 25s)..." disabled readonly autocomplete="off" oninput="onPlayerAnswerTyping('VQ')">
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-label"> </div>
+                        <div class="status-bar" id="s4_status_bar">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 5: CÂU HỎI PHỤ -->
+        <div class="scene-container" id="scene-5">
+            <div class="scene-header">
+                <div class="section-label">Câu hỏi phụ</div>
+                <div class="scene-title">CÂU HỎI PHỤ</div>
+
+                <div class="timer-box">
+                    <span class="clock-icon">⏰</span>
+                    <span class="timer-value" id="s5_timer">15</span>
+                </div>
+
+                <div class="player-score-header">
+                    <div class="player-score-label js-player-score-label" id="s5_player_label">TS1 - Thí sinh 1</div>
+                    <div class="player-score-box">
+                        <span class="player-score-prefix">Điểm:</span>
+                        <span class="player-score-value js-player-score-value" id="s5_player_score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scene-main">
+                <div class="question-area">
+                    <div class="row-label" id="s5_row_label">Câu hỏi phụ số 1</div>
+                    <div class="black-box" id="s5_q_text" style="height: 240px;"></div>
+                </div>
+
+                <div class="answer-area">
+                    <div class="input-group">
+                        <input type="text" id="s5_ans_input" class="answer-input" placeholder="" disabled autocomplete="off" oninput="onPlayerAnswerTyping('CHP')">
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-label"> </div>
+                        <div class="status-bar" id="s5_status_bar">---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT REAL-TIME NETWORK & PLAYER CONTROLLER LOGIC -->
+    <script>
+        // State variables
+        let currentContestantId = 1;
+        let currentRoomCode = 'DDVQ2026';
+        let currentPassword = '1111';
+        let contestantName = 'Thí sinh 1';
+        let contestantScore = 0;
+        let currentXuatPhatTurnIndex = 1;
+        let currentS1QuestionIndex = 1;
+        let s1QuestionStates = {};
+
+        let activeSceneNum = 1; // 1..5
+        let timerInterval = null;
+        let currentTimerVal = 60;
+        let lastVQTimerStartTime = 0;
+        let isVQ25sActive = false;
+
+        let syncChannel = null;
+        let submitDebounceTimer = null;
+        let vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+        try {
+            const savedVsLocks = localStorage.getItem('ddvq_vs_locked_contestants');
+            if (savedVsLocks) {
+                const parsedLocks = JSON.parse(savedVsLocks);
+                if (parsedLocks && typeof parsedLocks === 'object') {
+                    vsLockedContestants = {
+                        1: !!parsedLocks[1],
+                        2: !!parsedLocks[2],
+                        3: !!parsedLocks[3],
+                        4: !!parsedLocks[4]
+                    };
+                }
+            }
+        } catch(e) {}
+
+        function isCurrentPlayerVSLocked() {
+            return !!(vsLockedContestants && vsLockedContestants[parseInt(currentContestantId, 10)]);
+        }
+
+        function saveVSLockedState() {
+            try {
+                localStorage.setItem('ddvq_vs_locked_contestants', JSON.stringify(vsLockedContestants));
+            } catch(e) {}
+        }
+
+        function applyVSPlayerLockUI() {
+            const locked = isCurrentPlayerVSLocked();
+            const inp = document.getElementById('s3_ans_input');
+            const btn = document.getElementById('s3_btn_bell');
+            const feedback = document.getElementById('s3_bell_feedback');
+
+            if (locked) {
+                if (inp) {
+                    inp.disabled = true;
+                    inp.readOnly = true;
+                    inp.value = '';
+                    inp.placeholder = 'Bạn đã bị loại khỏi phần thi';
+                    if (document.activeElement === inp) {
+                        try { inp.blur(); } catch(e) {}
+                    }
+                }
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('pressed');
+                    btn.style.opacity = '0.35';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'Bạn đã bị loại khỏi phần thi';
+                }
+                if (feedback) {
+                    feedback.innerText = 'MÁY ĐÃ BỊ KHÓA DO TRẢ LỜI SAI ĐÁP ÁN VÒNG THI';
+                    feedback.style.color = '#b91c1c';
+                    feedback.style.display = 'flex';
+                }
+            } else {
+                if (btn) {
+                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN VÒNG THI';
+                    if (!btn.classList.contains('pressed')) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    }
+                }
+                if (feedback && feedback.innerText.indexOf('KHÓA') !== -1) {
+                    feedback.style.display = 'none';
+                    feedback.innerText = '';
+                }
+                if (inp && inp.placeholder && inp.placeholder.indexOf('khóa máy') !== -1) {
+                    inp.placeholder = '';
+                }
+            }
+        }
+
+        function updateS1CorrectCountUI() {
+            let corrects = 0;
+            let totals = 0;
+            Object.keys(s1QuestionStates).forEach((key) => {
+                const val = s1QuestionStates[key];
+                if (val === 'correct') {
+                    corrects++;
+                    totals++;
+                } else if (val === 'wrong') {
+                    totals++;
+                }
+            });
+            const correctEl = document.getElementById('s1_correct_count');
+            if (correctEl) {
+                correctEl.innerText = `${corrects}/${totals}`;
+            }
+        }
+
+        function resetS1CorrectCount() {
+            s1QuestionStates = {};
+            currentS1QuestionIndex = 1;
+            updateS1CorrectCountUI();
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            // Read URL params or SessionStorage (tab-isolated)
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryRoom = urlParams.get('roomid') || urlParams.get('roomCode') || urlParams.get('room') || urlParams.get('channel');
+            const queryTs = parseInt(urlParams.get('slot') || urlParams.get('ts') || urlParams.get('contestant') || urlParams.get('id') || '0', 10);
+
+            if (queryTs >= 1 && queryTs <= 4) {
+                currentContestantId = queryTs;
+                sessionStorage.setItem('ddvq_player_ts_id', queryTs.toString());
+                sessionStorage.setItem('ddvq_active_slot', queryTs.toString());
+            } else {
+                const sessSlot = parseInt(sessionStorage.getItem('ddvq_player_ts_id') || sessionStorage.getItem('ddvq_active_slot') || '0', 10);
+                if (sessSlot >= 1 && sessSlot <= 4) {
+                    currentContestantId = sessSlot;
+                } else {
+                    currentContestantId = 1;
+                }
+            }
+
+            if (queryRoom) {
+                currentRoomCode = queryRoom.trim().toUpperCase();
+            } else {
+                currentRoomCode = (localStorage.getItem('ddvq_room_code') || 'DDVQ2026').trim().toUpperCase();
+            }
+
+            const savedPass = localStorage.getItem('ddvq_player_password');
+            if (savedPass) {
+                currentPassword = savedPass;
+            }
+
+            localStorage.setItem('ddvq_room_code', currentRoomCode);
+
+            // Setup enter key listener on input fields
+            ['s2_ans_input', 's3_ans_input', 's4_ans_input', 's5_ans_input'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const roundKey = id.startsWith('s2') ? 'RA_KHOI' : (id.startsWith('s3') ? 'VUOT_SONG' : (id.startsWith('s4') ? 'VINH_QUANG' : 'CHP'));
+                            submitPlayerAnswer(roundKey);
+                        }
+                    });
+                }
+            });
+
+            // Start player session immediately
+            updatePlayerTopBar();
+            applyVSPlayerLockUI();
+            initSyncConnection();
+        });
+
+        function logoutPlayer() {
+            localStorage.removeItem('ddvq_player_logged_in');
+            window.location.href = 'playerLogin.html';
+        }
+
+        function updatePlayerTopBar() {
+            const resolvedName = contestantName || `Thí sinh ${currentContestantId}`;
+            const resolvedScore = contestantScore || 0;
+
+            const tagEl = document.getElementById('top_player_tag');
+            if (tagEl) tagEl.innerText = `TS${currentContestantId}`;
+            const nameEl = document.getElementById('top_player_name');
+            if (nameEl) nameEl.innerText = resolvedName;
+            const scoreEl = document.getElementById('top_player_score');
+            if (scoreEl) scoreEl.innerText = resolvedScore;
+            const roomEl = document.getElementById('top_room_badge');
+            if (roomEl) roomEl.innerText = `Mã phòng: ${currentRoomCode}`;
+
+            document.querySelectorAll('.js-player-score-label').forEach(el => {
+                el.innerText = `TS${currentContestantId} - ${resolvedName}`;
+            });
+            document.querySelectorAll('.js-player-score-value').forEach(el => {
+                el.innerText = resolvedScore;
+            });
+        }
+
+        // Initialize Real-time Network Sync Channel
+        function initSyncConnection() {
+            window.CURRENT_ROLE = `ts${currentContestantId}`;
+            if (typeof GameSyncChannel !== 'undefined') {
+                syncChannel = new GameSyncChannel(`ddvq_player_${currentContestantId}`);
+                syncChannel.onmessage = (event) => {
+                    if (event.data) {
+                        handleIncomingSyncMessage(event.data);
+                    }
+                };
+            }
+
+            // Send Heartbeat every 4s
+            setInterval(() => {
+                const hb = {
+                    type: 'CLIENT_HEARTBEAT',
+                    role: `ts${currentContestantId}`,
+                    contestantId: currentContestantId,
+                    name: contestantName,
+                    roomCode: currentRoomCode,
+                    timestamp: Date.now()
+                };
+                if (syncChannel) {
+                    syncChannel.postMessage(hb);
+                } else {
+                    fetch(getApiUrl('/api/action'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(hb)
+                    }).catch(() => {});
+                }
+            }, 4000);
+
+            // Fetch initial state
+            fetch(getApiUrl(`/api/state?roomid=${encodeURIComponent(currentRoomCode)}`))
+                .then(r => r.json())
+                .then(data => {
+                    if (data) handleIncomingSyncMessage(data);
+                }).catch(() => {});
+        }
+
+        // Switch active scene (1 to 5)
+        function switchScene(sceneNum) {
+            const prevScene = activeSceneNum;
+            activeSceneNum = sceneNum;
+            if (prevScene !== sceneNum && timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                sceneTimerStartTime = 0;
+                sceneTimerDuration = 0;
+                currentTimerVal = 0;
+            }
+            if (prevScene === 4 && sceneNum !== 4) {
+                isVQ25sActive = false;
+                lastVQTimerStartTime = 0;
+                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+            }
+            for (let i = 1; i <= 5; i++) {
+                const sc = document.getElementById(`scene-${i}`);
+                if (sc) {
+                    if (i === sceneNum) sc.classList.add('active');
+                    else sc.classList.remove('active');
+                }
+            }
+            if (sceneNum === 4 && (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0)) {
+                isVQ25sActive = false;
+                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+            }
+            if (sceneNum === 3) {
+                applyVSPlayerLockUI();
+            }
+        }
+
+        let isBellLocked = true;
+
+        // Handle Realtime Sync Messages from Controller / Server
+        function handleIncomingSyncMessage(data) {
+            if (!data) return;
+
+            if (data.type === 'PING_PROBE') {
+                if (typeof respondToPingProbe === 'function') {
+                    respondToPingProbe(data);
+                }
+                return;
+            }
+
+            if (data.type === 'LOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_FASTEST_HL' || (data.type === 'PLAYER_RING_BELL' && (data.round === 'KD' || data.round === 'XUAT_PHAT' || data.round === 'KHOI_DONG' || activeSceneNum === 1))) {
+                isBellLocked = true;
+                const btn = document.getElementById('s1_btn_bell');
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.style.opacity = '0.4';
+                }
+                const feedback = document.getElementById('s1_bell_feedback');
+                if (feedback) {
+                    const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.contestantId);
+                    const who = data.contestantName || (buzzedId ? `Thí sinh ${buzzedId}` : 'Thí sinh khác');
+                    if (buzzedId === currentContestantId) {
+                        feedback.innerText = '✅ BẠN ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!';
+                        feedback.style.color = '#15803d';
+                    } else {
+                        feedback.innerText = `🔒 ${who.toUpperCase()} ĐÃ BẤM CHUÔNG! CHUÔNG ĐÃ BỊ KHÓA`;
+                        feedback.style.color = '#b91c1c';
+                    }
+                    feedback.style.display = 'flex';
+                }
+            }
+            if (data.type === 'UNLOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_QUESTION' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_START_TIMER' || data.type === 'XUAT_PHAT_SELECT_CHUNG' || data.type === 'XUAT_PHAT_RESET') {
+                isBellLocked = false;
+                resetBellState(1);
+            }
+
+            // Contestants info & scores
+            const contestantsList = Array.isArray(data.contestants)
+                ? data.contestants
+                : (data.gameData && Array.isArray(data.gameData.contestants) ? data.gameData.contestants : null);
+            if (contestantsList) {
+                const myData = contestantsList[currentContestantId - 1];
+                if (myData) {
+                    if (myData.name) contestantName = myData.name;
+                    if (myData.score !== undefined) contestantScore = myData.score;
+                    updatePlayerTopBar();
+                }
+            } else if (data.score !== undefined && parseInt(data.contestantId, 10) === parseInt(currentContestantId, 10)) {
+                contestantScore = data.score;
+                if (data.name || data.contestantName) contestantName = data.name || data.contestantName;
+                updatePlayerTopBar();
+            }
+
+            // Sync Round 1 correct question count from full state
+            if (data.s1QuestionStates && typeof data.s1QuestionStates === 'object') {
+                s1QuestionStates = Object.assign({}, data.s1QuestionStates);
+                updateS1CorrectCountUI();
+            }
+
+            // Sync Vuot Song contestant machine lock state
+            const incomingVsLocks = data.vsLockedContestants || (data.gameData && data.gameData.vsLockedContestants);
+            if (incomingVsLocks && typeof incomingVsLocks === 'object') {
+                const wasLocked = isCurrentPlayerVSLocked();
+                vsLockedContestants = {
+                    1: !!incomingVsLocks[1],
+                    2: !!incomingVsLocks[2],
+                    3: !!incomingVsLocks[3],
+                    4: !!incomingVsLocks[4]
+                };
+                saveVSLockedState();
+                if (wasLocked && !isCurrentPlayerVSLocked()) {
+                    resetBellState(3);
+                }
+                applyVSPlayerLockUI();
+            }
+
+            // Switch Round
+            if (data.type === 'SWITCH_ROUND' || data.type === 'SWITCH_ROUND_PLAYER_MC' || data.type === 'VIEW_SELECT' || data.type === 'SELECT_VIEW' || data.activeRound || data.round) {
+                const round = (data.activeRound || data.round || '').toString().toUpperCase();
+                const viewNum = parseInt(data.viewNum || data.view || data.roundIndex || 0, 10);
+
+                if (round === 'XUAT_PHAT' || round === 'KHOI_DONG' || round === 'KD' || viewNum === 1) {
+                    switchScene(1);
+                } else if (round === 'RA_KHOI' || round === 'TANG_TOC' || round === 'TT' || viewNum === 2) {
+                    switchScene(2);
+                } else if (round === 'VUOT_SONG' || round === 'VCNV' || round === 'CNV' || round === 'VUOT_CHUONG_NGAI_VAT' || viewNum === 3) {
+                    switchScene(3);
+                } else if (round === 'VINH_QUANG' || round === 'VE_DICH' || round === 'VQ' || viewNum === 4 || viewNum === 6) {
+                    switchScene(4);
+                } else if (round === 'CAU_HOI_PHU' || round === 'CHP' || viewNum === 5 || viewNum === 7) {
+                    switchScene(5);
+                }
+            }
+
+            if (data.type === 'START_ROUND_CLEAN') {
+                const rName = (data.round || data.activeRound || '').toString().toUpperCase();
+                const rIdx = parseInt(data.roundIndex || data.sceneNum || 0, 10);
+                if (rName === 'XUAT_PHAT' || rIdx === 1 || !data.round) {
+                    resetS1CorrectCount();
+                }
+                if (rName === 'VUOT_SONG' || rIdx === 3 || !data.round) {
+                    vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+                    saveVSLockedState();
+                    resetBellState(3);
+                    applyVSPlayerLockUI();
+                }
+                if (rName === 'VINH_QUANG' || rName === 'VE_DICH' || rName === 'VQ' || rIdx === 4) {
+                    isVQ25sActive = false;
+                    lastVQTimerStartTime = 0;
+                    clearPlayerSceneUI(4);
+                    updateTimerDisplay(4, 25);
+                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                }
+            }
+
+            if (data.type === 'STOP_TIMER') {
+                if (activeSceneNum === 4) isVQ25sActive = false;
+                stopSceneTimer(activeSceneNum);
+            }
+
+            // Resume or lock timer on state snapshot (INITIAL_STATE_SYNC / FULL_STATE_SYNC / /api/state)
+            const hasTimerSnapshotField = (!data.type || data.type === 'INITIAL_STATE_SYNC' || data.type === 'FULL_STATE_SYNC' || ('currentTimer' in data));
+            if (hasTimerSnapshotField) {
+                const t = data.currentTimer;
+                if (t && (t.targetTime || (t.startTime && t.duration) || (t.remaining !== undefined && t.remaining > 0))) {
+                    const tRound = (t.round || data.activeRound || data.round || '').toString().toUpperCase();
+                    let tScene = activeSceneNum;
+                    if (tRound === 'XUAT_PHAT' || tRound === 'XP') tScene = 1;
+                    else if (tRound === 'RA_KHOI' || tRound === 'RK') tScene = 2;
+                    else if (tRound === 'VUOT_SONG' || tRound === 'VS') tScene = 3;
+                    else if (tRound === 'VINH_QUANG' || tRound === 'VE_DICH' || tRound === 'VQ') tScene = 4;
+                    else if (tRound === 'CAU_HOI_PHU' || tRound === 'CHP') tScene = 5;
+
+                    const dur = t.duration || (tScene === 4 ? 25 : (tScene === 2 ? 30 : 15));
+                    const st = t.startTime || (t.targetTime ? (t.targetTime - dur * 1000) : (Date.now() - (dur - (t.remaining || dur)) * 1000));
+                    const remMs = (t.targetTime || (st + dur * 1000)) - Date.now();
+                    if (remMs > 0) {
+                        const isVQTimer25s = (tScene === 4) && (t.is25s === true || t.type === 'VINH_QUANG_25S' || t.type === 'VE_DICH_25S' || (Number(dur) === 25 && t.type !== 'VINH_QUANG_START_TIMER_5S'));
+                        if (tScene === 4 && !isVQTimer25s) {
+                            isVQ25sActive = false;
+                            startSceneTimer(4, dur, st, true);
+                        } else if (tScene !== 4 || !lastVQTimerStartTime || lastVQTimerStartTime !== st || !timerInterval) {
+                            if (tScene === 4) {
+                                lastVQTimerStartTime = st;
+                                isVQ25sActive = true;
+                            }
+                            startSceneTimer(tScene, dur, st, false);
+                        }
+                    } else {
+                        if (tScene === 4) isVQ25sActive = false;
+                        stopSceneTimer(tScene, 0);
+                    }
+                } else if (activeSceneNum === 4) {
+                    isVQ25sActive = false;
+                    stopSceneTimer(4, 25);
+                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                }
+            }
+
+            // Round 1: Xuất phát (Khởi Động)
+            if (data.type && (data.type.startsWith('XUAT_PHAT_') || data.type.startsWith('KHOI_DONG_') || data.type.startsWith('KD_'))) {
+                switchScene(1);
+                const s1Box = document.getElementById('s1_q_text') || document.getElementById('s1_question_text');
+                const isStartOrActive = data.type === 'XUAT_PHAT_START_TIMER' || data.type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_RIGHT' || data.type === 'XUAT_PHAT_WRONG' || (data.xpQuestionShown === true);
+                const isResetOrFinish = data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_FINISH';
+
+                if (isStartOrActive && data.questionText) {
+                    if (s1Box) s1Box.innerText = data.questionText;
+                    window.s1IsQuestionActive = true;
+                    try {
+                        localStorage.setItem('ddvq_xp_question_shown', 'true');
+                        localStorage.setItem('ddvq_xp_question_text', data.questionText);
+                    } catch(e) {}
+                } else if (isResetOrFinish) {
+                    const txt = (data.type === 'XUAT_PHAT_FINISH') ? 'Đã hoàn thành lượt thi Xuất Phát' : 'Đang chờ bắt đầu lượt thi Xuất Phát...';
+                    if (s1Box) s1Box.innerText = txt;
+                    window.s1IsQuestionActive = false;
+                    try {
+                        localStorage.setItem('ddvq_xp_question_shown', 'false');
+                        localStorage.removeItem('ddvq_xp_question_text');
+                    } catch(e) {}
+                } else if (data.xpQuestionShown === false) {
+                    if (s1Box) s1Box.innerText = 'Đang chờ bắt đầu lượt thi Xuất Phát...';
+                    window.s1IsQuestionActive = false;
+                    try {
+                        localStorage.setItem('ddvq_xp_question_shown', 'false');
+                        localStorage.removeItem('ddvq_xp_question_text');
+                    } catch(e) {}
+                } else if (data.questionText && window.s1IsQuestionActive) {
+                    if (s1Box) s1Box.innerText = data.questionText;
+                }
+
+                if (data.questionIndex !== undefined) {
+                    currentS1QuestionIndex = parseInt(data.questionIndex, 10) || 1;
+                    const lbl = document.getElementById('s1_q_label');
+                    if (lbl) lbl.innerText = `Câu hỏi số ${currentS1QuestionIndex}`;
+                }
+
+                if (data.type === 'XUAT_PHAT_SELECT_CONTESTANT' || data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI' || data.type === 'XUAT_PHAT_RESET') {
+                    resetS1CorrectCount();
+                } else if (data.type === 'XUAT_PHAT_RIGHT' || data.type === 'KHOI_DONG_RIGHT' || data.type === 'KD_RIGHT') {
+                    const qIdx = parseInt(data.questionIndex || currentS1QuestionIndex || 1, 10);
+                    currentS1QuestionIndex = qIdx;
+                    s1QuestionStates[qIdx] = 'correct';
+                    updateS1CorrectCountUI();
+                } else if (data.type === 'XUAT_PHAT_WRONG' || data.type === 'KHOI_DONG_WRONG' || data.type === 'KD_WRONG') {
+                    const qIdx = parseInt(data.questionIndex || currentS1QuestionIndex || 1, 10);
+                    currentS1QuestionIndex = qIdx;
+                    s1QuestionStates[qIdx] = 'wrong';
+                    updateS1CorrectCountUI();
+                }
+
+                if (data.duration && (data.type === 'XUAT_PHAT_START_TIMER' || data.type === 'XUAT_PHAT_BAT_DAU_CAU_HOI')) {
+                    startSceneTimer(1, data.duration);
+                }
+
+                if (data.type === 'XUAT_PHAT_SELECT_CHUNG') {
+                    currentXuatPhatTurnIndex = 5;
+                } else if (data.type === 'XUAT_PHAT_SELECT_CONTESTANT') {
+                    currentXuatPhatTurnIndex = parseInt(data.turnIndex !== undefined ? data.turnIndex : (data.contestantId !== undefined ? data.contestantId : 1));
+                } else if (data.turnIndex !== undefined) {
+                    currentXuatPhatTurnIndex = parseInt(data.turnIndex);
+                } else if (data.contestantId !== undefined && data.type.startsWith('XUAT_PHAT_')) {
+                    currentXuatPhatTurnIndex = parseInt(data.contestantId);
+                }
+
+                if (data.type === 'XUAT_PHAT_RANDOM_DE') {
+                    const tIdx = parseInt(data.turnIndex || data.contestantId || currentXuatPhatTurnIndex);
+                    if (tIdx) {
+                        s1HasSelectedDeForTurn[tIdx] = true;
+                        if (data.deNumber) s1ChosenDeMap[tIdx] = data.deNumber;
+                    }
+                } else if (data.type === 'XUAT_PHAT_RESET' || data.type === 'RESET_S1_DE' || data.type === 'START_ROUND_CLEAN') {
+                    const targetC = data.contestantId;
+                    if (targetC === 'ALL' || !targetC) {
+                        s1HasSelectedDeForTurn = { 1: false, 2: false, 3: false, 4: false };
+                        s1ChosenDeMap = { 1: null, 2: null, 3: null, 4: null };
+                    } else {
+                        const cId = parseInt(targetC);
+                        if (cId) {
+                            s1HasSelectedDeForTurn[cId] = false;
+                            s1ChosenDeMap[cId] = null;
+                        }
+                    }
+                }
+
+                updateS1RandomDeButtonUI();
+
+                const actionArea = document.getElementById('s1_action_area');
+                const qTextBox = document.getElementById('s1_q_text');
+                if (currentXuatPhatTurnIndex === 5) {
+                    if (actionArea) actionArea.style.display = 'flex';
+                    if (qTextBox) qTextBox.style.height = '40vh';
+                } else {
+                    if (actionArea) actionArea.style.display = 'none';
+                    if (qTextBox) qTextBox.style.height = '60vh';
+                }
+
+                if (data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_FINISH') {
+                    clearPlayerSceneUI(1);
+                }
+
+                if (data.type === 'XUAT_PHAT_SELECT_CHUNG' || data.type === 'XUAT_PHAT_SELECT_CONTESTANT' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_START_TIMER') {
+                    resetBellState(1);
+                }
+            }
+
+            // Round 2: Ra Khơi (Tăng Tốc)
+            if (data.type && (data.type.startsWith('RA_KHOI_') || data.type.startsWith('TANG_TOC_') || data.type.startsWith('TT_'))) {
+                switchScene(2);
+                if (data.type === 'RA_KHOI_RESET' || data.type === 'TANG_TOC_RESET') {
+                    clearPlayerSceneUI(2);
+                } else {
+                    const s2Box = document.getElementById('s2_q_text');
+                    if (data.questionText) {
+                        if (s2Box) s2Box.innerText = data.questionText;
+                    } else if (data.mediaUrl) {
+                        if (s2Box) s2Box.innerHTML = `<img src="${data.mediaUrl}" alt="Media Question" style="max-height: 200px; border-radius: 6px;">`;
+                    } else {
+                        if (s2Box) s2Box.innerText = '';
+                    }
+                    if (data.questionIndex !== undefined) {
+                        const rLabel = document.getElementById('s2_row_label');
+                        if (rLabel) rLabel.innerText = `Câu hỏi Ra khơi số ${data.questionIndex}`;
+                    }
+                    if (data.duration) {
+                        startSceneTimer(2, data.duration);
+                    } else if (data.type === 'RA_KHOI_START_TIMER' || data.type === 'TANG_TOC_START_TIMER') {
+                        startSceneTimer(2, 30);
+                    }
+                }
+                if (data.type === 'RA_KHOI_SHOW_QUESTION' || data.type === 'TANG_TOC_SHOW_QUESTION' || data.type === 'RA_KHOI_RESET') {
+                    const s2Inp = document.getElementById('s2_ans_input');
+                    if (s2Inp) s2Inp.value = '';
+                    setInputState(2, false, '');
+                    const s2Stat = document.getElementById('s2_status_bar');
+                    if (s2Stat) {
+                        s2Stat.innerText = '---';
+                        s2Stat.classList.remove('submitted');
+                    }
+                }
+            }
+
+            // Round 3: Vượt Sóng (VCNV)
+            if (data.type && (data.type.startsWith('VUOT_SONG_') || data.type.startsWith('VCNV_') || data.type.startsWith('CNV_') || (data.type === 'START_ROUND_CLEAN' && data.round === 'VUOT_SONG'))) {
+                switchScene(3);
+                if (data.roundStartTime) {
+                    try { localStorage.setItem('s3_round_start_time', data.roundStartTime); } catch(e) {}
+                }
+                if (data.type === 'VUOT_SONG_LOCK_CONTESTANT') {
+                    const targetCid = parseInt(data.contestantId, 10);
+                    if (data.vsLockedContestants && typeof data.vsLockedContestants === 'object') {
+                        vsLockedContestants = {
+                            1: !!data.vsLockedContestants[1],
+                            2: !!data.vsLockedContestants[2],
+                            3: !!data.vsLockedContestants[3],
+                            4: !!data.vsLockedContestants[4]
+                        };
+                    } else if (targetCid >= 1 && targetCid <= 4) {
+                        vsLockedContestants[targetCid] = !!data.locked;
+                    }
+                    saveVSLockedState();
+                    if (targetCid === parseInt(currentContestantId, 10) && !vsLockedContestants[targetCid]) {
+                        resetBellState(3);
+                    }
+                    applyVSPlayerLockUI();
+                } else if (data.type === 'VUOT_SONG_UNLOCK_CONTESTANT') {
+                    const cid = data.contestantId;
+                    if (cid === 'ALL' || !cid) {
+                        vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+                        saveVSLockedState();
+                        resetBellState(3);
+                    } else {
+                        const targetCid = parseInt(cid, 10);
+                        if (targetCid >= 1 && targetCid <= 4) {
+                            vsLockedContestants[targetCid] = false;
+                            saveVSLockedState();
+                            if (targetCid === parseInt(currentContestantId, 10)) {
+                                resetBellState(3);
+                            }
+                        }
+                    }
+                    applyVSPlayerLockUI();
+                } else if (data.type === 'VUOT_SONG_UNLOCK_ALL') {
+                    vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+                    saveVSLockedState();
+                    resetBellState(3);
+                    applyVSPlayerLockUI();
+                } else if (data.type === 'VUOT_SONG_RESET') {
+                    vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+                    saveVSLockedState();
+                    clearPlayerSceneUI(3);
+                    applyVSPlayerLockUI();
+                } else {
+                    const s3Box = document.getElementById('s3_q_text');
+                    if (data.questionText) {
+                        if (s3Box) s3Box.innerText = data.questionText;
+                    } else if (data.type === 'VUOT_SONG_SELECT_ROW' && data.questionText) {
+                        if (s3Box) s3Box.innerText = data.questionText;
+                    }
+                    
+                    const rIndex = data.row !== undefined ? data.row : data.questionIndex;
+                    if (rIndex !== undefined) {
+                        const rowLabel = document.getElementById('s3_row_label');
+                        if (rowLabel) rowLabel.innerText = `Hàng ngang số ${rIndex}`;
+                    }
+
+                    if (data.duration) {
+                        startSceneTimer(3, data.duration);
+                    } else if (data.type === 'VUOT_SONG_START_TIMER') {
+                        startSceneTimer(3, 15);
+                    }
+                }
+
+                if (data.type === 'VUOT_SONG_SELECT_ROW' || data.type === 'VUOT_SONG_SHOW_QUESTION' || data.type === 'VUOT_SONG_ROW_RIGHT' || data.type === 'VUOT_SONG_RIGHT_ROW' || data.type === 'VUOT_SONG_ROW_WRONG' || data.type === 'VUOT_SONG_WRONG_ROW' || data.type === 'VUOT_SONG_RIGHT_CNV') {
+                    const s3Inp = document.getElementById('s3_ans_input');
+                    if (s3Inp) s3Inp.value = '';
+                    setInputState(3, false, '');
+                    const s3Stat = document.getElementById('s3_status_bar');
+                    if (s3Stat) {
+                        s3Stat.innerText = '---';
+                        s3Stat.classList.remove('submitted');
+                    }
+                    applyVSPlayerLockUI();
+                }
+
+                if (data.type === 'RESET_VS_BELL' || data.type === 'VUOT_SONG_RESET_BELL' || data.type === 'RESET_BELL_VCNV' || data.type === 'RESET_BELL' || data.type === 'VUOT_SONG_RESET') {
+                    if (data.contestantId === 'ALL' || !data.contestantId || parseInt(data.contestantId) === parseInt(currentContestantId)) {
+                        resetBellState(3);
+                    }
+                }
+            }
+
+            // Round 4: Vinh quang (Về đích)
+            if (data.type && (data.type.startsWith('VINH_QUANG_') || data.type.startsWith('VE_DICH_'))) {
+                switchScene(4);
+                const isVQReset = (data.type === 'VINH_QUANG_RESET' || data.type === 'VE_DICH_RESET' || data.type === 'VINH_QUANG_INTRO');
+                const isVQ25sTimer = (
+                    data.type === 'VINH_QUANG_25S' ||
+                    data.type === 'VE_DICH_25S' ||
+                    ((data.type === 'VINH_QUANG_START_TIMER' || data.type === 'VE_DICH_START_TIMER') && (data.is25s === true || Number(data.duration) === 25))
+                );
+                const isVQOtherTimer = !isVQ25sTimer && (
+                    data.type === 'VINH_QUANG_START_TIMER_5S' ||
+                    data.type === 'VINH_QUANG_START_TIMER' ||
+                    data.type === 'VE_DICH_START_TIMER'
+                );
+                const isVQShowQ = (data.type === 'VINH_QUANG_SHOW_QUESTION' || data.type === 'VE_DICH_SHOW_QUESTION');
+                const isVQLockEvent = (
+                    data.type === 'VINH_QUANG_SELECT_PACK' ||
+                    data.type === 'VINH_QUANG_SHOW_PACKS' ||
+                    data.type === 'VINH_QUANG_SHOW_PACK_SELECTION' ||
+                    data.type === 'VINH_QUANG_HIDE_PACK' ||
+                    data.type === 'VINH_QUANG_FLY_OUT' ||
+                    data.type === 'VINH_QUANG_HIDE_QUESTION' ||
+                    data.type === 'VINH_QUANG_HIDE_ALL' ||
+                    data.type === 'VINH_QUANG_SHOW_ANSWERS' ||
+                    data.type === 'VINH_QUANG_RIGHT' ||
+                    data.type === 'VINH_QUANG_WRONG' ||
+                    data.type === 'VINH_QUANG_PHAN_THI' ||
+                    data.type === 'VINH_QUANG_VIDEO_VE_DICH' ||
+                    data.type === 'VINH_QUANG_VIDEO_CAU_HOI' ||
+                    data.type === 'VINH_QUANG_TG_THUC_NGHIEM'
+                );
+
+                if (isVQReset) {
+                    isVQ25sActive = false;
+                    lastVQTimerStartTime = 0;
+                    clearPlayerSceneUI(4);
+                    updateTimerDisplay(4, 25);
+                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                } else {
+                    const s4Box = document.getElementById('s4_q_text');
+                    const isVQShown = (data.vqQuestionShown === true) || isVQShowQ || isVQ25sTimer || isVQOtherTimer;
+                    if (isVQShown && !isVQLockEvent) {
+                        if (data.questionText) {
+                            if (s4Box) s4Box.innerText = data.questionText;
+                        } else if (data.mediaUrl) {
+                            if (s4Box) s4Box.innerHTML = `<img src="${data.mediaUrl}" alt="Media Question" style="max-height: 200px; border-radius: 6px;">`;
+                        } else if (isVQShowQ) {
+                            if (s4Box) s4Box.innerText = '';
+                        }
+                    } else if (isVQLockEvent && data.type !== 'VINH_QUANG_SHOW_ANSWERS' && data.type !== 'VINH_QUANG_RIGHT' && data.type !== 'VINH_QUANG_WRONG') {
+                        if (s4Box) s4Box.innerText = '🔒 [Đang chờ MC phát lệnh HIỆN CÂU HỎI...]';
+                    }
+
+                    if (data.questionIndex !== undefined) {
+                        const rLabel = document.getElementById('s4_row_label');
+                        if (rLabel) rLabel.innerText = `Câu hỏi Vinh quang số ${data.questionIndex}`;
+                    }
+
+                    if (isVQ25sTimer) {
+                        const dur = 25;
+                        const st = data.startTime || Date.now();
+                        const isDuplicateStart = (data.startTime && data.startTime === lastVQTimerStartTime && timerInterval && isVQ25sActive);
+                        if (!isDuplicateStart) {
+                            lastVQTimerStartTime = st;
+                            isVQ25sActive = true;
+                            const s4Inp = document.getElementById('s4_ans_input');
+                            if (s4Inp) s4Inp.value = '';
+                            const s4Stat = document.getElementById('s4_status_bar');
+                            if (s4Stat) {
+                                s4Stat.innerText = '---';
+                                s4Stat.classList.remove('submitted');
+                            }
+                            startSceneTimer(4, dur, st, false);
+                        }
+                    } else if (isVQOtherTimer) {
+                        // Non-25s timers (e.g. 20s thinking timer or 5s steal buzzer): count down visually ONLY, keep input locked
+                        isVQ25sActive = false;
+                        lastVQTimerStartTime = 0;
+                        const dur = data.type === 'VINH_QUANG_START_TIMER_5S' ? 5 : (Number(data.duration) || 20);
+                        const st = data.startTime || Date.now();
+                        startSceneTimer(4, dur, st, true);
+                    } else if (isVQShowQ) {
+                        isVQ25sActive = false;
+                        lastVQTimerStartTime = 0;
+                        stopSceneTimer(4, 25);
+                        const s4Inp = document.getElementById('s4_ans_input');
+                        if (s4Inp) s4Inp.value = '';
+                        const s4Stat = document.getElementById('s4_status_bar');
+                        if (s4Stat) {
+                            s4Stat.innerText = '---';
+                            s4Stat.classList.remove('submitted');
+                        }
+                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    } else if (isVQLockEvent) {
+                        isVQ25sActive = false;
+                        lastVQTimerStartTime = 0;
+                        stopSceneTimer(4);
+                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    } else if (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0) {
+                        isVQ25sActive = false;
+                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    }
+                }
+            }
+
+            // Round 5: Câu hỏi phụ
+            if (data.type && data.type.startsWith('CAU_HOI_PHU_')) {
+                switchScene(5);
+                const participants = data.participatingContestants || [1, 2, 3, 4];
+                const isParticipant = participants.includes(parseInt(currentContestantId));
+
+                if (data.type === 'CAU_HOI_PHU_RESET') {
+                    clearPlayerSceneUI(5);
+                } else if (data.type === 'CAU_HOI_PHU_SHOW_QUESTION') {
+                    const s5Box = document.getElementById('s5_q_text');
+                    const s5Label = document.getElementById('s5_row_label');
+                    if (s5Box) s5Box.innerText = data.questionText || data.question || '';
+                    if (s5Label) s5Label.innerText = `Câu hỏi phụ số ${data.questionIndex || 1}`;
+                    const s5Inp = document.getElementById('s5_ans_input');
+                    if (s5Inp) s5Inp.value = '';
+                    const s5Stat = document.getElementById('s5_status_bar');
+                    if (s5Stat) { s5Stat.innerText = '---'; s5Stat.classList.remove('submitted'); }
+
+                    if (isParticipant) {
+                        setInputState(5, false, 'Nhập câu trả lời (khi bấm Bắt đầu 15s)...');
+                    } else {
+                        setInputState(5, false, 'Thí sinh không tham gia phần thi này');
+                    }
+                } else if (data.type === 'CAU_HOI_PHU_START_TIMER') {
+                    const s5Box = document.getElementById('s5_q_text');
+                    if (data.questionText && s5Box) s5Box.innerText = data.questionText;
+                    if (isParticipant) {
+                        startSceneTimer(5, data.duration || 15);
+                        setInputState(5, true, 'Nhập câu trả lời Câu hỏi phụ...');
+                    } else {
+                        setInputState(5, false, 'Thí sinh không tham gia phần thi này');
+                    }
+                }
+            }
+
+            if (data.type === 'RESET_ALL_DATA' || data.type === 'RESET') {
+                vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+                saveVSLockedState();
+                resetS1CorrectCount();
+                clearPlayerSceneUI(1);
+                clearPlayerSceneUI(2);
+                clearPlayerSceneUI(3);
+                clearPlayerSceneUI(4);
+                clearPlayerSceneUI(5);
+                resetBellState(3);
+                applyVSPlayerLockUI();
+                if (!data.contestants && !(data.gameData && data.gameData.contestants)) {
+                    contestantScore = 0;
+                    updatePlayerTopBar();
+                }
+            }
+
+            // Timer sync
+            if (data.timeLeft !== undefined) {
+                updateTimerDisplay(activeSceneNum, data.timeLeft);
+            }
+
+            if (data.type === 'RESET_BELL' || data.type === 'RESET_BELL_VCNV' || data.type === 'RESET_VS_BELL' || data.type === 'VUOT_SONG_RESET_BELL' || data.type === 'VUOT_SONG_RESET') {
+                if (data.contestantId === 'ALL' || !data.contestantId || parseInt(data.contestantId) === parseInt(currentContestantId)) {
+                    resetBellState(3);
+                }
+                if (!data.round || data.round === 'KD') resetBellState(1);
+                if (!data.round || data.round === 'VQ') resetBellState(4);
+                if (!data.round || data.round === 'CHP') resetBellState(5);
+            }
+        }
+
+        // Helper to reset buzzer button state
+        function resetBellState(sceneNum) {
+            if (sceneNum === 3 && isCurrentPlayerVSLocked()) {
+                isBellLocked = true;
+                applyVSPlayerLockUI();
+                return;
+            }
+            isBellLocked = false;
+            let btnId = '';
+            let feedbackId = '';
+            if (sceneNum === 1) {
+                btnId = 's1_btn_bell';
+                feedbackId = 's1_bell_feedback';
+            } else if (sceneNum === 2) {
+                btnId = 's2_btn_bell';
+                feedbackId = 's2_bell_feedback';
+            } else if (sceneNum === 3) {
+                btnId = 's3_btn_bell';
+                feedbackId = 's3_bell_feedback';
+            } else if (sceneNum === 4) {
+                btnId = 's4_btn_bell';
+                feedbackId = 's4_bell_feedback';
+            } else if (sceneNum === 5) {
+                btnId = 's5_btn_bell';
+                feedbackId = 's5_bell_feedback';
+            }
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.classList.remove('pressed', 'active');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                if (sceneNum === 3) {
+                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN VÒNG THI';
+                }
+            }
+            const feedback = document.getElementById(feedbackId);
+            if (feedback) {
+                feedback.style.display = 'none';
+                feedback.innerText = '';
+            }
+        }
+
+        // Helper to enable/disable player input controls
+        function setInputState(sceneNum, enabled, placeholderText) {
+            if (sceneNum === 3 && isCurrentPlayerVSLocked()) {
+                enabled = false;
+                placeholderText = 'Bạn đã bị loại khỏi phần thi';
+            }
+            let inputId = '';
+            if (sceneNum === 2) inputId = 's2_ans_input';
+            else if (sceneNum === 3) inputId = 's3_ans_input';
+            else if (sceneNum === 4) inputId = 's4_ans_input';
+            else if (sceneNum === 5) inputId = 's5_ans_input';
+
+            if (inputId) {
+                const inp = document.getElementById(inputId);
+                if (inp) {
+                    inp.disabled = !enabled;
+                    inp.readOnly = !enabled;
+                    if (placeholderText !== undefined) {
+                        inp.placeholder = placeholderText;
+                    }
+                    if (enabled) {
+                        setTimeout(() => {
+                            try { if (!inp.disabled) inp.focus(); } catch(e) {}
+                        }, 50);
+                    } else if (document.activeElement === inp) {
+                        try { inp.blur(); } catch(e) {}
+                    }
+                }
+            }
+        }
+
+        // Timer controller
+        let sceneTimerStartTime = 0;
+        let sceneTimerDuration = 0;
+
+        function stopSceneTimer(sceneNum, resetDisplayVal) {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            sceneTimerStartTime = 0;
+            sceneTimerDuration = 0;
+            currentTimerVal = 0;
+            if (sceneNum === 4) {
+                isVQ25sActive = false;
+            }
+            if (resetDisplayVal !== undefined) {
+                updateTimerDisplay(sceneNum, resetDisplayVal);
+            }
+            setInputState(sceneNum, false, sceneNum === 4 ? 'Đang khóa (Chỉ mở khi bấm 25s)...' : '');
+        }
+
+        function startSceneTimer(sceneNum, duration, customStartTime, lockOnly = false) {
+            if (timerInterval) clearInterval(timerInterval);
+            sceneTimerDuration = duration;
+            sceneTimerStartTime = customStartTime || Date.now();
+            const targetTime = sceneTimerStartTime + duration * 1000;
+            const initialRem = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
+            currentTimerVal = initialRem;
+            updateTimerDisplay(sceneNum, currentTimerVal);
+
+            if (initialRem <= 0) {
+                timerInterval = null;
+                sceneTimerStartTime = 0;
+                sceneTimerDuration = 0;
+                if (sceneNum === 4) isVQ25sActive = false;
+                setInputState(sceneNum, false, sceneNum === 4 ? 'Đang khóa (Chỉ mở khi bấm 25s)...' : 'Hết thời gian trả lời...');
+                return;
+            }
+
+            if (sceneNum === 4 && (lockOnly || !isVQ25sActive)) {
+                isVQ25sActive = false;
+                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+            } else if (sceneNum === 3 && isCurrentPlayerVSLocked()) {
+                setInputState(3, false, 'Bạn đã bị loại khỏi phần thi');
+            } else {
+                let defaultPlaceholder = 'Nhập câu trả lời...';
+                if (sceneNum === 2) defaultPlaceholder = 'Nhập câu trả lời';
+                if (sceneNum === 3) defaultPlaceholder = 'Nhập câu trả lời';
+                if (sceneNum === 4) defaultPlaceholder = 'Nhập câu trả lời';
+                setInputState(sceneNum, true, defaultPlaceholder);
+            }
+
+            timerInterval = setInterval(() => {
+                const elapsedSec = (Date.now() - sceneTimerStartTime) / 1000;
+                currentTimerVal = Math.max(0, Math.ceil(sceneTimerDuration - elapsedSec));
+                updateTimerDisplay(sceneNum, currentTimerVal);
+                if (elapsedSec >= sceneTimerDuration) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    sceneTimerStartTime = 0;
+                    sceneTimerDuration = 0;
+                    currentTimerVal = 0;
+                    if (sceneNum === 4) isVQ25sActive = false;
+                    setInputState(sceneNum, false, sceneNum === 4 ? 'Hết thời gian 25s (Đã khóa)...' : 'Hết thời gian trả lời...');
+                }
+            }, 100);
+        }
+
+        function updateTimerDisplay(sceneNum, val) {
+            const elId = `s${sceneNum}_timer`;
+            const el = document.getElementById(elId);
+            if (el) {
+                el.innerText = val < 10 ? '0' + val : val;
+            }
+        }
+
+        function clearPlayerSceneUI(sceneNum) {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            sceneTimerStartTime = 0;
+            sceneTimerDuration = 0;
+            const timerEl = document.getElementById(`s${sceneNum}_timer`);
+            if (timerEl) timerEl.innerText = '';
+
+            setInputState(sceneNum, false, '');
+
+            if (sceneNum === 1) {
+                const qBox = document.getElementById('s1_q_text');
+                if (qBox) qBox.innerText = '';
+            } else if (sceneNum === 2) {
+                const qBox = document.getElementById('s2_q_text');
+                if (qBox) qBox.innerText = '';
+                const rLabel = document.getElementById('s2_row_label');
+                if (rLabel) rLabel.innerText = '';
+                const inp = document.getElementById('s2_ans_input');
+                if (inp) inp.value = '';
+                const stat = document.getElementById('s2_status_bar');
+                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
+            } else if (sceneNum === 3) {
+                const qBox = document.getElementById('s3_q_text');
+                if (qBox) qBox.innerText = '';
+                const rLabel = document.getElementById('s3_row_label');
+                if (rLabel) rLabel.innerText = '';
+                const inp = document.getElementById('s3_ans_input');
+                if (inp) inp.value = '';
+                const stat = document.getElementById('s3_status_bar');
+                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
+            } else if (sceneNum === 4) {
+                isVQ25sActive = false;
+                const qBox = document.getElementById('s4_q_text');
+                if (qBox) qBox.innerText = '';
+                const rLabel = document.getElementById('s4_row_label');
+                if (rLabel) rLabel.innerText = '';
+                const inp = document.getElementById('s4_ans_input');
+                if (inp) inp.value = '';
+                const stat = document.getElementById('s4_status_bar');
+                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
+                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+            } else if (sceneNum === 5) {
+                const qBox = document.getElementById('s5_q_text');
+                if (qBox) qBox.innerText = '';
+                const rLabel = document.getElementById('s5_row_label');
+                if (rLabel) rLabel.innerText = 'Câu hỏi phụ số 1';
+                const inp = document.getElementById('s5_ans_input');
+                if (inp) inp.value = '';
+                const stat = document.getElementById('s5_status_bar');
+                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
+            }
+        }
+
+        function escapePlayerHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Typing & Submitting Player Answers
+        function onPlayerAnswerTyping(roundKey) {
+            const rUpper = (roundKey || '').toString().toUpperCase();
+            if (rUpper === 'VQ' || rUpper === 'VINH_QUANG' || rUpper === 'VE_DICH') {
+                const inp = document.getElementById('s4_ans_input');
+                if (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0) {
+                    isVQ25sActive = false;
+                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    if (inp) inp.value = '';
+                }
+            } else if (rUpper === 'VCNV' || rUpper === 'CNV' || rUpper === 'VUOT_SONG' || rUpper === 'VS') {
+                if (isCurrentPlayerVSLocked()) {
+                    applyVSPlayerLockUI();
+                }
+            }
+        }
+
+        function submitPlayerAnswer(roundKey, isAutoTyping = false) {
+            let inputId = '';
+            let statusId = '';
+            let normalizedRound = 'RK';
+            let calculatedTime = '';
+            let maxDuration = 30;
+
+            const rUpper = (roundKey || '').toString().toUpperCase();
+
+            if (rUpper === 'RA_KHOI' || rUpper === 'RK' || rUpper === 'TANG_TOC' || rUpper === 'TT' || (!roundKey && activeSceneNum === 2)) {
+                inputId = 's2_ans_input';
+                statusId = 's2_status_bar';
+                normalizedRound = 'RK';
+                maxDuration = 30;
+            } else if (rUpper === 'VCNV' || rUpper === 'CNV' || rUpper === 'VUOT_SONG' || rUpper === 'VS' || (!roundKey && activeSceneNum === 3)) {
+                inputId = 's3_ans_input';
+                statusId = 's3_status_bar';
+                normalizedRound = 'VS';
+                maxDuration = 15;
+            } else if (rUpper === 'VINH_QUANG' || rUpper === 'VQ' || rUpper === 'VE_DICH' || (!roundKey && activeSceneNum === 4)) {
+                inputId = 's4_ans_input';
+                statusId = 's4_status_bar';
+                normalizedRound = 'VQ';
+                maxDuration = 25;
+            } else if (rUpper === 'CHP' || (!roundKey && activeSceneNum === 5)) {
+                inputId = 's5_ans_input';
+                statusId = 's5_status_bar';
+                normalizedRound = 'CHP';
+                maxDuration = 15;
+            }
+
+            if (normalizedRound === 'VS' && isCurrentPlayerVSLocked()) {
+                applyVSPlayerLockUI();
+                return;
+            }
+
+            const inputEl = document.getElementById(inputId);
+            if (!inputEl || inputEl.disabled) return;
+            if (normalizedRound === 'VQ' && (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0)) {
+                isVQ25sActive = false;
+                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                return;
+            }
+            const rawAnswer = inputEl.value;
+            const answerText = rawAnswer.trim() === '' ? ' ' : rawAnswer;
+
+            if (sceneTimerStartTime > 0) {
+                const elapsedSec = Math.min(sceneTimerDuration || maxDuration, Math.max(0, (Date.now() - sceneTimerStartTime) / 1000));
+                const fixedStr = elapsedSec.toFixed(2);
+                calculatedTime = elapsedSec < 10 ? '0' + fixedStr : fixedStr;
+            } else if (timerInterval && currentTimerVal >= 0) {
+                const elapsed = (maxDuration - currentTimerVal);
+                const fixedStr = elapsed.toFixed(2);
+                calculatedTime = elapsed < 10 ? '0' + fixedStr : fixedStr;
+            } else {
+                calculatedTime = '00.00';
+            }
+
+            const statusEl = statusId ? document.getElementById(statusId) : null;
+            if (statusEl) {
+                statusEl.style.whiteSpace = 'nowrap';
+                statusEl.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;">${escapePlayerHtml(answerText)}</span><span style="flex-shrink:0;margin-left:10px;background:rgba(0,0,0,0.22);padding:2px 8px;border-radius:4px;font-size:1.05rem;">Thời gian: ${calculatedTime}s</span>`;
+                statusEl.classList.add('submitted');
+            }
+
+            // Làm trống ô nhập đáp án sau khi Enter để thí sinh có thể gõ ngay đáp án mới nếu muốn đổi
+            inputEl.value = '';
+            try { inputEl.focus(); } catch(e) {}
+
+            const nameEl = document.getElementById('top_player_name');
+            const tsName = contestantName || (nameEl && nameEl.textContent.trim()) || `Thí sinh ${currentContestantId}`;
+
+            const payload = {
+                id: 'ans_' + currentContestantId + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                type: 'PLAYER_SUBMIT_ANSWER',
+                contestantId: currentContestantId,
+                contestantName: tsName,
+                name: tsName,
+                round: normalizedRound,
+                answer: answerText,
+                time: calculatedTime || '00.00',
+                roomCode: currentRoomCode,
+                auth: currentPassword || '',
+                isAutoTyping: isAutoTyping,
+                isVongThi: false,
+                timestamp: Date.now()
+            };
+
+            if (syncChannel) {
+                try { syncChannel.postMessage(payload); } catch(e) {}
+            }
+
+            try {
+                localStorage.setItem(`ddvq_player_ans_${currentRoomCode}_${currentContestantId}`, JSON.stringify(payload));
+                localStorage.setItem('ddvq_latest_action', JSON.stringify(payload));
+            } catch(e) {}
+
+            // If WebSocket is not currently connected, use HTTP fallback
+            if (!syncChannel || !syncChannel.isWsConnected) {
+                fetch(getApiUrl('/api/action'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+            }
+        }
+
+        // Ring Bell function for Xuất Phát, Vượt Sóng, Vinh Quang & Câu Hỏi Phụ
+        function ringBell(roundKey) {
+            const rkUpper = (roundKey || '').toString().toUpperCase();
+            if ((rkUpper === 'VCNV' || rkUpper === 'CNV' || rkUpper === 'VS' || rkUpper === 'VUOT_SONG') && isCurrentPlayerVSLocked()) {
+                applyVSPlayerLockUI();
+                return;
+            }
+            if (isBellLocked) return;
+            isBellLocked = true;
+            let btnId = '';
+            let feedbackId = '';
+            if (roundKey === 'KD' || roundKey === 'XP') {
+                btnId = 's1_btn_bell';
+                feedbackId = 's1_bell_feedback';
+            } else if (roundKey === 'RA_KHOI' || roundKey === 'RK' || roundKey === 'TANG_TOC') {
+                btnId = 's2_btn_bell';
+                feedbackId = 's2_bell_feedback';
+            } else if (roundKey === 'VCNV' || roundKey === 'CNV' || roundKey === 'VS' || roundKey === 'VUOT_SONG') {
+                btnId = 's3_btn_bell';
+                feedbackId = 's3_bell_feedback';
+            } else if (roundKey === 'VQ') {
+                btnId = 's4_btn_bell';
+                feedbackId = 's4_bell_feedback';
+            } else {
+                btnId = 's5_btn_bell';
+                feedbackId = 's5_bell_feedback';
+            }
+
+            const btn = document.getElementById(btnId);
+            const feedback = document.getElementById(feedbackId);
+
+            if (btn) {
+                btn.classList.add('pressed');
+                btn.style.opacity = '0.4';
+            }
+            if (feedback) feedback.style.display = 'flex';
+
+            let s3StartTime = parseInt(localStorage.getItem('s3_round_start_time')) || 0;
+            let elapsedStr = "00.00";
+            if (s3StartTime > 0) {
+                let elapsed = (Date.now() - s3StartTime) / 1000;
+                elapsedStr = elapsed < 10 ? '0' + elapsed.toFixed(2) : elapsed.toFixed(2);
+            }
+
+            const payload = {
+                type: 'PLAYER_RING_BELL',
+                contestantId: currentContestantId,
+                contestantName: contestantName,
+                round: roundKey,
+                time: elapsedStr,
+                roomCode: currentRoomCode,
+                timestamp: Date.now()
+            };
+
+            const ansPayload = {
+                type: 'PLAYER_SUBMIT_ANSWER',
+                contestantId: currentContestantId,
+                contestantName: contestantName,
+                round: 'VS',
+                isVongThi: true,
+                answer: '',
+                time: elapsedStr,
+                roomCode: currentRoomCode,
+                timestamp: Date.now()
+            };
+
+            const flashPayload = {
+                type: 'S3_FLASH_SCOREBOARD',
+                contestantId: currentContestantId,
+                round: 'VUOT_SONG',
+                timestamp: Date.now()
+            };
+
+            // Fast microsecond path: post to native WebSocket + local BroadcastChannel
+            if (syncChannel) {
+                try { syncChannel.postMessage(payload); } catch(e) {}
+                try { syncChannel.postMessage(ansPayload); } catch(e) {}
+                try { syncChannel.postMessage(flashPayload); } catch(e) {}
+            }
+
+            try {
+                localStorage.setItem('ddvq_latest_action', JSON.stringify(payload));
+            } catch(e) {}
+
+            // If WebSocket is offline, fallback to HTTP fetch
+            if (!syncChannel || !syncChannel.isWsConnected) {
+                fetch(getApiUrl('/api/action'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+            }
+        }
+
+        let s1HasSelectedDeForTurn = { 1: false, 2: false, 3: false, 4: false };
+        let s1ChosenDeMap = { 1: null, 2: null, 3: null, 4: null };
+
+        function updateS1RandomDeButtonUI() {
+            const btn = document.getElementById('s1_random_btn');
+            if (!btn) return;
+
+            if (!currentXuatPhatTurnIndex || currentXuatPhatTurnIndex <= 0) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.style.background = '#475569';
+                btn.style.borderColor = '#64748b';
+                btn.style.boxShadow = 'none';
+                btn.innerHTML = `CHƯA BẮT ĐẦU LƯỢT THI (ĐANG CHỜ MC CHỌN THÍ SINH)`;
+                return;
+            }
+
+            if (parseInt(currentXuatPhatTurnIndex) !== parseInt(currentContestantId)) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.style.background = '#475569';
+                btn.style.borderColor = '#64748b';
+                btn.style.boxShadow = 'none';
+                btn.innerHTML = `CHƯA ĐẾN LƯỢT THI (TS ${currentXuatPhatTurnIndex} ĐANG THI)`;
+                return;
+            }
+
+            if (s1HasSelectedDeForTurn[currentContestantId]) {
+                btn.disabled = true;
+                btn.style.opacity = '0.8';
+                btn.style.cursor = 'not-allowed';
+                btn.style.background = '#1e3a8a';
+                btn.style.borderColor = '#3b82f6';
+                btn.style.boxShadow = 'none';
+                const deText = s1ChosenDeMap[currentContestantId] ? `BỘ ĐỀ ${s1ChosenDeMap[currentContestantId]}` : 'ĐÃ CHỌN';
+                btn.innerHTML = `ĐÃ CHỌN (${deText})`;
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+                btn.style.borderColor = '#4ade80';
+                btn.style.boxShadow = '0 4px 12px rgba(22, 163, 74, 0.4)';
+                btn.innerHTML = `<span>BẤM PHÍM CHỌN ĐỀ</span> <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 12px; border: 1px solid rgba(255,255,255,0.4); margin-left: 8px;">Phím cách (Space)</span>`;
+            }
+        }
+
+        function triggerRandomDeFromPlayer() {
+            if (!currentXuatPhatTurnIndex || currentXuatPhatTurnIndex <= 0) {
+                return;
+            }
+            if (parseInt(currentXuatPhatTurnIndex) !== parseInt(currentContestantId)) {
+                return;
+            }
+            if (s1HasSelectedDeForTurn[currentContestantId]) {
+                return;
+            }
+
+            const chosenSet = Math.floor(Math.random() * 8) + 1;
+            s1HasSelectedDeForTurn[currentContestantId] = true;
+            s1ChosenDeMap[currentContestantId] = chosenSet;
+            updateS1RandomDeButtonUI();
+
+            const payload = {
+                type: 'XUAT_PHAT_RANDOM_DE',
+                contestantId: currentContestantId,
+                turnIndex: currentContestantId,
+                deNumber: chosenSet,
+                name: contestantName,
+                roomCode: currentRoomCode,
+                timestamp: Date.now()
+            };
+
+            if (syncChannel) syncChannel.postMessage(payload);
+            try {
+                localStorage.setItem('ddvq_latest_action', JSON.stringify(payload));
+            } catch(e) {}
+            fetch(getApiUrl('/api/action'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(() => {});
+        }
+
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+                    return;
+                }
+                if (activeSceneNum === 1) {
+                    e.preventDefault();
+                    triggerRandomDeFromPlayer();
+                }
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-sync.js"></script>
+</body>
+</html>

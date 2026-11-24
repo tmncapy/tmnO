@@ -1,0 +1,1644 @@
+// Projector.js - Màn hình hiển thị Projector
+function showPopup(message) {
+    const msgEl = document.getElementById('popup-message');
+    const popEl = document.getElementById('custom-popup');
+    if (msgEl) msgEl.innerText = message;
+    if (popEl) popEl.style.display = 'flex';
+}
+
+function closePopup() {
+    const popEl = document.getElementById('custom-popup');
+    if (popEl) popEl.style.display = 'none';
+}
+
+window.alert = function(msg) { showPopup(msg); };
+window.prompt = function(msg) { showPopup(msg); return null; };
+window.confirm = function(msg) { showPopup(msg); return false; };
+
+let currentViewIndex = 1;
+
+function switchView(viewNum) {
+    currentViewIndex = viewNum;
+    for (let i = 1; i <= 10; i++) {
+        const viewEl = document.getElementById(`view-file-${i}`);
+        const btnEl = document.getElementById(`btn-view-${i}`);
+        if (viewEl) {
+            viewEl.classList.remove('active-view');
+            viewEl.style.display = '';
+        }
+        if (btnEl) btnEl.classList.remove('active-view-btn');
+    }
+    const activeView = document.getElementById(`view-file-${viewNum}`);
+    const activeBtn = document.getElementById(`btn-view-${viewNum}`);
+    if (activeView) {
+        activeView.classList.add('active-view');
+        activeView.style.display = 'block';
+    }
+    if (activeBtn) activeBtn.classList.add('active-view-btn');
+}
+
+function scaleStage() {
+    const wrapper = document.querySelector('.stage-wrapper');
+    if (!wrapper) return;
+    const targetWidth = 1920;
+    const targetHeight = 1080;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    const scale = Math.min(windowWidth / targetWidth, windowHeight / targetHeight);
+
+    wrapper.style.transform = `scale(${scale})`;
+    wrapper.style.left = `${(windowWidth - targetWidth * scale) / 2}px`;
+    wrapper.style.top = `${(windowHeight - targetHeight * scale) / 2}px`;
+}
+
+let scaleStageRaf = null;
+function scheduleScaleStage() {
+    if (scaleStageRaf) return;
+    scaleStageRaf = requestAnimationFrame(() => {
+        scaleStage();
+        scaleStageRaf = null;
+    });
+}
+window.addEventListener('resize', scheduleScaleStage);
+window.addEventListener('DOMContentLoaded', () => {
+    scaleStage();
+    let vsData = null;
+    try {
+        const saved = localStorage.getItem('duong_den_vinh_quang_data');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            vsData = parsed.vuotSong;
+        }
+    } catch(e) {}
+    syncVuotSongGrid(vsData);
+});
+
+/* VIEW 1 LOGIC */
+let score1 = 0, timeLeft1 = 60, timerInterval1 = null, isRolling1 = false, currentQuestionIndex1 = 1;
+let soundShowTitle1 = new Audio('sounds/ShowTitle.mp3');
+let soundRandomSet1 = new Audio('sounds/RandomSet.mp3');
+let soundBeginQues1 = new Audio('sounds/BeginQues.mp3');
+let sound60s1 = new Audio('sounds/60s.mp3');
+let soundTick1 = new Audio('sounds/Tick.mp3');
+let soundTimeUp1 = new Audio('sounds/TImeUp.mp3');
+let soundRight1 = new Audio('sounds/right.mp3');
+let soundWrong1 = new Audio('sounds/wrong.mp3');
+let soundRKAnswer = new Audio('sounds/Answer.mp3');
+let soundRKTimer = new Audio('sounds/25sV1.mp3');
+let soundChooseQues = new Audio('sounds/ChooseQues.mp3');
+let soundRightV3 = new Audio('sounds/RightV3.mp3');
+let soundActivate = new Audio('sounds/Activate.mp3');
+let soundOpenLetter = new Audio('sounds/OpenLetter.mp3');
+let soundShowRound = new Audio('sounds/showRound.mp3');
+
+let screenAudioSettings = {
+    enabled: true,
+    volume: 1.0,
+    round3Audio: 'sounds/20sV1.mp3',
+    round4Audio: 'sounds/25sV1.mp3'
+};
+
+function applyAudioSettingsProjector(settings) {
+    if (!settings) return;
+    screenAudioSettings.enabled = settings.projectorEnabled !== false;
+    screenAudioSettings.volume = typeof settings.projectorVolume === 'number' ? settings.projectorVolume / 100 : 1.0;
+    if (settings.round3Audio) screenAudioSettings.round3Audio = settings.round3Audio;
+    if (settings.round4Audio) screenAudioSettings.round4Audio = settings.round4Audio;
+
+    const vq4 = document.getElementById('vongThiAudio4');
+    if (vq4) {
+        vq4.src = screenAudioSettings.round3Audio;
+        vq4.volume = screenAudioSettings.volume;
+        vq4.muted = !screenAudioSettings.enabled;
+    }
+    const vq7 = document.getElementById('vongThiAudio7');
+    if (vq7) {
+        vq7.src = screenAudioSettings.round4Audio;
+        vq7.volume = screenAudioSettings.volume;
+        vq7.muted = !screenAudioSettings.enabled;
+    }
+    if (typeof soundRKTimer !== 'undefined' && soundRKTimer) {
+        soundRKTimer.src = screenAudioSettings.round4Audio;
+        soundRKTimer.volume = screenAudioSettings.volume;
+        soundRKTimer.muted = !screenAudioSettings.enabled;
+    }
+
+    const allAudios = [soundShowTitle1, soundRandomSet1, soundBeginQues1, sound60s1, soundTick1, soundTimeUp1, soundRight1, soundWrong1, soundRKAnswer, soundChooseQues, soundRightV3, soundActivate, soundOpenLetter, soundShowRound];
+    allAudios.forEach(a => {
+        if (a) {
+            a.volume = screenAudioSettings.volume;
+            a.muted = !screenAudioSettings.enabled;
+        }
+    });
+
+    if (typeof document !== 'undefined') {
+        document.querySelectorAll('audio, video').forEach(m => {
+            m.volume = screenAudioSettings.volume;
+            m.muted = !screenAudioSettings.enabled;
+        });
+    }
+}
+window.applyAudioSettingsProjector = applyAudioSettingsProjector;
+
+let isAudioUnlocked = false;
+let globalAudioCtx = null;
+
+function unlockAudio() {
+    if (isAudioUnlocked) return;
+    isAudioUnlocked = true;
+    try {
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtxClass) {
+            if (!globalAudioCtx) globalAudioCtx = new AudioCtxClass();
+            if (globalAudioCtx.state === 'suspended') {
+                globalAudioCtx.resume().catch(() => {});
+            }
+        }
+    } catch(e) {}
+}
+
+['click', 'keydown', 'pointerdown', 'touchstart'].forEach(evt => {
+    window.addEventListener(evt, unlockAudio, { once: true, capture: true });
+});
+
+function safePlay(audio) {
+    if (!audio) return;
+    if (!screenAudioSettings.enabled) {
+        try { audio.pause(); audio.currentTime = 0; } catch(e) {}
+        return;
+    }
+    try {
+        unlockAudio();
+        audio.volume = screenAudioSettings.volume;
+        audio.muted = false;
+        audio.currentTime = 0;
+        let p = audio.play();
+        if (p && typeof p.then === 'function') {
+            p.catch(e => {
+                console.log("[Audio] Play prevented until user interaction:", e.message || e);
+            });
+        }
+    } catch(e) {
+        console.warn("[Audio] Play exception:", e);
+    }
+}
+
+function safePause(audio) {
+    if (!audio) return;
+    try {
+        audio.pause();
+        audio.currentTime = 0;
+    } catch(e) {}
+}
+
+function stopAllAudio1() {
+    safePause(soundShowTitle1);
+    safePause(soundRandomSet1);
+    safePause(soundBeginQues1);
+    safePause(sound60s1);
+    safePause(soundTick1);
+    safePause(soundTimeUp1);
+    safePause(soundRight1);
+    safePause(soundWrong1);
+    safePause(soundShowRound);
+    safePause(soundRKAnswer);
+    safePause(soundChooseQues);
+    safePause(soundRightV3);
+    safePause(soundActivate);
+    safePause(soundOpenLetter);
+    if (typeof stopCustomSound === 'function') stopCustomSound();
+}
+
+function updateBlink1() {
+    document.querySelectorAll('#view-file-1 .ket-qua-cau').forEach(el => el.classList.remove('blinking'));
+    let currentBox = document.getElementById('kq1-' + currentQuestionIndex1);
+    if (currentBox) currentBox.classList.add('blinking');
+}
+
+function xuatPhat1() { 
+    const xp = document.getElementById('xuatPhatContainer');
+    const cl = document.getElementById('contestantList1');
+    if (xp) xp.style.display = 'none'; 
+    if (cl) cl.style.display = 'flex'; 
+}
+
+function chonThiSinh1(name) { 
+    const cl = document.getElementById('contestantList1');
+    const ri = document.getElementById('randomImg1');
+    const dn = document.getElementById('displayContestantName1');
+    const qn = document.getElementById('quesContestantName1');
+    const nb = document.getElementById('numberBox1');
+    const bd = document.getElementById('btnBamDe1');
+
+    if (cl) cl.style.display = 'none'; 
+    if (ri) ri.style.display = 'block'; 
+    if (dn) { dn.style.display = 'flex'; dn.innerText = name; }
+    if (qn) qn.innerText = name; 
+    if (nb) nb.style.display = 'flex'; 
+    if (bd) bd.style.display = 'block'; 
+}
+
+function triggerQuestionMotion(text) {
+    const qEl = document.getElementById('questionText1');
+    if (!qEl) return;
+    if (text !== undefined && text !== null) {
+        qEl.innerText = text;
+    }
+    qEl.classList.remove('animate-question-slide');
+    void qEl.offsetWidth; // trigger reflow
+    qEl.classList.add('animate-question-slide');
+}
+
+function bamDe1(targetDe) {
+    if (isRolling1) return;
+    isRolling1 = true;
+    const bd = document.getElementById('btnBamDe1');
+    if (bd) bd.style.display = 'none';
+    safePlay(soundRandomSet1);
+
+    let startTime = Date.now();
+    let rollInterval = setInterval(() => {
+        const nb = document.getElementById('numberBox1');
+        if (nb) nb.innerText = Math.floor(Math.random() * 8) + 1;
+        if (Date.now() - startTime >= 5000) { 
+            clearInterval(rollInterval);
+            if (targetDe !== undefined && targetDe !== null) {
+                if (nb) nb.innerText = targetDe;
+            }
+            isRolling1 = false;
+        }
+    }, 100);
+}
+
+function batDauCauHoi1(qText) {
+    const txt = qText || "Nội dung câu hỏi số 1";
+    triggerQuestionMotion(txt);
+    let firstBox = document.getElementById('kq1-1');
+    if (firstBox) firstBox.classList.remove('inactive');
+    updateBlink1();
+
+    clearInterval(timerInterval1);
+    safePlay(soundBeginQues1);
+    safePlay(sound60s1);
+
+    timeLeft1 = 60;
+    const timer1El = document.getElementById('timer1');
+    if (timer1El) timer1El.innerText = "60";
+    let targetTime = Date.now() + 60000;
+    timerInterval1 = setInterval(() => {
+        let prevTime = timeLeft1;
+        timeLeft1 = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
+        if (timer1El) timer1El.innerText = timeLeft1 < 10 ? ('0' + timeLeft1) : timeLeft1;
+
+        if (timeLeft1 <= 5 && timeLeft1 > 0 && timeLeft1 !== prevTime) {
+            safePlay(soundTick1);
+        }
+
+        if (timeLeft1 === 0) {
+            clearInterval(timerInterval1);
+            safePlay(soundTimeUp1);
+        }
+    }, 200);
+}
+
+function traLoiDung1(skipScoreAdd = false) {
+    safePlay(soundRight1);
+    if (!skipScoreAdd) {
+        score1 += 10; 
+        const s1 = document.getElementById('score1');
+        if (s1) s1.innerText = score1;
+    }
+    let el = document.getElementById('kq1-' + currentQuestionIndex1);
+    if(el) { el.classList.remove('blinking'); el.style.backgroundColor = '#3b82f6'; }
+    const ab = document.getElementById('answerBox1');
+    if (ab) ab.style.display = 'flex';
+}
+
+function traLoiSai1() {
+    safePlay(soundWrong1);
+    let el = document.getElementById('kq1-' + currentQuestionIndex1);
+    if(el) { el.classList.remove('blinking'); el.style.backgroundColor = '#ef4444'; }
+    const ab = document.getElementById('answerBox1');
+    if (ab) ab.style.display = 'flex';
+}
+
+function chuyenCau1() {
+    const ab = document.getElementById('answerBox1');
+    if (ab) ab.style.display = 'none';
+    if(currentQuestionIndex1 < 10) {
+        currentQuestionIndex1++;
+        let nextBox = document.getElementById('kq1-' + currentQuestionIndex1);
+        if(nextBox) nextBox.classList.remove('inactive');
+        const q1 = document.getElementById('questionText1');
+        if (q1) q1.innerText = "Nội dung câu hỏi số " + currentQuestionIndex1;
+        updateBlink1();
+    }
+}
+
+/* VIEW 3 LOGIC */
+let windowCurrentVsData = null;
+
+function removeVietnameseTones(str) {
+    if (!str) return '';
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    str = str.replace(/đ/g, "d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    try {
+        str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    } catch(e) {}
+    return str;
+}
+
+function ensureVSGridSynced() {
+    const rowsContainer = document.getElementById('file3-rows-container');
+    if (!rowsContainer || rowsContainer.children.length === 0) {
+        syncVuotSongGrid(windowCurrentVsData);
+    }
+}
+
+window.vsOpenedRows = window.vsOpenedRows || { 1: false, 2: false, 3: false, 4: false, center: false, keyword: false };
+window.vsRevealedIndices = window.vsRevealedIndices || [];
+
+function syncVuotSongGrid(vsData) {
+    if (vsData) {
+        windowCurrentVsData = vsData;
+    } else if (!windowCurrentVsData) {
+        try {
+            const saved = localStorage.getItem('duong_den_vinh_quang_data');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.vuotSong) {
+                    windowCurrentVsData = parsed.vuotSong;
+                }
+            }
+        } catch(e) {}
+    }
+    const dataToUse = vsData || windowCurrentVsData;
+
+    const rowsContainer = document.getElementById('file3-rows-container');
+    const keysContainer = document.getElementById('file3-keys-container');
+    if (!rowsContainer || !keysContainer) return;
+
+    const startX_Row = 237.2, startY_Row = 157.7, deltaX_Row = 99.2, deltaY_Row = 102.7;
+    const widthRow = 95.6, heightRow = 75.7;
+    let rowHtml = '';
+
+    for (let h = 1; h <= 4; h++) {
+        const baseY = startY_Row + (h - 1) * deltaY_Row;
+        const ans = dataToUse ? (dataToUse[`h${h}`]?.a || dataToUse[`h${h}`]?.q || '') : '';
+        const cleanAns = ans.replace(/\s+/g, '').toUpperCase();
+        const totalChars = cleanAns.length;
+
+        if (totalChars === 0) continue;
+
+        const isMultiLine = totalChars > 15;
+        const tileHeight = isMultiLine ? 44 : heightRow;
+        const fontSize = isMultiLine ? '26px' : '40px';
+        const isRowOpened = !!(window.vsOpenedRows && window.vsOpenedRows[h]);
+
+        for (let i = 0; i < totalChars; i++) {
+            const lineInRow = Math.floor(i / 15);
+            const colInLine = i % 15;
+            const currentX = startX_Row + colInLine * deltaX_Row;
+            const currentY = isMultiLine ? (baseY + lineInRow * 46) : baseY;
+            const charToShow = (isRowOpened && i < cleanAns.length) ? cleanAns[i] : '';
+
+            rowHtml += `<div class="game-item row-${h}-item" style="left: ${currentX}px; top: ${currentY}px; width: ${widthRow}px; height: ${tileHeight}px; font-size: ${fontSize}; background-image: url('Images/LetterDefault.png');">${charToShow}</div>`;
+        }
+    }
+    rowsContainer.innerHTML = rowHtml;
+
+    const startY_Key = 565.5, deltaX_Key = 98.5;
+    const widthKey = 86.7, heightKey = 75.7;
+    let keyHtml = '';
+    const kw = dataToUse ? (dataToUse.keyword || dataToUse.center?.a || '') : '';
+    const cleanKw = removeVietnameseTones(kw).replace(/\s+/g, '').toUpperCase();
+    const kwL = cleanKw.length;
+    const isKwAllOpened = !!(window.vsOpenedRows && (window.vsOpenedRows.keyword || window.vsOpenedRows.center));
+
+    if (kwL > 0) {
+        if (kwL <= 15) {
+            const computedStartX_Key = (1920 - (kwL * deltaX_Key - (deltaX_Key - widthKey))) / 2;
+            for (let cot = 0; cot < kwL; cot++) {
+                let currentX = computedStartX_Key + cot * deltaX_Key;
+                const isOpened = isKwAllOpened || (window.vsRevealedIndices && window.vsRevealedIndices.includes(cot));
+                const bg = isOpened ? "url('Images/LetterKeyOpen.png')" : "url('Images/LetterKey.png')";
+                const charToShow = isOpened ? (cleanKw[cot] || '') : '';
+                keyHtml += `<div class="game-item key-item" style="left: ${currentX}px; top: ${startY_Key}px; width: ${widthKey}px; height: ${heightKey}px; background-image: ${bg};">${charToShow}</div>`;
+            }
+        } else {
+            for (let i = 0; i < kwL; i++) {
+                const lineIndex = Math.floor(i / 15);
+                const colInLine = i % 15;
+                const lineCharCount = Math.min(15, kwL - lineIndex * 15);
+                const computedStartX = (1920 - (lineCharCount * deltaX_Key - (deltaX_Key - widthKey))) / 2;
+                const currentX = computedStartX + colInLine * deltaX_Key;
+                const currentY = startY_Key + lineIndex * 46;
+                const isOpened = isKwAllOpened || (window.vsRevealedIndices && window.vsRevealedIndices.includes(i));
+                const bg = isOpened ? "url('Images/LetterKeyOpen.png')" : "url('Images/LetterKey.png')";
+                const charToShow = isOpened ? (cleanKw[i] || '') : '';
+
+                keyHtml += `<div class="game-item key-item" style="left: ${currentX}px; top: ${currentY}px; width: ${widthKey}px; height: 44px; font-size: 26px; background-image: ${bg};">${charToShow}</div>`;
+            }
+        }
+    }
+    keysContainer.innerHTML = keyHtml;
+}
+
+/* VIEW 4 LOGIC */
+let countdown4, timeLeft4 = 20, isRunning4 = false;
+function startCountdown4() {
+    if (isRunning4) return;
+    isRunning4 = true;
+    const clockElement = document.getElementById('clock4');
+    const audio = document.getElementById('vongThiAudio4');
+    if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log(e));
+    }
+    countdown4 = setInterval(() => {
+        timeLeft4--;
+        if (clockElement) clockElement.textContent = timeLeft4 < 10 ? ('0' + Math.max(0, timeLeft4)) : timeLeft4;
+        if (timeLeft4 <= 0) { clearInterval(countdown4); if (clockElement) clockElement.textContent = "00"; isRunning4 = false; }
+    }, 1000);
+}
+
+/* VIEW 6 LOGIC */
+let isSelected6 = false;
+let lastRequestedScore6 = null;
+
+function setPackBackgroundImage(score) {
+    const pageWrapper = document.querySelector('#view-file-6 #pageWrapper');
+    const view6 = document.getElementById('view-file-6');
+    if (!pageWrapper && !view6) return;
+
+    lastRequestedScore6 = score;
+
+    const primaryUrl = `Images/chosse${score}.png`;
+    const secondaryUrl = `Images/choose${score}.png`;
+    const fallbackUrl = `Images/choosepack.png`;
+
+    const applyBg = (url, targetScore) => {
+        if (lastRequestedScore6 !== targetScore) return;
+        if (pageWrapper) pageWrapper.style.backgroundImage = `url('${url}')`;
+        if (view6) view6.style.backgroundImage = `url('${url}')`;
+    };
+
+    const img = new Image();
+    img.onload = function() {
+        applyBg(primaryUrl, score);
+    };
+    img.onerror = function() {
+        const img2 = new Image();
+        img2.onload = function() {
+            applyBg(secondaryUrl, score);
+        };
+        img2.onerror = function() {
+            applyBg(fallbackUrl, score);
+        };
+        img2.src = secondaryUrl;
+    };
+    img.src = primaryUrl;
+}
+
+function showPack6() {
+    isSelected6 = false;
+    lastRequestedScore6 = null;
+    switchView(6);
+    const view6 = document.getElementById('view-file-6');
+    const pageWrapper = document.querySelector('#view-file-6 #pageWrapper');
+    if (pageWrapper) {
+        pageWrapper.classList.add('no-transition');
+        pageWrapper.style.backgroundImage = "url('Images/pack.png')";
+        pageWrapper.classList.remove('fly-down');
+        // Force reflow
+        void pageWrapper.offsetWidth;
+        pageWrapper.classList.remove('no-transition');
+    }
+    if (view6) {
+        view6.style.backgroundImage = "url('Images/pack.png')";
+    }
+    const items = document.querySelectorAll('#view-file-6 .pack-item');
+    items.forEach(it => it.classList.remove('selected'));
+    const subjectTitleEl = document.getElementById('subjectTitle6');
+    if (subjectTitleEl) {
+        subjectTitleEl.innerText = '';
+        subjectTitleEl.classList.remove('show');
+    }
+    const subjectContainer = document.querySelector('#view-file-6 .subject-container');
+    if (subjectContainer) {
+        subjectContainer.classList.remove('show');
+    }
+}
+
+function resetVQProjector() {
+    isSelected6 = false;
+    lastRequestedScore6 = null;
+    
+    // 1. Reset View 6 (Packs view) to empty/fly-down state
+    const view6 = document.getElementById('view-file-6');
+    const pageWrapper = document.querySelector('#view-file-6 #pageWrapper');
+    if (pageWrapper) {
+        pageWrapper.classList.add('no-transition');
+        pageWrapper.style.backgroundImage = "url('Images/pack.png')";
+        pageWrapper.classList.add('fly-down'); // hide instantly
+        // Force reflow
+        void pageWrapper.offsetWidth;
+        pageWrapper.classList.remove('no-transition');
+    }
+    if (view6) {
+        view6.style.backgroundImage = "url('Images/pack.png')";
+    }
+    const items = document.querySelectorAll('#view-file-6 .pack-item');
+    items.forEach(it => it.classList.remove('selected'));
+    const subjectTitleEl = document.getElementById('subjectTitle6');
+    if (subjectTitleEl) {
+        subjectTitleEl.innerText = '';
+        subjectTitleEl.classList.remove('show');
+    }
+    const subjectContainer = document.querySelector('#view-file-6 .subject-container');
+    if (subjectContainer) {
+        subjectContainer.classList.remove('show');
+    }
+
+    // 2. Reset View 7 (Vinh Quang question view)
+    if (countdown7) {
+        clearInterval(countdown7);
+    }
+    isRunning7 = false;
+    isVQStarActive = false;
+    const qEl7 = document.getElementById('vq_question_text');
+    const rEl7 = document.getElementById('vq_round_title');
+    const pEl7 = document.getElementById('vq_selected_pack_title');
+    const starIcon7 = document.getElementById('vq_star_icon');
+    if (qEl7) qEl7.innerText = "";
+    if (rEl7) rEl7.innerText = "";
+    if (pEl7) pEl7.innerText = "";
+    if (starIcon7) starIcon7.style.display = "none";
+    const clockEl7 = document.getElementById('clock7');
+    if (clockEl7) clockEl7.innerText = "25";
+
+    // 3. Reset View 8 (Vinh Quang answers view)
+    for (let i = 1; i <= 4; i++) {
+        const scoreEl = document.getElementById(`vq_score_ts${i}`);
+        const nameEl = document.getElementById(`vq_name_ts${i}`);
+        const ansEl = document.getElementById(`vq_ans_ts${i}`);
+        const valEl = document.getElementById(`vq_ans_val_${i}`);
+        const timeEl = document.getElementById(`vq_ans_time_${i}`);
+        if (scoreEl) scoreEl.innerText = '';
+        if (nameEl) nameEl.innerText = '';
+        if (ansEl) ansEl.innerText = '';
+        if (valEl) valEl.innerText = '';
+        if (timeEl) timeEl.innerText = '';
+    }
+
+    // 4. Switch to view 6 (which acts as a transparent empty canvas when pageWrapper is in fly-down)
+    switchView(6);
+}
+
+function selectPack6(element, score, subjectName) {
+    isSelected6 = true;
+    switchView(6);
+    const pageWrapper = document.querySelector('#view-file-6 #pageWrapper');
+    if (pageWrapper) {
+        pageWrapper.classList.add('no-transition');
+        pageWrapper.classList.remove('fly-down');
+        // Force reflow
+        void pageWrapper.offsetWidth;
+        pageWrapper.classList.remove('no-transition');
+    }
+
+    setPackBackgroundImage(score);
+
+    const items = document.querySelectorAll('#view-file-6 .pack-item');
+    items.forEach(it => it.classList.remove('selected'));
+    const target = element || document.getElementById(`vq_pack_item_${score}`);
+    if (target) target.classList.add('selected');
+
+    const subjectTitleEl = document.getElementById('subjectTitle6');
+    if (subjectTitleEl) {
+        subjectTitleEl.innerText = subjectName ? subjectName.toUpperCase() : `MÔN HỌC GÓI ${score} ĐIỂM`;
+        subjectTitleEl.classList.add('show');
+    }
+    const subjectContainer = document.querySelector('#view-file-6 .subject-container');
+    if (subjectContainer) {
+        subjectContainer.classList.add('show');
+    }
+
+    const chooseAudio = document.getElementById('audioChoose6');
+    if (chooseAudio) {
+        safePlay(chooseAudio);
+    } else {
+        safePlay(soundShowTitle1);
+    }
+
+    if (!subjectName) {
+        const msg = {
+            type: 'VINH_QUANG_SELECT_PACK_FROM_PROJECTOR',
+            pack: parseInt(score) || 10,
+            timestamp: Date.now()
+        };
+        if (typeof syncChannel !== 'undefined' && syncChannel && typeof syncChannel.postMessage === 'function') {
+            try { syncChannel.postMessage(msg); } catch(e) {}
+        }
+    }
+}
+
+function hidePack6(silent = false) {
+    if (!silent) {
+        const closeAudio = document.getElementById('audioClose6');
+        if (closeAudio) {
+            closeAudio.currentTime = 0;
+            closeAudio.play().catch(e => console.log(e));
+        }
+    }
+    const pageWrapper = document.querySelector('#view-file-6 #pageWrapper');
+    if (pageWrapper) {
+        pageWrapper.classList.add('fly-down');
+    }
+}
+
+window.addEventListener('keydown', function(event) {
+    if (currentViewIndex === 6 && event.code === 'Space' && isSelected6) {
+        event.preventDefault();
+        hidePack6();
+    }
+});
+
+/* VIEW 7 LOGIC */
+let countdown7, timeLeft7 = 25, isRunning7 = false, isVQStarActive = false;
+function startCountdown7(duration = 25, forceRestart = false) {
+    if (isRunning7 && !forceRestart) {
+        return;
+    }
+    if (countdown7) clearInterval(countdown7);
+    isRunning7 = true;
+    timeLeft7 = duration;
+    const clockElement = document.getElementById('clock7');
+    if (clockElement) clockElement.textContent = timeLeft7 < 10 ? ('0' + timeLeft7) : timeLeft7;
+    const audio = document.getElementById('vongThiAudio7');
+    if (audio) {
+        audio.currentTime = 0;
+        safePlay(audio);
+    } else {
+        try {
+            const vqAudio = new Audio('sounds/25sV1.mp3');
+            safePlay(vqAudio);
+        } catch(e) {}
+    }
+    countdown7 = setInterval(() => {
+        timeLeft7--;
+        if (clockElement) clockElement.textContent = timeLeft7 < 10 ? ('0' + Math.max(0, timeLeft7)) : timeLeft7;
+        if (timeLeft7 <= 0) { 
+            clearInterval(countdown7); 
+            if (clockElement) clockElement.textContent = "00"; 
+            isRunning7 = false; 
+        }
+    }, 1000);
+}
+
+/* CONTROLLER - PROJECTOR CONNECTION */
+let projectorChannel = null;
+try {
+    if (typeof BroadcastChannel !== 'undefined') {
+        projectorChannel = new BroadcastChannel('ddvq_game_channel');
+        projectorChannel.onmessage = function(event) {
+            const data = event.data;
+            if (!data || !data.type) return;
+            handleProjectorMessage(data);
+        };
+    }
+} catch(e) {
+    console.warn("BroadcastChannel restricted in projector:", e);
+}
+
+// Server-Sent Events (SSE) fallback only if supabase-sync.js has not initialized it
+if (typeof EventSource !== 'undefined' && !window.syncChannel) {
+    try {
+        const ssePath = typeof window.getApiUrl === 'function' ? window.getApiUrl('/api/events') : '/api/events';
+        const projSse = new EventSource(ssePath);
+        projSse.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (data) {
+                    if (data.roomCode && data.roomCode !== localStorage.getItem('ddvq_room_code')) {
+                        console.log(`[Sync] Projector room code auto-syncing to: ${data.roomCode}`);
+                        localStorage.setItem('ddvq_room_code', data.roomCode);
+                    }
+                    if (data.type && data.type !== 'PING' && data.type !== 'PROJECTOR_READY') {
+                        if (data.id && data.id !== lastProcessedActionId) {
+                            lastProcessedActionId = data.id;
+                            handleProjectorMessage(data);
+                        } else if (!data.id) {
+                            handleProjectorMessage(data);
+                        }
+                    }
+                }
+            } catch(e) {}
+        };
+    } catch(e) {
+        console.warn("SSE projector connection error:", e);
+    }
+}
+
+let projectorContestants = [];
+
+function updateProjectorContestants(contestants) {
+    if (!contestants || !Array.isArray(contestants)) return;
+    projectorContestants = contestants;
+    for (let i = 1; i <= 4; i++) {
+        const ts = contestants[i - 1] || { name: `Thí sinh ${i}`, score: 0 };
+        const name = ts.name || `Thí sinh ${i}`;
+        const score = ts.score !== undefined ? ts.score : 0;
+
+        // View 2: Ra Khơi
+        const rkName = document.getElementById(`ten_ts${i}`);
+        if (rkName) rkName.innerText = name;
+
+        // View 5: Vượt Sóng
+        const vsName = document.getElementById(`vs_ans_name_${i}`);
+        if (vsName) vsName.innerText = name;
+
+        // View 8: Vinh Quang
+        const vqName = document.getElementById(`vq_name_ts${i}`);
+        if (vqName) vqName.innerText = name;
+        const vqScore = document.getElementById(`vq_score_ts${i}`);
+        if (vqScore) vqScore.innerText = score;
+    }
+}
+
+// Initial state fetch for projector
+function loadInitialProjectorState() {
+    try {
+        const savedContestants = localStorage.getItem('ddvq_contestants');
+        if (savedContestants) {
+            updateProjectorContestants(JSON.parse(savedContestants));
+        }
+    } catch(e) {}
+    try {
+        const savedAudio = localStorage.getItem('ddvq_audio_settings');
+        if (savedAudio) {
+            applyAudioSettingsProjector(JSON.parse(savedAudio));
+        }
+    } catch(e) {}
+
+    const apiPath = typeof window.getApiUrl === 'function' ? window.getApiUrl('/api/state') : '/api/state';
+    fetch(apiPath)
+        .then(res => res.json())
+        .then(state => {
+            if (state && state.contestants) {
+                updateProjectorContestants(state.contestants);
+            }
+        })
+        .catch(() => {});
+}
+window.addEventListener('DOMContentLoaded', loadInitialProjectorState);
+loadInitialProjectorState();
+
+function notifyControllerReady() {
+    const msg = { type: 'PROJECTOR_READY', timestamp: Date.now() };
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(msg);
+    } else if (projectorChannel) {
+        try { projectorChannel.postMessage(msg); } catch(e) {}
+    }
+    try {
+        localStorage.setItem('ddvq_projector_status', Date.now().toString());
+    } catch(e) {}
+    try {
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(msg, '*');
+        }
+    } catch(e) {}
+}
+// Notify once on initial startup (no polling interval needed)
+notifyControllerReady();
+
+window.addEventListener('storage', function(event) {
+    if (event.key === 'ddvq_latest_action' && event.newValue) {
+        try {
+            const data = JSON.parse(event.newValue);
+            if (data && data.type) {
+                handleProjectorMessage(data);
+            }
+        } catch(e) {
+            console.warn("Storage parse error:", e);
+        }
+    }
+});
+
+window.addEventListener('message', function(event) {
+    const data = event.data;
+    if (data && data.type) {
+        handleProjectorMessage(data);
+    }
+});
+
+let lastProcessedActionId = '';
+const processedProjectorMsgIds = new Set();
+let lastProjectorEventKey = '';
+let lastProjectorEventTime = 0;
+
+function isDuplicateProjectorMessage(data) {
+    if (!data || !data.type) return true;
+    if (data.id) {
+        if (processedProjectorMsgIds.has(data.id)) return true;
+        processedProjectorMsgIds.add(data.id);
+        if (processedProjectorMsgIds.size > 300) {
+            const first = processedProjectorMsgIds.values().next().value;
+            processedProjectorMsgIds.delete(first);
+        }
+    }
+    const now = Date.now();
+    const eventKey = `${data.type}_${data.questionIndex || ''}_${data.pack || ''}_${data.subject || ''}_${data.questionText || ''}_${data.turnIndex || ''}_${data.deIndex || ''}_${data.row || ''}`;
+    if (lastProjectorEventKey === eventKey && (now - lastProjectorEventTime) < 180) {
+        return true;
+    }
+    lastProjectorEventKey = eventKey;
+    lastProjectorEventTime = now;
+    return false;
+}
+
+// Real-time actions are delivered instantly via window.addEventListener('storage') and WebSocket
+// A lightweight fallback checks every 2s in case of rare tab sleep
+setInterval(() => {
+    try {
+        const raw = localStorage.getItem('ddvq_latest_action');
+        if (raw) {
+            const data = JSON.parse(raw);
+            if (data && data.id && data.id !== lastProcessedActionId) {
+                lastProcessedActionId = data.id;
+                handleProjectorMessage(data);
+            }
+        }
+    } catch(e) {}
+}, 2000);
+
+function handleProjectorMessage(data) {
+    if (isDuplicateProjectorMessage(data)) return;
+
+    if (data.type === 'PING_PROBE') {
+        if (typeof respondToPingProbe === 'function') {
+            respondToPingProbe(data);
+        }
+        return;
+    }
+
+    if (data.type === 'UPDATE_AUDIO_SETTINGS') {
+        applyAudioSettingsProjector(data.audioSettings);
+    } else if (data.type === 'TOGGLE_SUMMARY' || data.type === 'SHOW_SUMMARY' || data.type === 'HIDE_SUMMARY') {
+        handleToggleSummary(data);
+    } else if (data.type === 'SWITCH_VIEW') {
+        if (data.viewNum) switchView(data.viewNum);
+    } else if (data.type === 'XUAT_PHAT_INTRO') {
+        switchView(1);
+        stopAllAudio1();
+        safePlay(soundShowTitle1);
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.add('active');
+        if (scq) scq.classList.remove('active');
+        const xp = document.getElementById('xuatPhatContainer');
+        const cl = document.getElementById('contestantList1');
+        const ri = document.getElementById('randomImg1');
+        const dn = document.getElementById('displayContestantName1');
+        const nb = document.getElementById('numberBox1');
+        const bd = document.getElementById('btnBamDe1');
+
+        if (xp) xp.style.display = 'block';
+        if (cl) cl.style.display = 'none';
+        if (ri) ri.style.display = 'none';
+        if (dn) dn.style.display = 'none';
+        if (nb) nb.style.display = 'none';
+        if (bd) bd.style.display = 'none';
+    } else if (data.type === 'XUAT_PHAT_LUAT') {
+        switchView(1);
+        stopAllAudio1();
+        safePlay(soundShowTitle1);
+        showPopup('VÒNG THI XUẤT PHÁT:\nMỗi thí sinh khởi động với các câu hỏi trong vòng 60 giây. Trả lời đúng mỗi câu được 10 điểm, trả lời sai không bị trừ điểm.');
+    } else if (data.type === 'XUAT_PHAT_SELECT_CONTESTANT') {
+        switchView(1);
+        const name = data.name || "Thí sinh";
+        chonThiSinh1(name);
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+    } else if (data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CHON_DE') {
+        switchView(1);
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.add('active');
+        if (scq) scq.classList.remove('active');
+        const xp = document.getElementById('xuatPhatContainer');
+        const cl = document.getElementById('contestantList1');
+        const ri = document.getElementById('randomImg1');
+        const dn = document.getElementById('displayContestantName1');
+        const qn = document.getElementById('quesContestantName1');
+        const nb = document.getElementById('numberBox1');
+        const bd = document.getElementById('btnBamDe1');
+
+        if (xp) xp.style.display = 'none';
+        if (cl) cl.style.display = 'none';
+        if (ri) ri.style.display = 'block';
+        if (dn) dn.style.display = 'flex';
+        if (data.name) {
+            if (dn) dn.innerText = data.name;
+            if (qn) qn.innerText = data.name;
+        }
+        if (nb) nb.style.display = 'flex';
+        if (bd) bd.style.display = 'block';
+    } else if (data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI') {
+        switchView(1);
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.remove('active');
+        if (scq) scq.classList.add('active');
+        const qn = document.getElementById('quesContestantName1');
+        if (data.name && qn) {
+            qn.innerText = data.name;
+        }
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+        const qEl = document.getElementById('questionText1');
+        if (qEl) {
+            qEl.innerText = "";
+            qEl.classList.remove('animate-question-slide');
+        }
+        const ab = document.getElementById('answerBox1');
+        if (ab) ab.style.display = 'none';
+        for (let i = 1; i <= 10; i++) {
+            let box = document.getElementById('kq1-' + i);
+            if (box) {
+                box.className = 'ket-qua-cau inactive';
+                box.style.backgroundColor = '';
+            }
+        }
+        document.querySelectorAll('#view-file-1 .ket-qua-cau').forEach(el => el.classList.remove('blinking'));
+    } else if (data.type === 'XUAT_PHAT_RANDOM_DE') {
+        switchView(1);
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.add('active');
+        if (scq) scq.classList.remove('active');
+        const ri = document.getElementById('randomImg1');
+        const dn = document.getElementById('displayContestantName1');
+        const qn = document.getElementById('quesContestantName1');
+        const nb = document.getElementById('numberBox1');
+
+        if (ri) ri.style.display = 'block';
+        if (dn) dn.style.display = 'flex';
+        if (data.name) {
+            if (dn) dn.innerText = data.name;
+            if (qn) qn.innerText = data.name;
+        }
+        if (nb) nb.style.display = 'flex';
+        bamDe1(data.deNumber);
+    } else if (data.type === 'XUAT_PHAT_START_TIMER') {
+        switchView(1);
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.remove('active');
+        if (scq) scq.classList.add('active');
+        if (data.questionIndex) {
+            currentQuestionIndex1 = data.questionIndex;
+        }
+        const qn = document.getElementById('quesContestantName1');
+        if (data.contestantName && qn) {
+            qn.innerText = data.contestantName;
+        }
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+        batDauCauHoi1(data.questionText);
+    } else if (data.type === 'XUAT_PHAT_RIGHT') {
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+        const ab = document.getElementById('answerBox1');
+        if (data.answerText && ab) {
+            ab.innerText = data.answerText;
+        }
+        traLoiDung1(data.score !== undefined);
+    } else if (data.type === 'XUAT_PHAT_WRONG') {
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+        const ab = document.getElementById('answerBox1');
+        if (data.answerText && ab) {
+            ab.innerText = data.answerText;
+        }
+        traLoiSai1();
+    } else if (data.type === 'XUAT_PHAT_FINISH') {
+        clearInterval(timerInterval1);
+        stopAllAudio1();
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.remove('active');
+        if (scq) scq.classList.remove('active');
+    } else if (data.type === 'XUAT_PHAT_NEXT_QUESTION') {
+        if (data.questionIndex) {
+            currentQuestionIndex1 = data.questionIndex;
+        }
+        if (data.score !== undefined) {
+            score1 = data.score;
+            const s1 = document.getElementById('score1');
+            if (s1) s1.innerText = score1;
+        }
+        const ab = document.getElementById('answerBox1');
+        if (ab) ab.style.display = 'none';
+        let nextBox = document.getElementById('kq1-' + currentQuestionIndex1);
+        if (nextBox) nextBox.classList.remove('inactive');
+        const txt = data.questionText || ("Nội dung câu hỏi số " + currentQuestionIndex1);
+        triggerQuestionMotion(txt);
+        updateBlink1();
+    } else if (data.type === 'XUAT_PHAT_RESET') {
+        clearInterval(timerInterval1);
+        stopAllAudio1();
+        timeLeft1 = 60;
+        const timer1El = document.getElementById('timer1');
+        if (timer1El) timer1El.innerText = "60";
+        score1 = data.score !== undefined ? data.score : 0;
+        const s1 = document.getElementById('score1');
+        if (s1) s1.innerText = score1;
+        currentQuestionIndex1 = 1;
+        const ab = document.getElementById('answerBox1');
+        if (ab) ab.style.display = 'none';
+        const scd = document.getElementById('scene-chon-de');
+        const scq = document.getElementById('scene-cau-hoi1');
+        if (scd) scd.classList.add('active');
+        if (scq) scq.classList.remove('active');
+        const xp = document.getElementById('xuatPhatContainer');
+        const cl = document.getElementById('contestantList1');
+        const ri = document.getElementById('randomImg1');
+        const dn = document.getElementById('displayContestantName1');
+        const nb = document.getElementById('numberBox1');
+        const bd = document.getElementById('btnBamDe1');
+
+        if (xp) xp.style.display = 'block';
+        if (cl) cl.style.display = 'none';
+        if (ri) ri.style.display = 'none';
+        if (dn) { dn.innerText = ""; dn.style.display = 'none'; }
+        if (nb) { nb.innerText = ""; nb.style.display = 'none'; }
+        if (bd) bd.style.display = 'none';
+        const q1 = document.getElementById('questionText1');
+        if (q1) q1.innerText = "";
+
+        for (let i = 1; i <= 10; i++) {
+            let box = document.getElementById('kq1-' + i);
+            if (box) {
+                box.className = 'ket-qua-cau inactive';
+                box.style.backgroundColor = '';
+            }
+        }
+    } else if (data.type === 'XUAT_PHAT_STOP_SOUND') {
+        stopAllAudio1();
+    } else if (data.type === 'CAU_HOI_PHU_SHOW_QUESTION') {
+        switchView(9);
+        safePlay(soundBeginQues1);
+        handleCHPShowQuestion(data);
+    } else if (data.type === 'CAU_HOI_PHU_START_TIMER') {
+        switchView(9);
+        handleCHPStartTimer(data);
+    } else if (data.type === 'CAU_HOI_PHU_SHOW_CONTESTANT_ANSWERS') {
+        switchView(10);
+        safePlay(soundRKAnswer);
+        handleCHPShowContestantAnswers(data);
+    } else if (data.type === 'CAU_HOI_PHU_SHOW_ANSWER') {
+        switchView(9);
+        handleCHPShowAnswer(data);
+    } else if (data.type === 'CAU_HOI_PHU_RESET') {
+        switchView(0);
+        handleCHPReset();
+    } else if (data.type === 'RA_KHOI_PLAY_CLIP' || data.type === 'RA_KHOI_SHOW_VIDEO' || data.type === 'RA_KHOI_INTRO' || data.type === 'RA_KHOI_SHOW_QUESTION') {
+        handleRKPlayClip(data);
+    } else if (data.type === 'RA_KHOI_START_TIMER') {
+        switchView(2);
+        startRKTimer30s(data.duration || 30);
+    } else if (data.type === 'RA_KHOI_SHOW_CONTESTANT_ANSWERS') {
+        handleRKShowContestantAnswers(data);
+    } else if (data.type === 'RA_KHOI_SHOW_ANSWER') {
+        switchView(2);
+        safePlay(soundRKAnswer);
+    } else if (data.type === 'RA_KHOI_RESET') {
+        switchView(2);
+        if (rkTimerIntervalProj) clearInterval(rkTimerIntervalProj);
+        if (rkAutoTimerTimeout) clearTimeout(rkAutoTimerTimeout);
+        rkTimerAlreadyTriggered = false;
+        lastRKClipTimestamp = 0;
+        lastRKMediaUrl = '';
+        const clockEl = document.getElementById('rk_clock_box');
+        if (clockEl) clockEl.innerText = "30";
+
+        // Stop, reset & hide video clip completely
+        const video = document.getElementById('rk_video_player');
+        if (video) {
+            try {
+                video.pause();
+                video.currentTime = 0;
+                video.src = "";
+                video.removeAttribute('src');
+                video.load();
+            } catch(e) {}
+            video.style.display = 'none';
+        }
+        const overlay = document.getElementById('rk_video_play_overlay');
+        if (overlay) overlay.style.display = 'none';
+
+        const placeholder = document.getElementById('rk_video_placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        const placeholderText = document.getElementById('rk_placeholder_text');
+        if (placeholderText) placeholderText.innerText = "";
+
+        const blackBg = document.getElementById('rk_center_black_bg');
+        if (blackBg) blackBg.style.display = 'none';
+
+        const qText = document.getElementById('rk_question_text');
+        if (qText) {
+            qText.innerText = "";
+            qText.style.display = 'none';
+        }
+
+        // Stop any playing audio in round 2
+        const vAudio = document.getElementById('vongThiAudio2');
+        if (vAudio) { try { vAudio.pause(); vAudio.currentTime = 0; } catch(e) {} }
+        const aAudio = document.getElementById('soundRKAnswer2') || document.getElementById('soundRKAnswer');
+        if (aAudio) { try { aAudio.pause(); aAudio.currentTime = 0; } catch(e) {} }
+
+        // Stop intro overlay if active
+        const introOverlay = document.getElementById('intro_video_overlay');
+        const introPlayer = document.getElementById('intro_video_player');
+        if (introPlayer) {
+            try {
+                introPlayer.pause();
+                introPlayer.currentTime = 0;
+                introPlayer.src = "";
+                introPlayer.removeAttribute('src');
+            } catch(e) {}
+        }
+        if (introOverlay) introOverlay.style.display = 'none';
+
+        const qScene = document.getElementById('rk-scene-question');
+        const aScene = document.getElementById('rk-scene-answers');
+        if (qScene) qScene.style.display = 'flex';
+        if (aScene) aScene.style.display = 'none';
+
+        // Clear answers and times on projector for the new question
+        for (let i = 1; i <= 4; i++) {
+            const t = document.getElementById('thoi_gian_ts' + i);
+            const n = document.getElementById('ten_ts' + i);
+            const a = document.getElementById('dap_an_ts' + i);
+            if (t) t.innerText = "";
+            if (n) n.innerText = "";
+            if (a) a.innerText = "";
+        }
+    } else if (data.type === 'CLEAR_PLAYER_ANSWERS') {
+        const r = data.round;
+        if (!r || r === 'RK') {
+            for (let i = 1; i <= 4; i++) {
+                const t = document.getElementById('thoi_gian_ts' + i);
+                const n = document.getElementById('ten_ts' + i);
+                const a = document.getElementById('dap_an_ts' + i);
+                if (t) t.innerText = "";
+                if (n) n.innerText = "";
+                if (a) a.innerText = "";
+            }
+        }
+        if (!r || r === 'VS') {
+            for (let i = 1; i <= 4; i++) {
+                const timeEl = document.getElementById(`vs_time_ts${i}`);
+                const nameEl = document.getElementById(`vs_name_ts${i}`);
+                const ansEl = document.getElementById(`vs_ans_ts${i}`);
+                if (timeEl) timeEl.innerText = "";
+                if (nameEl) nameEl.innerText = "";
+                if (ansEl) ansEl.innerText = "";
+                const valEl = document.getElementById(`vs_ans_val_${i}`);
+                const vTimeEl = document.getElementById(`vs_ans_time_${i}`);
+                if (valEl) valEl.innerText = "";
+                if (vTimeEl) vTimeEl.innerText = "";
+            }
+        }
+        if (!r || r === 'VQ') {
+            for (let i = 1; i <= 4; i++) {
+                const vqAns = document.getElementById(`vq_ans_val_${i}`);
+                const vqTime = document.getElementById(`vq_ans_time_${i}`);
+                if (vqAns) vqAns.innerText = "";
+                if (vqTime) vqTime.innerText = "";
+                const ansEl = document.getElementById(`vq_ans_ts${i}`);
+                if (ansEl) ansEl.innerText = "";
+            }
+        }
+    } else if (data.type === 'PLAYER_SUBMIT_ANSWER' || data.type === 'PLAYER_RING_BELL') {
+        const tsIdx = parseInt(data.contestantId) || 1;
+        const ans = (data.answer || '').toString().trim();
+        const rawTime = (data.time || '').toString();
+        const cleanTime = rawTime.replace(/s|giây/gi, '').trim() || '00.00';
+        const round = (data.round || '').toUpperCase();
+
+        if (round === 'RK' || round === 'RA_KHOI' || round === 'TANG_TOC' || !round) {
+            const tenEl = document.getElementById(`ten_ts${tsIdx}`);
+            const tgEl = document.getElementById(`thoi_gian_ts${tsIdx}`);
+            const daEl = document.getElementById(`dap_an_ts${tsIdx}`);
+            if (tenEl && (data.contestantName || data.name)) tenEl.innerText = data.contestantName || data.name;
+            if (tgEl && cleanTime) tgEl.innerText = cleanTime;
+            if (daEl && ans) fitAnswerText(daEl, ans);
+        }
+        if (round === 'VS' || round === 'VUOT_SONG') {
+            const daEl = document.getElementById(`vs_ans_ts${tsIdx}`);
+            const tgEl = document.getElementById(`vs_time_ts${tsIdx}`);
+            if (daEl && ans) daEl.innerText = ans;
+            if (tgEl && cleanTime) tgEl.innerText = cleanTime;
+        }
+        if (round === 'VQ' || round === 'VINH_QUANG') {
+            const vqAns = document.getElementById(`vq_ans_val_${tsIdx}`);
+            const vqTime = document.getElementById(`vq_ans_time_${tsIdx}`);
+            const ansEl = document.getElementById(`vq_ans_ts${tsIdx}`);
+            if (vqAns && ans) vqAns.innerText = ans;
+            if (vqTime && cleanTime) vqTime.innerText = cleanTime;
+            if (ansEl && ans) ansEl.innerText = ans;
+        }
+        if (round === 'CHP' || round === 'CAU_HOI_PHU') {
+            const chpAns = document.getElementById(`chp_ans_val_${tsIdx}`);
+            const chpTime = document.getElementById(`chp_ans_time_${tsIdx}`);
+            const chpName = document.getElementById(`chp_ans_name_${tsIdx}`);
+            if (chpAns && ans) chpAns.innerText = ans;
+            if (chpTime && cleanTime) chpTime.innerText = cleanTime;
+            if (chpName && (data.contestantName || data.name)) chpName.innerText = data.contestantName || data.name;
+        }
+
+        if (data.round === 'RK' || data.round === 'RA_KHOI' || data.round === 'TANG_TOC' || (data.round === 'VS' && data.isVongThi) || data.type === 'PLAYER_RING_BELL') {
+            safePlay(soundActivate);
+        }
+    } else if (data.type === 'VUOT_SONG_SELECT_ROW') {
+        flashVuotSongRow(data.row);
+    } else if (data.type === 'VUOT_SONG_SHOW_QUESTION') {
+        handleVSShowQuestion(data);
+    } else if (data.type === 'VUOT_SONG_START_TIMER') {
+        handleVSStartTimer(data);
+    } else if (data.type === 'VUOT_SONG_SHOW_CONTESTANT_ANSWERS') {
+        handleVSShowAnswers(data);
+    } else if (data.type === 'VUOT_SONG_SYNC_GRID') {
+        syncVuotSongGrid(data.vuotSong);
+    } else if (data.type === 'VUOT_SONG_RESET') {
+        handleVSReset();
+    } else if (data.type === 'VUOT_SONG_OPEN_ROW_ANSWER') {
+        handleVSOpenRowAnswer(data);
+    } else if (data.type === 'VUOT_SONG_OPEN_KEYWORD_LETTERS') {
+        handleVSOpenKeywordLetters(data);
+    } else if (data.type === 'VUOT_SONG_OPEN_ALL_ANSWERS') {
+        handleVSOpenAllAnswers(data);
+    } else if (data.type === 'VUOT_SONG_RETURN_GRID') {
+        handleVSReturnGrid(data);
+    } else if (data.type === 'VINH_QUANG_INTRO') {
+        switchView(6);
+    } else if (data.type === 'VINH_QUANG_HIDE_QUESTION') {
+        switchView(6);
+        const qEl = document.getElementById('vq_question_text');
+        if (qEl) qEl.innerText = "";
+    } else if (data.type === 'VINH_QUANG_SHOW_PACKS' || data.type === 'VINH_QUANG_SHOW_PACK_SELECTION') {
+        showPack6();
+    } else if (data.type === 'VINH_QUANG_SELECT_PACK') {
+        switchView(6);
+        const pack = data.pack || 10;
+        const elem = document.getElementById(`vq_pack_item_${pack}`);
+        selectPack6(elem, pack.toString(), data.subject || `Gói ${pack} Điểm`);
+    } else if (data.type === 'VINH_QUANG_HIDE_PACK' || data.type === 'VINH_QUANG_FLY_OUT') {
+        switchView(6);
+        hidePack6(data.silent || false);
+    } else if (data.type === 'VINH_QUANG_RESET') {
+        resetVQProjector();
+    } else if (data.type === 'VINH_QUANG_SHOW_QUESTION') {
+        switchView(7);
+        const view7 = document.getElementById('view-file-7');
+        if (view7) {
+            view7.classList.add('active-view');
+            view7.style.display = 'block';
+        }
+        if (countdown7) clearInterval(countdown7);
+        isRunning7 = false;
+        const vqAudio = document.getElementById('vongThiAudio7');
+        if (vqAudio) { try { vqAudio.pause(); vqAudio.currentTime = 0; } catch(e) {} }
+        safePlay(soundBeginQues1);
+        let qEl = document.getElementById('vq_question_text');
+        if (!qEl) {
+            const box = document.querySelector('#view-file-7 .question-box');
+            if (box) {
+                box.innerHTML = '<img id="vq_star_icon" src="Images/star.gif" alt="Ngôi sao hy vọng" class="vq-star-gif"><div id="vq_question_text" style="flex: 1;"></div>';
+                qEl = document.getElementById('vq_question_text');
+            }
+        }
+        const rEl = document.getElementById('vq_round_title');
+        const pEl = document.getElementById('vq_selected_pack_title');
+        const starIcon = document.getElementById('vq_star_icon');
+        const qText = data.questionText || (data.question ? data.question.q : '') || "Nội dung câu hỏi Vinh Quang...";
+        if (qEl) {
+            qEl.innerText = qText;
+            qEl.style.display = 'block';
+        }
+        if (rEl) rEl.innerText = "VINH QUANG";
+        if (pEl) {
+            const packTxt = data.pack ? `GÓI ${data.pack} ĐIỂM` + (data.subject ? ` - ${data.subject.toUpperCase()}` : '') : (data.subject ? data.subject.toUpperCase() : "GÓI ĐIỂM");
+            pEl.innerText = packTxt;
+        }
+        if (data.hasStar !== undefined) {
+            isVQStarActive = !!data.hasStar;
+        } else if (data.starActive !== undefined) {
+            isVQStarActive = !!data.starActive;
+        }
+        if (starIcon) {
+            starIcon.style.display = isVQStarActive ? "block" : "none";
+        }
+        const clockEl = document.getElementById('clock7');
+        if (clockEl) clockEl.innerText = "25";
+        for (let i = 1; i <= 4; i++) {
+            const ansEl = document.getElementById(`vq_ans_ts${i}`);
+            if (ansEl) ansEl.innerText = "";
+        }
+    } else if (data.type === 'VINH_QUANG_START_TIMER' || data.type === 'VINH_QUANG_25S') {
+        switchView(7);
+        startCountdown7(data.duration || 25);
+    } else if (data.type === 'VINH_QUANG_STAR_OF_HOPE') {
+        if (data.active !== undefined) {
+            isVQStarActive = !!data.active;
+        } else if (data.hasStar !== undefined) {
+            isVQStarActive = !!data.hasStar;
+        } else {
+            isVQStarActive = !isVQStarActive;
+        }
+        if (isVQStarActive) {
+            safePlay(soundChooseQues);
+        }
+        const starIcon = document.getElementById('vq_star_icon');
+        if (starIcon) {
+            starIcon.style.display = isVQStarActive ? "block" : "none";
+        }
+    } else if (data.type === 'VINH_QUANG_SHOW_ANSWERS') {
+        switchView(8);
+        const ansAudio = document.getElementById('audioVQAnswer') || document.getElementById('soundRKAnswer');
+        if (ansAudio) {
+            ansAudio.currentTime = 0;
+            ansAudio.play().catch(e => console.log(e));
+        } else {
+            safePlay(soundRKAnswer);
+        }
+        const contestants = data.contestants || [];
+        for (let i = 1; i <= 4; i++) {
+            const ts = contestants[i - 1] || {};
+            const scoreEl = document.getElementById(`vq_score_ts${i}`);
+            const nameEl = document.getElementById(`vq_name_ts${i}`);
+            const ansEl = document.getElementById(`vq_ans_ts${i}`);
+            if (scoreEl) scoreEl.innerText = ts.score !== undefined ? ts.score : '0';
+            if (nameEl) nameEl.innerText = ts.name || `THÍ SINH ${i}`;
+            if (ansEl) {
+                fitAnswerText(ansEl, ts.answer || '');
+            }
+        }
+    } else if (data.type === 'VINH_QUANG_HIDE_ALL') {
+        if (countdown7) clearInterval(countdown7);
+        isRunning7 = false;
+        stopAllAudio1();
+        if (typeof stopCustomSound === 'function') stopCustomSound();
+
+        // Ẩn màn hình đáp án TS (View 8)
+        const v8 = document.getElementById('view-file-8');
+        if (v8) {
+            v8.classList.remove('active-view');
+            v8.style.display = 'none';
+        }
+        // Ẩn màn hình câu hỏi (View 7)
+        const v7 = document.getElementById('view-file-7');
+        if (v7) {
+            v7.classList.remove('active-view');
+            v7.style.display = 'none';
+        }
+        const qEl7 = document.getElementById('vq_question_text');
+        if (qEl7) qEl7.innerText = '';
+        const starIcon7 = document.getElementById('vq_star_icon');
+        if (starIcon7) starIcon7.style.display = 'none';
+
+        // Ẩn gói câu hỏi View 6
+        hidePack6(true);
+        const subjContainer = document.querySelector('#view-file-6 .subject-container');
+        if (subjContainer) subjContainer.classList.remove('show');
+        const subjectTitleEl = document.getElementById('subjectTitle6');
+        if (subjectTitleEl) {
+            subjectTitleEl.innerText = '';
+            subjectTitleEl.classList.remove('show');
+        }
+
+        // Ẩn overlay video nếu có
+        const overlay = document.getElementById('intro_video_overlay');
+        const vplayer = document.getElementById('intro_video_player');
+        if (overlay) overlay.style.display = 'none';
+        if (vplayer) { try { vplayer.pause(); vplayer.src = ''; } catch(e) {} }
+
+        // Quay về view 6 (phông nền sạch)
+        switchView(6);
+    } else if (data.type === 'UPDATE_CONTESTANTS' || data.type === 'UPDATE_SCORES' || data.type === 'FULL_STATE_SYNC' || data.type === 'UPDATE_STATE') {
+        if (data.contestants && Array.isArray(data.contestants)) {
+            updateProjectorContestants(data.contestants);
+        }
+    } else if (data.type === 'RESET_ALL_DATA') {
+        clearInterval(timerInterval1);
+        stopAllAudio1();
+        timeLeft1 = 60;
+        score1 = 0;
+        const s1 = document.getElementById('score1');
+        if (s1) s1.innerText = "0";
+        const q1 = document.getElementById('questionText1');
+        if (q1) q1.innerText = "";
+        const ab1 = document.getElementById('answerBox1');
+        if (ab1) ab1.style.display = 'none';
+
+        if (rkTimerIntervalProj) clearInterval(rkTimerIntervalProj);
+        if (rkAutoTimerTimeout) clearTimeout(rkAutoTimerTimeout);
+        const clockEl2 = document.getElementById('rk_clock_box');
+        if (clockEl2) clockEl2.innerText = "30";
+        const video2 = document.getElementById('rk_video_player');
+        if (video2) { video2.pause(); video2.currentTime = 0; }
+        const qTitle2 = document.getElementById('rk_question_title');
+        if (qTitle2) qTitle2.innerText = "";
+        const qText2 = document.getElementById('rk_question_text');
+        if (qText2) qText2.innerText = "";
+        for (let i = 1; i <= 4; i++) {
+            const t = document.getElementById('thoi_gian_ts' + i);
+            const n = document.getElementById('ten_ts' + i);
+            const a = document.getElementById('dap_an_ts' + i);
+            if (t) t.innerText = "";
+            if (n) n.innerText = "";
+            if (a) a.innerText = "";
+        }
+
+        handleVSReset();
+        resetVQProjector();
+        switchView(1);
+    } else if (data.type === 'START_ROUND_CLEAN') {
+        const roundIdx = data.roundIndex || 1;
+        // 1. Dừng toàn bộ video và âm thanh đang chạy
+        const overlay = document.getElementById('intro_video_overlay');
+        const vplayer = document.getElementById('intro_video_player');
+        if (overlay && vplayer) {
+            overlay.style.display = 'none';
+            vplayer.pause();
+            vplayer.src = '';
+        }
+        if (typeof stopAllAudio1 === 'function') stopAllAudio1();
+        if (typeof stopAllAudioRK === 'function') stopAllAudioRK();
+        if (typeof stopAllAudioVS === 'function') stopAllAudioVS();
+        if (typeof stopAllAudioVQ === 'function') stopAllAudioVQ();
+
+        // 2. Chuyển sang view tương ứng và ẩn sạch toàn bộ graphic/overlay
+        if (roundIdx === 1) {
+            switchView(1);
+            const scd = document.getElementById('scene-chon-de');
+            const scq = document.getElementById('scene-cau-hoi1');
+            if (scd) scd.classList.remove('active');
+            if (scq) scq.classList.remove('active');
+            const xp = document.getElementById('xuatPhatContainer');
+            if (xp) xp.style.display = 'none';
+            const ri = document.getElementById('randomImg1');
+            const nb = document.getElementById('numberBox1');
+            const bd = document.getElementById('btnBamDe1');
+            const cl = document.getElementById('contestantList1');
+            const dn = document.getElementById('displayContestantName1');
+            if (ri) ri.style.display = 'none';
+            if (nb) nb.style.display = 'none';
+            if (bd) bd.style.display = 'none';
+            if (cl) cl.style.display = 'none';
+            if (dn) dn.style.display = 'none';
+            const ansBox = document.querySelector('#view-file-1 .answer-box');
+            if (ansBox) ansBox.style.display = 'none';
+        } else if (roundIdx === 2) {
+            switchView(2);
+            const ansScene = document.getElementById('rk-scene-answers');
+            if (ansScene) ansScene.style.display = 'none';
+            const mediaOverlay = document.getElementById('rk-media-overlay');
+            if (mediaOverlay) mediaOverlay.style.display = 'none';
+            const videoEl = document.getElementById('rk-media-video');
+            if (videoEl) { videoEl.pause(); videoEl.src = ''; }
+        } else if (roundIdx === 3) {
+            switchView(3);
+            const vsAnsScene = document.getElementById('vs-scene-answers');
+            if (vsAnsScene) vsAnsScene.style.display = 'none';
+            const vsQuesScene = document.getElementById('scene-cau-hoi-vs');
+            if (vsQuesScene) vsQuesScene.classList.remove('active');
+            stopAllAudio1();
+            safePlay(soundShowRound);
+        } else if (roundIdx === 4) {
+            switchView(6);
+            resetVQProjector();
+            stopAllAudio1();
+            const pageWrapper = document.getElementById('pageWrapper');
+            if (pageWrapper) {
+                pageWrapper.classList.remove('show');
+                pageWrapper.classList.add('fly-down');
+            }
+            const subjContainer = document.querySelector('.subject-container');
+            if (subjContainer) subjContainer.classList.remove('show');
+            const qEl7 = document.getElementById('vq_question_text');
+            if (qEl7) {
+                qEl7.innerText = '';
+            } else {
+                const box = document.querySelector('#view-file-7 .question-box');
+                if (box) box.innerHTML = '<img id="vq_star_icon" src="Images/star.gif" alt="Ngôi sao hy vọng" class="vq-star-gif"><div id="vq_question_text" style="flex: 1;"></div>';
+            }
+        }
+    } else if (data.type === 'RELOAD_CLIENT') {
+        if (data.target === 'projector' || data.target === 'all' || data.role === 'projector') {
+            setTimeout(() => { window.location.reload(); }, 300);
+        }
+    } else if (data.type === 'PLAY_INTRO_VIDEO') {
+        const overlay = document.getElementById('intro_video_overlay');
+        const player = document.getElementById('intro_video_player');
+        let imgPlayer = document.getElementById('intro_image_player');
+        if (!imgPlayer && overlay) {
+            imgPlayer = document.createElement('img');
+            imgPlayer.id = 'intro_image_player';
+            imgPlayer.style.cssText = 'width: 100%; height: 100%; object-fit: contain; display: none;';
+            overlay.appendChild(imgPlayer);
+        }
+
+        if (overlay) {
+            overlay.style.display = 'flex';
+            const rawSrc = data.src || '';
+            const fullSrc = (typeof getApiUrl === 'function') ? getApiUrl(rawSrc) : rawSrc;
+            const srcLower = fullSrc.toLowerCase();
+            const isVideo = (data.mediaType === 'video') || srcLower.match(/\.(mp4|webm|ogg|mov|m4v)($|\?)/i);
+            const isImage = (data.mediaType === 'image') || !isVideo;
+
+            if (isImage) {
+                if (player) {
+                    player.pause();
+                    player.style.display = 'none';
+                    player.src = '';
+                }
+                if (imgPlayer) {
+                    imgPlayer.src = fullSrc;
+                    imgPlayer.style.display = 'block';
+                }
+            } else {
+                if (imgPlayer) {
+                    imgPlayer.style.display = 'none';
+                    imgPlayer.src = '';
+                }
+                if (player) {
+                    player.style.display = 'block';
+                    player.src = fullSrc;
+                    player.play().catch(err => {
+                        console.warn("Intro media play error:", err);
+                    });
+                    player.onended = () => {
+                        overlay.style.display = 'none';
+                        player.src = '';
+                    };
+                }
+            }
+        }
+    } else if (data.type === 'STOP_INTRO_VIDEO') {
+        const overlay = document.getElementById('intro_video_overlay');
+        const player = document.getElementById('intro_video_player');
+        const imgPlayer = document.getElementById('intro_image_player');
+        if (player) {
+            player.pause();
+            player.src = '';
+            player.style.display = 'none';
+        }
+        if (imgPlayer) {
+            imgPlayer.src = '';
+            imgPlayer.style.display = 'none';
+        }
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    } else if (data.type === 'PLAY_SOUND') {
+        const soundFile = data.sound || '';
+        if (soundFile) {
+            playCustomSound(soundFile);
+        }
+    } else if (data.type === 'STOP_SOUND') {
+        stopCustomSound();
+    }
+}
