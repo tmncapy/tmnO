@@ -1,0 +1,467 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    color: #1e293b;
+    background-color: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+}
+
+#toast-msg {
+    display: none;
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    z-index: 99999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    flex-wrap: wrap;
+}
+
+.nav-item {
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    user-select: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.nav-item:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.nav-item.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+}
+
+/* Tab Containers */
+.tab-content {
+    display: none;
+    flex: 1;
+    min-height: 0;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+.main-container {
+    gap: 14px;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.left-col {
+    flex: 0 0 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.right-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+@media (max-width: 1080px) {
+    .main-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .left-col {
+        flex: none;
+        width: 100%;
+        overflow-y: visible;
+    }
+    .right-col {
+        overflow-y: visible;
+    }
+}
+
+.panel {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.conn-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+}
+
+.conn-table td, .conn-table th {
+    padding: 5px 6px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.conn-table input[type="text"] {
+    padding: 4px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.sub-section-title {
+    font-weight: 800;
+    font-size: 13px;
+    color: #1e3a8a;
+    margin: 14px 0 8px 0;
+    padding: 6px 10px;
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    border-radius: 4px;
+}
+
+/* Xuat Phat Tabs & Question Table */
+.kd-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.kd-tab {
+    padding: 5px 10px;
+    background: #e2e8f0;
+    color: #334155;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.kd-tab.active {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.kd-tab-controls {
+    padding: 5px 9px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    user-select: none;
+}
+
+.kd-container {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px;
+    background: #f8fafc;
+}
+
+.kd-header-row,
+.kd-row {
+    display: grid;
+    grid-template-columns: 70px 1.6fr 1fr 180px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.kd-header-row {
+    font-weight: 700;
+    font-size: 12px;
+    color: #475569;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.kd-row input[type="text"],
+.q-row input[type="text"],
+.vcnv-row input[type="text"],
+.vcnv-center-row input[type="text"],
+.vq-q-row input[type="text"] {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.q-row {
+    display: grid;
+    grid-template-columns: 75px 1.3fr 1fr;
+    gap: 10px;
+    align-items: start;
+    margin-bottom: 8px;
+    padding: 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.vcnv-row,
+.vcnv-center-row {
+    display: grid;
+    grid-template-columns: 75px 1.3fr 1fr 220px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.voice-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.voice-input-group input[type="text"] {
+    flex: 1;
+    min-width: 60px;
+}
+
+.grid-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f8fafc;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.grid-row-boxes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.box-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #1e3a8a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.char-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.vq-q-row {
+    display: grid;
+    grid-template-columns: 80px 140px 1.4fr 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1.5px solid #cbd5e1;
+}
+
+/* Round Control Buttons */
+.luot-thi-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+}
+
+.luot-thi-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.luot-thi-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+}
+
+.luot-thi-btn .badge {
+    background: rgba(0, 0, 0, 0.12);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.luot-thi-btn.active .badge {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.ctrl-btn-sm {
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #1e293b;
+}
+
+.ctrl-btn-sm:hover {
+    background: #e2e8f0;
+}
+
+.ctrl-btn-action {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #ffffff;
+    border: 1.5px solid #94a3b8;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #1e293b;
+}
+
+.ctrl-btn-action:hover {
+    background: #f1f5f9;
+}
+
+.ctrl-btn-bottom {
+    flex: 1;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e2e8f0;
+    border: 1.5px solid #94a3b8;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #0f172a;
+}
+
+.ctrl-btn-bottom:hover {
+    background: #cbd5e1;
+}
+
+.btn-tong-ket {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+.btn-tong-ket:hover {
+    background: #fde68a;
+}
+
+.status-indicator.connected {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.status-indicator.disconnected {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 11px;
+}

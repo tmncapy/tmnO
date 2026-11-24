@@ -1463,17 +1463,31 @@ function resolvePageFile(name) {
   return path.join(__dirname, name);
 }
 
+app.set('trust proxy', true);
+
+// Helper to send page file safely
+function sendPageOrFallback(res, filename, fallbackRedirect = null) {
+  const filePath = resolvePageFile(filename);
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  if (fallbackRedirect) {
+    return res.redirect(fallbackRedirect);
+  }
+  return res.status(404).send(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>404 - Không tìm thấy trang</title></head><body style="font-family:sans-serif;padding:40px;background:#f8fafc;color:#1e293b;"><h2>Trang <code>${filename}</code> chưa có trong thư mục Public.</h2><p><a href="/controller">Quay lại Bảng Điều Khiển (Controller)</a></p></body></html>`);
+}
+
 // Route shortcuts
-app.get('/control', (req, res) => { res.sendFile(resolvePageFile('controller.html')); });
-app.get('/player', (req, res) => { res.sendFile(resolvePageFile('player.html')); });
-app.get('/host', (req, res) => { res.sendFile(resolvePageFile('host.html')); });
-app.get('/controller', (req, res) => { res.sendFile(resolvePageFile('controller.html')); });
-app.get('/projector', (req, res) => { res.sendFile(resolvePageFile('projector.html')); });
-app.get('/graphic', (req, res) => { res.sendFile(resolvePageFile('graphic.html')); });
-app.get('/scoreboard', (req, res) => { res.sendFile(resolvePageFile('Scoreboard.html')); });
-app.get('/designer', (req, res) => { res.sendFile(resolvePageFile('designer.html')); });
-app.get('/guide', (req, res) => { res.sendFile(resolvePageFile('guide.html')); });
-app.get('/', (req, res) => { res.sendFile(resolvePageFile('index.html')); });
+app.get('/control', (req, res) => { sendPageOrFallback(res, 'controller.html'); });
+app.get('/player', (req, res) => { sendPageOrFallback(res, 'player.html'); });
+app.get('/host', (req, res) => { sendPageOrFallback(res, 'host.html'); });
+app.get('/controller', (req, res) => { sendPageOrFallback(res, 'controller.html'); });
+app.get('/projector', (req, res) => { sendPageOrFallback(res, 'projector.html'); });
+app.get('/graphic', (req, res) => { sendPageOrFallback(res, 'graphic.html'); });
+app.get('/scoreboard', (req, res) => { sendPageOrFallback(res, 'Scoreboard.html'); });
+app.get('/designer', (req, res) => { sendPageOrFallback(res, 'designer.html'); });
+app.get('/guide', (req, res) => { sendPageOrFallback(res, 'guide.html'); });
+app.get('/', (req, res) => { sendPageOrFallback(res, 'index.html', '/controller'); });
 
 // Start HTTP + WebSocket server
 server.listen(PORT, '0.0.0.0', () => {
