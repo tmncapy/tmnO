@@ -119,6 +119,9 @@ let serverState = {
   vuotSong: null,
   vuotSongRow: 0,
   currentXuatPhatTurn: 0,
+  xpBuzzerOpen: false,
+  xpBuzzerLocked: true,
+  xpBuzzerWinner: 0,
   s1HasSelectedDeForTurn: { 1: false, 2: false, 3: false, 4: false },
   s1ChosenDeMap: { 1: null, 2: null, 3: null, 4: null },
   contestants: [
@@ -370,7 +373,21 @@ function handleIncomingAction(action, senderWs = null) {
 
   // Handle Player Ring Bell
   if (type === 'PLAYER_RING_BELL' && action.contestantId) {
-    const tsIdx = action.contestantId;
+    const tsIdx = parseInt(action.contestantId, 10) || action.contestantId;
+    const rUpper = (action.round || '').toString().toUpperCase();
+    const isR1Bell = (rUpper === 'KD' || rUpper === 'XUAT_PHAT' || rUpper === 'KHOI_DONG' || rUpper === 'XP' || (!rUpper && serverState.activeRound === 'XUAT_PHAT'));
+
+    if (isR1Bell) {
+      if (serverState.currentXuatPhatTurn !== 5 || serverState.xpBuzzerLocked || !serverState.xpBuzzerOpen) {
+        return; // Ignore late or out-of-turn buzzes so only the single fastest contestant wins
+      }
+      serverState.xpBuzzerLocked = true;
+      serverState.xpBuzzerOpen = false;
+      serverState.xpBuzzerWinner = parseInt(tsIdx, 10) || 0;
+      action.winnerId = serverState.xpBuzzerWinner;
+      action.turnIndex = 5;
+    }
+
     const rKey = action.round ? `ts${tsIdx}_${action.round}` : `ts${tsIdx}`;
     serverState.playerAnswers[`ts${tsIdx}`] = {
       contestantId: tsIdx,
@@ -434,6 +451,10 @@ function handleIncomingAction(action, senderWs = null) {
     if (serverState.gameData && serverState.gameData.contestants) {
       serverState.gameData.contestants.forEach(c => { c.score = 0; });
     }
+    serverState.currentXuatPhatTurn = 0;
+    serverState.xpBuzzerOpen = false;
+    serverState.xpBuzzerLocked = true;
+    serverState.xpBuzzerWinner = 0;
     serverState.buzzerState = { buzzerUnlocked: false, buzzerWinner: null };
   }
 
@@ -482,22 +503,77 @@ function handleIncomingAction(action, senderWs = null) {
     serverState.currentTimer = action.currentTimer;
   }
 
-  // Track Question Visibility across rounds
-  // 1. Xuat Phat: Only visible when timer starts or next question is triggered
-  if (type === 'XUAT_PHAT_START_TIMER' || type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' || type === 'XUAT_PHAT_NEXT_QUESTION') {
+  // Track Question Visibility & Turn 5 Buzzer State across rounds
+  // 1. Xuat Phat: Visible when question is explicitly shown or next question is triggered
+  if (type === 'XUAT_PHAT_SELECT_CONTESTANT') {
+    serverState.currentXuatPhatTurn = parseInt(action.turnIndex || action.contestantId, 10) || 1;
+    serverState.xpBuzzerOpen = false;
+    serverState.xpBuzzerLocked = true;
+    serverState.xpBuzzerWinner = 0;
+  } else if (type === 'XUAT_PHAT_SELECT_CHUNG') {
+    serverState.currentXuatPhatTurn = 5;
+    serverState.xpBuzzerOpen = false;
+    serverState.xpBuzzerLocked = true;
+    serverState.xpBuzzerWinner = 0;
+  } else if (type === 'XUAT_PHAT_SHOW_FASTEST_HL' || type === 'LOCK_BELLS') {
+    if (serverState.currentXuatPhatTurn === 5 || parseInt(action.turnIndex, 10) === 5) {
+      serverState.currentXuatPhatTurn = 5;
+      serverState.xpBuzzerOpen = false;
+      serverState.xpBuzzerLocked = true;
+      const w = parseInt(action.contestantIndex || action.whoBuzzed || action.contestantId || action.winnerId, 10);
+      if (w >= 1 && w <= 4) serverState.xpBuzzerWinner = w;
+    }
+  } else if (type === 'UNLOCK_BELLS') {
+    if (serverState.currentXuatPhatTurn === 5 || parseInt(action.turnIndex, 10) === 5) {
+      serverState.currentXuatPhatTurn = 5;
+      serverState.xpBuzzerOpen = true;
+      serverState.xpBuzzerLocked = false;
+      serverState.xpBuzzerWinner = 0;
+    }
+  }
+
+  if (type === 'XUAT_PHAT_START_TIMER' || type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' || type === 'XUAT_PHAT_HIEN_CAU_HOI' || type === 'XUAT_PHAT_NEXT_QUESTION') {
     serverState.xpQuestionShown = true;
+    if (action.turnIndex !== undefined) {
+      serverState.currentXuatPhatTurn = parseInt(action.turnIndex, 10) || serverState.currentXuatPhatTurn;
+    }
+    if (serverState.currentXuatPhatTurn === 5) {
+      serverState.xpBuzzerOpen = true;
+      serverState.xpBuzzerLocked = false;
+      serverState.xpBuzzerWinner = 0;
+    }
+  } else if (type === 'XUAT_PHAT_RIGHT' || type === 'XUAT_PHAT_WRONG') {
+    if (serverState.currentXuatPhatTurn === 5) {
+      serverState.xpBuzzerOpen = false;
+      serverState.xpBuzzerLocked = true;
+    }
   } else if (
     type === 'XUAT_PHAT_RESET' ||
     type === 'XUAT_PHAT_FINISH' ||
     type === 'XUAT_PHAT_SELECT_CONTESTANT' ||
+    type === 'XUAT_PHAT_SELECT_CHUNG' ||
     type === 'XUAT_PHAT_SHOW_QUESTION' ||
     type === 'XUAT_PHAT_RANDOM_DE' ||
     type === 'XUAT_PHAT_SHOW_GRAPHIC_CHON_DE' ||
+    type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI' ||
     type === 'SWITCH_ROUND' ||
     type === 'START_ROUND_CLEAN' ||
     type === 'RESET_ALL_DATA'
   ) {
     serverState.xpQuestionShown = false;
+    if (type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI') {
+      if (action.turnIndex !== undefined) {
+        serverState.currentXuatPhatTurn = parseInt(action.turnIndex, 10) || serverState.currentXuatPhatTurn;
+      }
+      serverState.xpBuzzerOpen = false;
+      serverState.xpBuzzerLocked = true;
+      serverState.xpBuzzerWinner = 0;
+    } else if (type === 'XUAT_PHAT_RESET' || type === 'XUAT_PHAT_FINISH' || type === 'START_ROUND_CLEAN') {
+      serverState.currentXuatPhatTurn = 0;
+      serverState.xpBuzzerOpen = false;
+      serverState.xpBuzzerLocked = true;
+      serverState.xpBuzzerWinner = 0;
+    }
   }
 
   // 2. Vuot Song: Only visible when VUOT_SONG_SHOW_QUESTION is explicitly called
@@ -664,6 +740,10 @@ function handleIncomingAction(action, senderWs = null) {
       questionText: effectiveQText,
       questionIndex: serverState.currentQuestion?.questionIndex || 1,
       xpQuestionShown: !!serverState.xpQuestionShown,
+      currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+      xpBuzzerOpen: !!serverState.xpBuzzerOpen,
+      xpBuzzerLocked: !!serverState.xpBuzzerLocked,
+      xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
       vsQuestionShown: !!serverState.vsQuestionShown,
       vqQuestionShown: !!serverState.vqQuestionShown,
       vuotSong: serverState.vuotSong,
@@ -733,6 +813,10 @@ wss.on('connection', (ws, req) => {
       questionText: showQ ? (serverState.currentQuestion?.questionText || '') : '',
       questionIndex: serverState.currentQuestion?.questionIndex || 1,
       xpQuestionShown: !!serverState.xpQuestionShown,
+      currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+      xpBuzzerOpen: !!serverState.xpBuzzerOpen,
+      xpBuzzerLocked: !!serverState.xpBuzzerLocked,
+      xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
       vsQuestionShown: !!serverState.vsQuestionShown,
       vqQuestionShown: !!serverState.vqQuestionShown,
       vuotSong: serverState.vuotSong,
@@ -1004,7 +1088,7 @@ app.get('/api/network-info', (req, res) => {
       projector: `${currentUrl}/projector`,
       host: `${currentUrl}/host`,
       player: `${currentUrl}/player`,
-      playerDirectLink: `${currentUrl}/player.html?roomid=${serverState.roomCode}&auth=${serverState.roomAuth}`,
+      playerDirectLink: `${currentUrl}/public/player.html?roomid=${serverState.roomCode}&auth=${serverState.roomAuth}`,
       graphic: `${currentUrl}/graphic`,
       scoreboard: `${currentUrl}/scoreboard`
     },
@@ -1441,18 +1525,19 @@ const staticOptions = {
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.html')) {
+    if (filePath.match(/\.(html|js|css)$/i)) {
       res.setHeader('Cache-Control', 'no-cache');
-    } else if (filePath.match(/\.(mp4|webm|ogg|mp3|wav|png|jpg|jpeg|gif|webp|ico|svg|css|js|woff|woff2)$/i)) {
+    } else if (filePath.match(/\.(mp4|webm|ogg|mp3|wav|png|jpg|jpeg|gif|webp|ico|svg|woff|woff2|otf)$/i)) {
       res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
     }
   }
 };
 
 // Serve static assets prioritizing public/ directory, with fallback to root
-const publicDir = path.join(__dirname, 'public');
+const publicDir = __dirname;
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir, staticOptions));
+  app.use('/public', express.static(publicDir, staticOptions));
 }
 app.use(express.static(__dirname, staticOptions));
 

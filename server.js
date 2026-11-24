@@ -1,1 +1,1 @@
-import './Public/server.js';
+import './public/server.js';

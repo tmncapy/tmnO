@@ -277,26 +277,7 @@ function getPlayerBaseUrl() {
             const proto = (window.location.protocol && window.location.protocol.startsWith('http')) ? window.location.protocol : 'http:';
             origin = `${proto}//${window.location.host}`.replace(/\/+$/, '');
         }
-
-        // Tự động bảo toàn đường dẫn thư mục / subpath (ví dụ: /DuongDenVinhQuang/controller.html -> /DuongDenVinhQuang)
-        let pathname = window.location.pathname || '';
-        let basePath = '';
-        if (pathname.includes('/')) {
-            const lastPart = pathname.split('/').pop() || '';
-            if (lastPart.includes('.')) {
-                basePath = pathname.substring(0, pathname.lastIndexOf('/'));
-            } else {
-                basePath = pathname;
-            }
-        }
-
-        if (basePath === '/' || basePath === '') {
-            basePath = '';
-        } else {
-            basePath = '/' + basePath.replace(/^\/+|\/+$/g, '');
-        }
-
-        return `${origin}${basePath}`;
+        return origin;
     }
     return '';
 }
@@ -369,16 +350,16 @@ function generateRandomRoomCredentials() {
 function getPlayerDirectLink(slot) {
     const roomInput = document.getElementById('room_code_input');
     const code = (roomInput ? roomInput.value.trim().toUpperCase() : '') || localStorage.getItem('ddvq_room_code') || 'DDVQ2026';
-    const baseUrl = getPlayerBaseUrl();
+    const baseUrl = getPlayerBaseUrl().replace(/\/public\/?$/i, '');
     
     if (slot && parseInt(slot) >= 1 && parseInt(slot) <= 4) {
         const slotNum = parseInt(slot);
         const slotAuth = getSlotAuth(slotNum);
-        return `${baseUrl}/player.html?roomid=${encodeURIComponent(code)}&slot=${slotNum}&id=${slotNum}&auth=${encodeURIComponent(slotAuth)}`;
+        return `${baseUrl}/public/player.html?roomid=${encodeURIComponent(code)}&slot=${slotNum}&id=${slotNum}&auth=${encodeURIComponent(slotAuth)}`;
     }
     const authInput = document.getElementById('room_auth_input');
     const masterAuth = (authInput ? authInput.value.trim() : '') || localStorage.getItem('ddvq_room_auth') || '123456';
-    return `${baseUrl}/player.html?roomid=${encodeURIComponent(code)}&auth=${encodeURIComponent(masterAuth)}`;
+    return `${baseUrl}/public/player.html?roomid=${encodeURIComponent(code)}&auth=${encodeURIComponent(masterAuth)}`;
 }
 
 function copyPlayerDirectLink(slot) {

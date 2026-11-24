@@ -320,6 +320,29 @@ function processHostAction(data) {
         else if (data.type.startsWith('VINH_QUANG_')) switchHostScene(4);
     }
 
+    if (data.type === 'XUAT_PHAT_SELECT_CHUNG') {
+        currentHostState.turnIndex = 5;
+        currentHostState.deIndex = data.deIndex || 5;
+        currentHostState.xpBuzzerWinner = null;
+    } else if (data.type === 'XUAT_PHAT_SELECT_CONTESTANT') {
+        currentHostState.xpBuzzerWinner = null;
+    } else if (data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI' || data.type === 'UNLOCK_BELLS') {
+        if (!data.winnerId && !data.xpBuzzerWinner) {
+            currentHostState.xpBuzzerWinner = null;
+        }
+    } else if (data.type === 'XUAT_PHAT_SHOW_FASTEST_HL') {
+        const wId = parseInt(data.contestantId || data.winnerId || 0);
+        if (wId >= 1 && wId <= 4) currentHostState.xpBuzzerWinner = wId;
+    } else if (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') {
+        const r = String(data.round || '').toUpperCase();
+        const isKD = !r || r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP';
+        const activeTsIdx = currentHostState.turnIndex || currentHostState.currentXuatPhatTurn || 1;
+        if (isKD && activeTsIdx === 5 && !currentHostState.xpBuzzerWinner) {
+            const wId = parseInt(data.winnerId || data.contestantId || data.tsIndex || 0);
+            if (wId >= 1 && wId <= 4) currentHostState.xpBuzzerWinner = wId;
+        }
+    }
+
     if (data.questionIndex) {
         selectedS1QuestionIndex = data.questionIndex;
     }
@@ -360,17 +383,34 @@ function renderHostScene1() {
         { name: 'Thí sinh 4', score: 0 }
     ];
 
-    const currentTsIdx = currentHostState.turnIndex || currentHostState.contestantId || 1;
-    const tsName = contestants[currentTsIdx - 1]?.name || `Thí sinh ${currentTsIdx}`;
-    if (turnBadge) turnBadge.innerText = `LƯỢT THI: ${tsName.toUpperCase()}`;
+    const currentTsIdx = currentHostState.turnIndex || currentHostState.currentXuatPhatTurn || currentHostState.contestantId || 1;
+    if (turnBadge) {
+        if (currentTsIdx === 5) {
+            const buzzWinner = parseInt(currentHostState.xpBuzzerWinner || 0);
+            if (buzzWinner >= 1 && buzzWinner <= 4) {
+                const wName = contestants[buzzWinner - 1]?.name || `Thí sinh ${buzzWinner}`;
+                turnBadge.innerText = `LƯỢT THI 5 (CHUNG) — 🔔 TS${buzzWinner}: ${wName.toUpperCase()}`;
+                turnBadge.style.background = '#d97706';
+            } else {
+                turnBadge.innerText = 'LƯỢT THI 5: LƯỢT THI CHUNG (BẤM CHUÔNG)';
+                turnBadge.style.background = '#7c3aed';
+            }
+        } else {
+            const tsName = contestants[currentTsIdx - 1]?.name || `Thí sinh ${currentTsIdx}`;
+            turnBadge.innerText = `LƯỢT THI: ${tsName.toUpperCase()}`;
+            turnBadge.style.background = '#2563eb';
+        }
+    }
 
-    const setIndex = currentHostState.deIndex || currentHostState.deNumber || 1;
+    const setIndex = currentHostState.deIndex || currentHostState.deNumber || (currentTsIdx === 5 ? 5 : 1);
     const qIndex = currentHostState.questionIndex || selectedS1QuestionIndex || 1;
+    const maxSetQ = (setIndex >= 1 && setIndex <= 4) ? 6 : 12;
 
     // Update pagination buttons active state
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 12; i++) {
         const btn = document.getElementById(`s1_btn_${i}`);
         if (btn) {
+            btn.style.display = i <= maxSetQ ? '' : 'none';
             btn.className = `s1-page-btn ${i === qIndex ? 'active' : ''}`;
         }
     }
@@ -398,15 +438,17 @@ function renderHostScene1() {
     let cleanAns1 = ansVal ? ansVal.replace(/^ĐÁP ÁN:\s*/i, '').trim() : '';
     if (ansEl) ansEl.innerText = cleanAns1 || '--';
 
+    const totalSetQ = currentHostState.totalQuestions || maxSetQ;
     if (deNum) deNum.innerText = setIndex;
     if (deTitle) deTitle.innerText = setIndex;
-    if (qNum) qNum.innerText = `${qIndex} / 10`;
+    if (qNum) qNum.innerText = `${qIndex} / ${totalSetQ}`;
 
-    // Render table of 10 questions in current set
+    // Render table of questions in current set (6 for turns 1..4, 12 for turn 5)
     const tableBody = document.getElementById('h1_q_table_body');
     if (tableBody && gData && gData.xuatPhat) {
         const xuatPhatSets = gData.xuatPhat;
-        const currentSet = xuatPhatSets[setIndex] || xuatPhatSets[setIndex - 1] || xuatPhatSets[String(setIndex)] || [];
+        const rawSet = xuatPhatSets[setIndex] || xuatPhatSets[setIndex - 1] || xuatPhatSets[String(setIndex)] || [];
+        const currentSet = rawSet.slice(0, maxSetQ);
         let html = '';
         currentSet.forEach((q, idx) => {
             const isActive = (idx + 1) === qIndex;

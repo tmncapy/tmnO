@@ -108,10 +108,11 @@ function onSwitchTabRound(index) {
 
     if (index === 1) {
         currentXuatPhatTurn = 0;
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 5; i++) {
             const btn = document.getElementById(`btn_luot_${i}`);
             if (btn) btn.classList.remove('active');
         }
+        if (typeof clearXPBuzzerUI === 'function') clearXPBuzzerUI();
         if (typeof updateTab1Preview === 'function') updateTab1Preview();
     } else if (index === 2) {
         if (typeof setRKQuestionUI === 'function') {
@@ -228,12 +229,13 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
     if (roundIndex === 1) {
         currentXuatPhatTurn = 0;
         if (typeof isXuatPhatStarted !== 'undefined') isXuatPhatStarted = false;
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 5; i++) {
             const btn = document.getElementById(`btn_luot_${i}`);
             if (btn) btn.classList.remove('active');
         }
+        if (typeof clearXPBuzzerUI === 'function') clearXPBuzzerUI();
         if (typeof updateTab1Preview === 'function') updateTab1Preview();
-        sendToProjector('XUAT_PHAT_RESET', { turnIndex: 0, round: 'XUAT_PHAT', activeRound: 'XUAT_PHAT', xpQuestionShown: false, vqQuestionShown: false });
+        sendToProjector('XUAT_PHAT_RESET', { turnIndex: 0, round: 'XUAT_PHAT', activeRound: 'XUAT_PHAT', xpQuestionShown: false, vqQuestionShown: false, keepRoundStartSound: true });
     } else if (roundIndex === 2) {
         if (typeof setRKQuestionUI === 'function') setRKQuestionUI(1);
         sendToProjector('RA_KHOI_RESET', { round: 'RA_KHOI', activeRound: 'RA_KHOI' });
@@ -297,27 +299,36 @@ function safeRemoveStorage(key) {
 
 // Seed default questions if empty
 function ensureDefaultGameDataSeed() {
-    if (!gameData.xuatPhat[1] || !gameData.xuatPhat[1][0] || !gameData.xuatPhat[1][0].q) {
-        const defaultXPSet1 = [
-            { q: "Thành phố Hồ Chí Minh trước năm 1976 có tên gọi là gì?", a: "Sài Gòn" },
-            { q: "Ngôn ngữ chính thức của Việt Nam là gì?", a: "Tiếng Việt" },
-            { q: "Hành tinh nào trong Hệ Mặt Trời gần Mặt Trời nhất?", a: "Thủy Tinh" },
-            { q: "Sông nào dài nhất chảy hoàn toàn trên lãnh thổ Việt Nam?", a: "Sông Đồng Nai" },
-            { q: "Ai là tác giả của tác phẩm Truyện Kiều?", a: "Nguyễn Du" },
-            { q: "Kim loại nào có khả năng dẫn điện tốt nhất?", a: "Bạc" },
-            { q: "Thủ đô của Nhật Bản là thành phố nào?", a: "Tokyo" },
-            { q: "Bác Hồ đọc Tuyên ngôn Độc lập khai sinh nước VNDCCH vào năm nào?", a: "1945" },
-            { q: "Đỉnh núi nào được mệnh danh là nóc nhà của Đông Dương?", a: "Fansipan" },
-            { q: "Vitamin nào có hàm lượng rất cao trong quả cam, chanh?", a: "Vitamin C" }
-        ];
-        gameData.xuatPhat[1] = defaultXPSet1;
-        for (let t = 2; t <= 8; t++) {
-            if (!gameData.xuatPhat[t] || !gameData.xuatPhat[t][0] || !gameData.xuatPhat[t][0].q) {
-                gameData.xuatPhat[t] = defaultXPSet1.map((item, idx) => ({
-                    q: `Câu hỏi số ${idx + 1} bộ đề ${t}`,
-                    a: `Đáp án câu ${idx + 1}`
-                }));
-            }
+    const defaultXPSet1 = [
+        { q: "Thành phố Hồ Chí Minh trước năm 1976 có tên gọi là gì?", a: "Sài Gòn" },
+        { q: "Ngôn ngữ chính thức của Việt Nam là gì?", a: "Tiếng Việt" },
+        { q: "Hành tinh nào trong Hệ Mặt Trời gần Mặt Trời nhất?", a: "Thủy Tinh" },
+        { q: "Sông nào dài nhất chảy hoàn toàn trên lãnh thổ Việt Nam?", a: "Sông Đồng Nai" },
+        { q: "Ai là tác giả của tác phẩm Truyện Kiều?", a: "Nguyễn Du" },
+        { q: "Kim loại nào có khả năng dẫn điện tốt nhất?", a: "Bạc" },
+        { q: "Thủ đô của Nhật Bản là thành phố nào?", a: "Tokyo" },
+        { q: "Bác Hồ đọc Tuyên ngôn Độc lập khai sinh nước VNDCCH vào năm nào?", a: "1945" },
+        { q: "Đỉnh núi nào được mệnh danh là nóc nhà của Đông Dương?", a: "Fansipan" },
+        { q: "Vitamin nào có hàm lượng rất cao trong quả cam, chanh?", a: "Vitamin C" },
+        { q: "Đơn vị đo cường độ dòng điện trong hệ SI là gì?", a: "Ampe" },
+        { q: "Quốc gia nào có diện tích lớn nhất thế giới?", a: "Nga" }
+    ];
+
+    for (let t = 1; t <= 8; t++) {
+        const countForTurn = (t >= 1 && t <= 4) ? 6 : 12;
+        if (!gameData.xuatPhat[t] || !Array.isArray(gameData.xuatPhat[t])) {
+            gameData.xuatPhat[t] = [];
+        }
+        while (gameData.xuatPhat[t].length < countForTurn) {
+            const idx = gameData.xuatPhat[t].length;
+            const src = defaultXPSet1[idx];
+            gameData.xuatPhat[t].push({
+                q: src ? src.q : `Câu hỏi số ${idx + 1} bộ đề ${t}`,
+                a: src ? src.a : `Đáp án câu ${idx + 1}`
+            });
+        }
+        if (gameData.xuatPhat[t].length > countForTurn) {
+            gameData.xuatPhat[t] = gameData.xuatPhat[t].slice(0, countForTurn);
         }
     }
 
@@ -362,17 +373,26 @@ function ensureDefaultGameDataSeed() {
 // Initialize empty Xuat Phat turns
 function initXuatPhatTurnData() {
     for (let turn = 1; turn <= 8; turn++) {
-        if (!gameData.xuatPhat[turn]) {
+        const maxRows = (turn >= 1 && turn <= 4) ? 6 : 12;
+        if (!gameData.xuatPhat[turn] || !Array.isArray(gameData.xuatPhat[turn])) {
             gameData.xuatPhat[turn] = [];
-            for (let i = 0; i < 10; i++) {
-                gameData.xuatPhat[turn].push({ q: '', a: '' });
-            }
+        }
+        while (gameData.xuatPhat[turn].length < maxRows) {
+            const idx = gameData.xuatPhat[turn].length;
+            const src = defaultXPSet1[idx];
+            gameData.xuatPhat[turn].push({
+                q: src ? src.q : `Câu hỏi số ${idx + 1} bộ đề ${turn}`,
+                a: src ? src.a : `Đáp án câu ${idx + 1}`
+            });
+        }
+        if (gameData.xuatPhat[turn].length > maxRows) {
+            gameData.xuatPhat[turn] = gameData.xuatPhat[turn].slice(0, maxRows);
         }
     }
     ensureDefaultGameDataSeed();
 }
 
-// Render Xuat Phat 10 rows for editing a set (1..8)
+// Render Xuat Phat rows for editing a set (1..4: max 6 rows, 5..8: 12 rows)
 function renderXuatPhatTurnUI(deNum) {
     editingXuatPhatDe = deNum || 1;
     const container = document.getElementById('xuatPhatRows');
@@ -381,21 +401,22 @@ function renderXuatPhatTurnUI(deNum) {
     // Highlight tab header
     const tabs = document.querySelectorAll('#xuatPhatTabHeader .kd-tab');
     tabs.forEach((tab, idx) => {
-        if (idx + 1 === deNum) tab.classList.add('active');
+        if (idx + 1 === editingXuatPhatDe) tab.classList.add('active');
         else tab.classList.remove('active');
     });
 
     container.innerHTML = '';
-    const questions = gameData.xuatPhat[deNum] || [];
+    const questions = gameData.xuatPhat[editingXuatPhatDe] || [];
+    const maxRows = (editingXuatPhatDe >= 1 && editingXuatPhatDe <= 4) ? 6 : 12;
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < maxRows; i++) {
         const item = questions[i] || { q: '', a: '' };
         const row = document.createElement('div');
         row.className = 'kd-row';
         row.innerHTML = `
             <span style="font-weight: bold; color: #555;">Câu ${i + 1}</span>
-            <input type="text" value="${escapeHtml(item.q)}" placeholder="Nội dung câu hỏi ${i + 1}" oninput="updateXuatPhatItem(${deNum}, ${i}, 'q', this.value)">
-            <input type="text" value="${escapeHtml(item.a)}" placeholder="Đáp án câu ${i + 1}" oninput="updateXuatPhatItem(${deNum}, ${i}, 'a', this.value)">
+            <input type="text" value="${escapeHtml(item.q)}" placeholder="Nội dung câu hỏi ${i + 1}" oninput="updateXuatPhatItem(${editingXuatPhatDe}, ${i}, 'q', this.value)">
+            <input type="text" value="${escapeHtml(item.a)}" placeholder="Đáp án câu ${i + 1}" oninput="updateXuatPhatItem(${editingXuatPhatDe}, ${i}, 'a', this.value)">
         `;
         container.appendChild(row);
     }
@@ -699,12 +720,13 @@ function parseXuatPhatSheet(rows) {
             currentItemIndex = 0;
         }
 
+        const maxRows = (currentTurn >= 1 && currentTurn <= 4) ? 6 : 12;
         if (!gameData.xuatPhat[currentTurn]) {
             gameData.xuatPhat[currentTurn] = [];
-            for (let i = 0; i < 10; i++) gameData.xuatPhat[currentTurn].push({ q: '', a: '' });
+            for (let i = 0; i < maxRows; i++) gameData.xuatPhat[currentTurn].push({ q: '', a: '' });
         }
 
-        if (currentItemIndex < 10) {
+        if (currentItemIndex < maxRows) {
             gameData.xuatPhat[currentTurn][currentItemIndex] = {
                 q: questionText,
                 a: answerText
@@ -1313,7 +1335,8 @@ function exportExcelFile() {
     const xpRows = [["XUẤT PHÁT"], ["STT ĐỀ", "NỘI DUNG", "ĐÁP ÁN"]];
     for (let t = 1; t <= 8; t++) {
         const turnData = gameData.xuatPhat[t] || [];
-        for (let i = 0; i < 10; i++) {
+        const maxRows = (t >= 1 && t <= 4) ? 6 : 12;
+        for (let i = 0; i < maxRows; i++) {
             const q = turnData[i]?.q || '';
             const a = turnData[i]?.a || '';
             xpRows.push([i === 0 ? t : "", q, a]);
@@ -1392,7 +1415,11 @@ function handleIncomingPlayerAnswer(data) {
     if (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') {
         const tsIdx = parseInt(data.contestantId) || 1;
         const round = (data.round || window.currentActiveRound || '').toUpperCase();
-        if (round === 'VS' || round === 'VUOT_SONG' || round === 'VCNV' || round === 'CNV' || window.currentActiveRound === 'VUOT_SONG') {
+        if (round === 'KD' || round === 'XUAT_PHAT' || round === 'KHOI_DONG' || round === 'XP' || window.currentActiveRound === 'XUAT_PHAT') {
+            if (typeof handleXuatPhatBuzzFromPlayer === 'function') {
+                handleXuatPhatBuzzFromPlayer(tsIdx, data);
+            }
+        } else if (round === 'VS' || round === 'VUOT_SONG' || round === 'VCNV' || round === 'CNV' || window.currentActiveRound === 'VUOT_SONG') {
             if (typeof markVSContestantSubmitted === 'function') {
                 markVSContestantSubmitted(tsIdx, data.time || null);
             }

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Giao diện Điều khiển Trò chơi - Đường Đến Vinh Quang</title>
-    <script src="designer-runtime.js?v=20261121a"></script>
-    <script src="media-preloader.js?v=20261121a"></script>
+    <script src="designer-runtime.js?v=20261124b"></script>
+    <script src="media-preloader.js?v=20261124b"></script>
     <!-- SheetJS for Excel Import/Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="controller.css?v=20261121a">
+    <link rel="stylesheet" href="controller.css?v=20261124b">
     <script>
         function switchTab(index) {
             const navItems = document.querySelectorAll('.nav-item');
@@ -260,7 +260,7 @@
                     <button class="btn" onclick="projectorWindow = window.open('./projector.html', 'ddvq_projector')">Màn hình Máy Chiếu</button>
                     <button class="btn" style="font-weight: bold;" onclick="window.open('./graphic.html', '_blank')">Màn hình Graphic (Trong suốt)</button>
                     <button class="btn" style="font-weight: bold;" onclick="window.open('./host.html', '_blank')">Màn hình MC (Host)</button>
-                    <button class="btn btn-primary" onclick="window.open('./player.html', '_blank')">Màn hình Thí sinh</button>
+                    <button class="btn btn-primary" onclick="window.open('./public/player.html', '_blank')">Màn hình Thí sinh</button>
                     <button class="btn" onclick="resetAllData()">Thiết lập lại dữ liệu</button>
                 </div>
 
@@ -543,7 +543,7 @@
                 <div class="kd-tab" onclick="switchXuatPhatTurn(2)">Bộ đề 2</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(3)">Bộ đề 3</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(4)">Bộ đề 4</div>
-                <div class="kd-tab" onclick="switchXuatPhatTurn(5)">Bộ đề 5</div>
+                <div class="kd-tab" onclick="switchXuatPhatTurn(5)">Bộ đề 5 (Thi chung)</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(6)">Bộ đề 6</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(7)">Bộ đề 7</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(8)">Bộ đề 8</div>
@@ -558,7 +558,7 @@
                     <span>Audio Voice</span>
                 </div>
                 <div id="xuatPhatRows">
-                    <!-- Rows 1..10 generated dynamically -->
+                    <!-- Rows 1..6 for sets 1..4, 1..12 for sets 5..8 -->
                 </div>
             </div>
 
@@ -837,7 +837,7 @@
                 </span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
-                ĐIỀU KHIỂN VÒNG THI XUẤT PHÁT
+                ĐIỀU KHIỂN VÒNG THI KHỞI ĐỘNG
             </div>
         </div>
 
@@ -847,7 +847,7 @@
             <!-- LEFT: 5 CONTESTANT CARDS -->
             <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; max-width: 650px;">
                 <!-- TS 1 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="ts1_xp_card" style="display: flex; align-items: center; gap: 8px;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <span id="ts1_score_disp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(1)">✏️</span>
@@ -857,12 +857,12 @@
                             <input type="text" id="ts1_name" value="Thí sinh 1" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
                             <input type="text" id="ts1_extra" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px;">
                         </div>
-                        <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none;"></div>
+                        <div id="ts1_xp_buzz_bar" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: bold; color: #64748b;"></div>
                     </div>
                 </div>
 
                 <!-- TS 2 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="ts2_xp_card" style="display: flex; align-items: center; gap: 8px;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <span id="ts2_score_disp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(2)">✏️</span>
@@ -872,12 +872,12 @@
                             <input type="text" id="ts2_name" value="Thí sinh 2" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
                             <input type="text" id="ts2_extra" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px;">
                         </div>
-                        <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none;"></div>
+                        <div id="ts2_xp_buzz_bar" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: bold; color: #64748b;"></div>
                     </div>
                 </div>
 
                 <!-- TS 3 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="ts3_xp_card" style="display: flex; align-items: center; gap: 8px;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <span id="ts3_score_disp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(3)">✏️</span>
@@ -887,12 +887,12 @@
                             <input type="text" id="ts3_name" value="Thí sinh 3" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
                             <input type="text" id="ts3_extra" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px;">
                         </div>
-                        <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none;"></div>
+                        <div id="ts3_xp_buzz_bar" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: bold; color: #64748b;"></div>
                     </div>
                 </div>
 
                 <!-- TS 4 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="ts4_xp_card" style="display: flex; align-items: center; gap: 8px;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <span id="ts4_score_disp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(4)">✏️</span>
@@ -902,7 +902,7 @@
                             <input type="text" id="ts4_name" value="Thí sinh 4" onchange="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
                             <input type="text" id="ts4_extra" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px;">
                         </div>
-                        <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none;"></div>
+                        <div id="ts4_xp_buzz_bar" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: bold; color: #64748b;"></div>
                     </div>
                 </div>
             </div>
@@ -920,6 +920,9 @@
                 </div>
                 <div id="btn_luot_4" class="luot-thi-btn" onclick="selectLuotThi(4)">
                     <span>Lượt thi riêng (TS4)</span> <span class="badge">4</span>
+                </div>
+                <div id="btn_luot_5" class="luot-thi-btn" onclick="selectLuotThi(5)">
+                    <span>Lượt thi chung</span> <span class="badge">5</span>
                 </div>
             </div>
         </div>
@@ -947,19 +950,7 @@
                     <div style="flex: 1; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
                             <span id="preview_turn_title">LƯỢT THI: CHƯA CHỌN THÍ SINH</span>
-                            <span>CÂU HỎI: <span id="preview_q_num">1</span>/10</span>
-                            <span>BỘ ĐỀ: 
-                                <select id="preview_de_select" onchange="changeXuatPhatDe(this.value)" style="background: rgba(0,0,0,0.3); color: #ffeb3b; border: 1px solid rgba(255,255,255,0.4); border-radius: 3px; padding: 1px 4px; font-weight: bold; outline: none; cursor: pointer;">
-                                    <option value="1">Bộ đề 1</option>
-                                    <option value="2">Bộ đề 2</option>
-                                    <option value="3">Bộ đề 3</option>
-                                    <option value="4">Bộ đề 4</option>
-                                    <option value="5">Bộ đề 5</option>
-                                    <option value="6">Bộ đề 6</option>
-                                    <option value="7">Bộ đề 7</option>
-                                    <option value="8">Bộ đề 8</option>
-                                </select>
-                            </span>
+                            <span>CÂU HỎI: <span id="preview_q_num">1</span>/<span id="preview_q_total">6</span></span>
                         </div>
                         <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc;" id="preview_q_text">
                             Nội dung câu hỏi số 1...
@@ -974,47 +965,42 @@
                     </div>
                 </div>
 
-                    <!-- BUTTON ACTIONS ROW 1: Graphic chọn đề, Graphic câu hỏi, Random, Bắt đầu, Đúng, Sai, Chuyển câu, Âm thanh -->
+                    <!-- BUTTON ACTIONS ROW 1: Bắt đầu, Hiện graphic câu hỏi, Hiện câu hỏi, Đúng, Sai, Chuyển câu, Phát âm -->
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <button class="ctrl-btn-action" onclick="onClickHienGraphicChonDe()" style="flex: 1;">
-                        Graphic chọn đề
-                    </button>
-
-                    <button class="ctrl-btn-action" onclick="onClickHienGraphicCauHoi()" style="flex: 1;">
-                        Graphic câu hỏi
-                    </button>
-
-                    <button id="btn_random_de" class="ctrl-btn-action" onclick="onClickRandomDe()" style="width: 80px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                        Random
-                    </button>
-
-                    <button class="ctrl-btn-action" onclick="onClickBatDau60s()" style="width: 75px; font-weight: bold;">
+                    <button class="ctrl-btn-action" onclick="onClickBatDau60s()" style="width: 90px; font-weight: bold;">
                         Bắt đầu
                     </button>
 
-                    <button class="ctrl-btn-action" onclick="onClickDung()" style="width: 65px; color: #16a34a !important; font-weight: bold;">
+                    <button class="ctrl-btn-action" onclick="onClickHienGraphicCauHoi()" style="flex: 1; font-weight: bold;">
+                        Hiện graphic câu hỏi
+                    </button>
+
+                    <button class="ctrl-btn-action" onclick="onClickHienCauHoi()" style="flex: 1; font-weight: bold;">
+                        Hiện câu hỏi
+                    </button>
+
+                    <button class="ctrl-btn-action" onclick="onClickDung()" style="width: 72px; color: #16a34a !important; font-weight: bold;">
                         Đúng
                     </button>
 
-                    <button class="ctrl-btn-action" onclick="onClickSai()" style="width: 65px; color: #dc2626 !important; font-weight: bold;">
+                    <button class="ctrl-btn-action" onclick="onClickSai()" style="width: 72px; color: #dc2626 !important; font-weight: bold;">
                         Sai
                     </button>
 
-                    <button class="ctrl-btn-action" onclick="onClickChuyenCau()" style="width: 95px; font-weight: bold;">
+                    <button class="ctrl-btn-action" onclick="onClickChuyenCau()" style="width: 108px; font-weight: bold;">
                         Chuyển câu
                     </button>
 
-                    <button class="ctrl-btn-action" onclick="onClickPhatAmThanh()" style="width: 75px;">
+                    <button class="ctrl-btn-action" onclick="onClickPhatAmThanh()" style="width: 82px;">
                         Phát âm
                     </button>
                 </div>
 
-                <!-- BUTTON ACTIONS ROW 2: Xuất phát, Hoàn thành, Dừng nhạc, Đặt lại, Reset chọn đề, Tổng kết -->
+                <!-- BUTTON ACTIONS ROW 2: KHỞI ĐỘNG, Hoàn thành, Dừng nhạc, Đặt lại, Tổng kết -->
                 <div style="display: flex; gap: 6px; justify-content: space-between;">
-                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(1)" style="font-weight: bold;">Xuất Phát</button>
+                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(1)" style="font-weight: bold;">KHỞI ĐỘNG</button>
                     <button class="ctrl-btn-bottom" onclick="onClickHoanThanh()">Hoàn thành</button>
                     <button class="ctrl-btn-bottom" onclick="onClickDungNhac()">Dừng nhạc</button>
-                    <button class="ctrl-btn-bottom" onclick="resetS1ContestantDe('ALL')" title="Reset nút bấm chọn đề cho thí sinh">Reset chọn đề</button>
                     <button class="ctrl-btn-bottom" onclick="onClickDatLaiVongThi()">Đặt lại</button>
                     <button class="ctrl-btn-bottom btn-tong-ket" onclick="onClickTongKet()">Tổng kết</button>
                 </div>
@@ -2112,13 +2098,13 @@
 
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261121a"></script>
-    <script src="setup.js?v=20261121a"></script>
-    <script src="setup_extra.js?v=20261121a"></script>
-    <script src="controllerR1.js?v=20261121a"></script>
-    <script src="controllerR2.js?v=20261121a"></script>
-    <script src="controllerR3.js?v=20261121a"></script>
-    <script src="controllerR4.js?v=20261121a"></script>
-    <script src="controllerRExtra.js?v=20261121a"></script>
+    <script src="supabase-sync.js?v=20261124d"></script>
+    <script src="setup.js?v=20261124d"></script>
+    <script src="setup_extra.js?v=20261124d"></script>
+    <script src="controllerR1.js?v=20261124d"></script>
+    <script src="controllerR2.js?v=20261124d"></script>
+    <script src="controllerR3.js?v=20261124d"></script>
+    <script src="controllerR4.js?v=20261124d"></script>
+    <script src="controllerRExtra.js?v=20261124d"></script>
 </body>
 </html>

@@ -623,11 +623,11 @@
     <!-- MAIN VIEWPORT CONTAINING 5 PLAYER SCENES -->
     <div class="player-viewport">
 
-        <!-- SCENE 1: XUẤT PHÁT -->
+        <!-- SCENE 1: KHỞI ĐỘNG -->
         <div class="scene-container active" id="scene-1">
             <div class="scene-header">
-                <div class="section-label">Xuất phát</div>
-                <div class="scene-title">VÒNG THI XUẤT PHÁT</div>
+                <div class="section-label">Khởi Động</div>
+                <div class="scene-title">VÒNG THI KHỞI ĐỘNG</div>
 
                 <div class="score-box-s1">
                     <span class="score-label-s1">Số câu đúng:</span>
@@ -650,12 +650,12 @@
 
             <div class="scene-main">
                 <div class="question-area">
-                    <div class="row-label" id="s1_q_label">Câu hỏi Xuất Phát</div>
-                    <div class="black-box" id="s1_q_text" style="height: 220px; font-size: 1.6rem;">Đang chờ bắt đầu lượt thi Xuất Phát...</div>
+                    <div class="row-label" id="s1_q_label">Câu hỏi Khởi Động</div>
+                    <div class="black-box" id="s1_q_text" style="height: 220px; font-size: 1.6rem;">Đang chờ bắt đầu lượt thi Khởi Động...</div>
                 </div>
 
                 <div class="answer-area">
-                    <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px; justify-content: center;">
+                    <div id="s1_random_btn_wrap" style="display: none; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px; justify-content: center;">
                         <button class="btn-bell" id="s1_random_btn" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px; background: #475569; border-color: #64748b;" onclick="triggerRandomDeFromPlayer()" disabled>
                             CHƯA BẮT ĐẦU LƯỢT THI 
                         </button>
@@ -676,8 +676,8 @@
         <!-- SCENE 2: RA KHƠI -->
         <div class="scene-container" id="scene-2">
             <div class="scene-header">
-                <div class="section-label">Ra khơi</div>
-                <div class="scene-title">RA KHƠI</div>
+                <div class="section-label">Ra Khơi</div>
+                <div class="scene-title">VÒNG THI RA KHƠI</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
@@ -695,7 +695,7 @@
 
             <div class="scene-main">
                 <div class="question-area">
-                    <div class="row-label" id="s2_row_label">Câu hỏi Ra khơi</div>
+                    <div class="row-label" id="s2_row_label">Câu hỏi Ra Khơi</div>
                     <div class="black-box" id="s2_q_text" style="height: 240px;"></div>
                 </div>
 
@@ -722,8 +722,8 @@
         <!-- SCENE 3: VƯỢT SÓNG -->
         <div class="scene-container" id="scene-3">
             <div class="scene-header">
-                <div class="section-label">Vượt sóng</div>
-                <div class="scene-title">VƯỢT SÓNG</div>
+                <div class="section-label">Vượt Sóng</div>
+                <div class="scene-title">VÒNG THI VƯỢT SÓNG</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
@@ -768,8 +768,8 @@
         <!-- SCENE 4: VINH QUANG -->
         <div class="scene-container" id="scene-4">
             <div class="scene-header">
-                <div class="section-label">Vinh quang</div>
-                <div class="scene-title">VINH QUANG</div>
+                <div class="section-label">Vinh Quang</div>
+                <div class="scene-title">VÒNG THI VINH QUANG</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
@@ -787,7 +787,7 @@
 
             <div class="scene-main">
                 <div class="question-area">
-                    <div class="row-label" id="s4_row_label">Câu hỏi Vinh quang</div>
+                    <div class="row-label" id="s4_row_label">Câu hỏi Vinh Quang</div>
                     <div class="black-box" id="s4_q_text" style="height: 240px;"></div>
                 </div>
 
@@ -1115,6 +1115,47 @@
         }
 
         let isBellLocked = true;
+        let s1FastestBuzzedId = 0;
+
+        function applyS1Turn5ModeUI() {
+            const actionArea = document.getElementById('s1_action_area');
+            const randomWrap = document.getElementById('s1_random_btn_wrap');
+            const qTextBox = document.getElementById('s1_q_text');
+            if (currentXuatPhatTurnIndex === 5) {
+                if (randomWrap) randomWrap.style.display = 'none';
+                if (actionArea) actionArea.style.display = 'flex';
+                if (qTextBox) qTextBox.style.height = '40vh';
+            } else {
+                if (randomWrap) randomWrap.style.display = 'none';
+                if (actionArea) actionArea.style.display = 'none';
+                if (qTextBox) qTextBox.style.height = '60vh';
+            }
+        }
+
+        function lockS1BellWithWinner(buzzedId, whoName) {
+            const id = parseInt(buzzedId, 10) || 0;
+            isBellLocked = true;
+            if (id >= 1 && id <= 4) s1FastestBuzzedId = id;
+            const btn = document.getElementById('s1_btn_bell');
+            if (btn) {
+                btn.classList.add('pressed');
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+            }
+            const feedback = document.getElementById('s1_bell_feedback');
+            if (feedback) {
+                const who = whoName || (id ? `Thí sinh ${id}` : 'Thí sinh khác');
+                if (id === parseInt(currentContestantId, 10)) {
+                    feedback.innerText = '✅ BẠN ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!';
+                    feedback.style.color = '#15803d';
+                } else {
+                    feedback.innerText = `🔒 ${who.toUpperCase()} ĐÃ BẤM CHUÔNG! CHUÔNG ĐÃ BỊ KHÓA`;
+                    feedback.style.color = '#b91c1c';
+                }
+                feedback.style.display = 'flex';
+            }
+        }
 
         // Handle Realtime Sync Messages from Controller / Server
         function handleIncomingSyncMessage(data) {
@@ -1127,28 +1168,33 @@
                 return;
             }
 
-            if (data.type === 'LOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_FASTEST_HL' || (data.type === 'PLAYER_RING_BELL' && (data.round === 'KD' || data.round === 'XUAT_PHAT' || data.round === 'KHOI_DONG' || activeSceneNum === 1))) {
-                isBellLocked = true;
-                const btn = document.getElementById('s1_btn_bell');
-                if (btn) {
-                    btn.classList.add('pressed');
-                    btn.style.opacity = '0.4';
+            const msgRoundUpper = (data.round || '').toString().toUpperCase();
+            const isR1BellMsg = (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') &&
+                (msgRoundUpper === 'KD' || msgRoundUpper === 'XUAT_PHAT' || msgRoundUpper === 'KHOI_DONG' || msgRoundUpper === 'XP');
+
+            if (data.type === 'LOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_FASTEST_HL' || isR1BellMsg) {
+                const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.contestantId || data.winnerId || 0, 10);
+                // If an authoritative winner was already recorded via fastest highlight/ring, ignore late raw PLAYER_RING_BELL
+                if (isR1BellMsg && s1FastestBuzzedId !== 0 && buzzedId !== s1FastestBuzzedId) {
+                    return;
                 }
-                const feedback = document.getElementById('s1_bell_feedback');
-                if (feedback) {
-                    const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.contestantId);
-                    const who = data.contestantName || (buzzedId ? `Thí sinh ${buzzedId}` : 'Thí sinh khác');
-                    if (buzzedId === currentContestantId) {
-                        feedback.innerText = '✅ BẠN ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!';
-                        feedback.style.color = '#15803d';
-                    } else {
-                        feedback.innerText = `🔒 ${who.toUpperCase()} ĐÃ BẤM CHUÔNG! CHUÔNG ĐÃ BỊ KHÓA`;
-                        feedback.style.color = '#b91c1c';
-                    }
-                    feedback.style.display = 'flex';
+                if (buzzedId >= 1 && buzzedId <= 4) {
+                    lockS1BellWithWinner(buzzedId, data.contestantName);
+                } else {
+                    isBellLocked = true;
                 }
             }
-            if (data.type === 'UNLOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_QUESTION' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_START_TIMER' || data.type === 'XUAT_PHAT_SELECT_CHUNG' || data.type === 'XUAT_PHAT_RESET') {
+            if (
+                data.type === 'UNLOCK_BELLS' ||
+                data.type === 'XUAT_PHAT_SHOW_QUESTION' ||
+                data.type === 'XUAT_PHAT_HIEN_CAU_HOI' ||
+                data.type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' ||
+                data.type === 'XUAT_PHAT_NEXT_QUESTION' ||
+                data.type === 'XUAT_PHAT_START_TIMER' ||
+                data.type === 'XUAT_PHAT_SELECT_CHUNG' ||
+                data.type === 'XUAT_PHAT_RESET'
+            ) {
+                s1FastestBuzzedId = 0;
                 isBellLocked = false;
                 resetBellState(1);
             }
@@ -1168,6 +1214,26 @@
                 contestantScore = data.score;
                 if (data.name || data.contestantName) contestantName = data.name || data.contestantName;
                 updatePlayerTopBar();
+            }
+
+            // Restore Turn 5 common mode & buzzer state on state snapshot (reload / reconnect)
+            if (data.currentXuatPhatTurn !== undefined) {
+                currentXuatPhatTurnIndex = parseInt(data.currentXuatPhatTurn, 10) || 0;
+                applyS1Turn5ModeUI();
+                updateS1RandomDeButtonUI();
+                if (currentXuatPhatTurnIndex === 5) {
+                    if (data.xpBuzzerLocked) {
+                        if (data.xpBuzzerWinner) {
+                            lockS1BellWithWinner(data.xpBuzzerWinner, null);
+                        } else {
+                            isBellLocked = true;
+                        }
+                    } else if (data.xpBuzzerOpen) {
+                        s1FastestBuzzedId = 0;
+                        isBellLocked = false;
+                        resetBellState(1);
+                    }
+                }
             }
 
             // Sync Round 1 correct question count from full state
@@ -1364,23 +1430,31 @@
                 }
 
                 updateS1RandomDeButtonUI();
-
-                const actionArea = document.getElementById('s1_action_area');
-                const qTextBox = document.getElementById('s1_q_text');
-                if (currentXuatPhatTurnIndex === 5) {
-                    if (actionArea) actionArea.style.display = 'flex';
-                    if (qTextBox) qTextBox.style.height = '40vh';
-                } else {
-                    if (actionArea) actionArea.style.display = 'none';
-                    if (qTextBox) qTextBox.style.height = '60vh';
-                }
+                applyS1Turn5ModeUI();
 
                 if (data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_FINISH') {
+                    s1FastestBuzzedId = 0;
                     clearPlayerSceneUI(1);
                 }
 
-                if (data.type === 'XUAT_PHAT_SELECT_CHUNG' || data.type === 'XUAT_PHAT_SELECT_CONTESTANT' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_START_TIMER') {
+                if (
+                    data.type === 'XUAT_PHAT_SELECT_CHUNG' ||
+                    data.type === 'XUAT_PHAT_SELECT_CONTESTANT' ||
+                    data.type === 'XUAT_PHAT_HIEN_CAU_HOI' ||
+                    data.type === 'XUAT_PHAT_NEXT_QUESTION' ||
+                    data.type === 'XUAT_PHAT_RESET' ||
+                    data.type === 'XUAT_PHAT_START_TIMER'
+                ) {
+                    s1FastestBuzzedId = 0;
                     resetBellState(1);
+                } else if (data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI') {
+                    s1FastestBuzzedId = 0;
+                    isBellLocked = true;
+                    const btn = document.getElementById('s1_btn_bell');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                    }
                 }
             }
 
@@ -2028,6 +2102,9 @@
                 applyVSPlayerLockUI();
                 return;
             }
+            if ((rkUpper === 'KD' || rkUpper === 'XP') && (currentXuatPhatTurnIndex !== 5 || s1FastestBuzzedId !== 0)) {
+                return;
+            }
             if (isBellLocked) return;
             isBellLocked = true;
             let btnId = '';
@@ -2054,15 +2131,25 @@
 
             if (btn) {
                 btn.classList.add('pressed');
+                btn.disabled = true;
                 btn.style.opacity = '0.4';
             }
-            if (feedback) feedback.style.display = 'flex';
+            if (feedback) {
+                if (roundKey === 'KD' || roundKey === 'XP') {
+                    feedback.innerText = '🔔 ĐÃ BẤM CHUÔNG — ĐANG XÁC NHẬN...';
+                    feedback.style.color = '#15803d';
+                }
+                feedback.style.display = 'flex';
+            }
 
-            let s3StartTime = parseInt(localStorage.getItem('s3_round_start_time')) || 0;
+            const isR3Bell = (rkUpper === 'VCNV' || rkUpper === 'CNV' || rkUpper === 'VS' || rkUpper === 'VUOT_SONG');
             let elapsedStr = "00.00";
-            if (s3StartTime > 0) {
-                let elapsed = (Date.now() - s3StartTime) / 1000;
-                elapsedStr = elapsed < 10 ? '0' + elapsed.toFixed(2) : elapsed.toFixed(2);
+            if (isR3Bell) {
+                let s3StartTime = parseInt(localStorage.getItem('s3_round_start_time')) || 0;
+                if (s3StartTime > 0) {
+                    let elapsed = (Date.now() - s3StartTime) / 1000;
+                    elapsedStr = elapsed < 10 ? '0' + elapsed.toFixed(2) : elapsed.toFixed(2);
+                }
             }
 
             const payload = {
@@ -2070,35 +2157,36 @@
                 contestantId: currentContestantId,
                 contestantName: contestantName,
                 round: roundKey,
+                turnIndex: (roundKey === 'KD' || roundKey === 'XP') ? currentXuatPhatTurnIndex : undefined,
                 time: elapsedStr,
                 roomCode: currentRoomCode,
-                timestamp: Date.now()
-            };
-
-            const ansPayload = {
-                type: 'PLAYER_SUBMIT_ANSWER',
-                contestantId: currentContestantId,
-                contestantName: contestantName,
-                round: 'VS',
-                isVongThi: true,
-                answer: '',
-                time: elapsedStr,
-                roomCode: currentRoomCode,
-                timestamp: Date.now()
-            };
-
-            const flashPayload = {
-                type: 'S3_FLASH_SCOREBOARD',
-                contestantId: currentContestantId,
-                round: 'VUOT_SONG',
                 timestamp: Date.now()
             };
 
             // Fast microsecond path: post to native WebSocket + local BroadcastChannel
             if (syncChannel) {
                 try { syncChannel.postMessage(payload); } catch(e) {}
-                try { syncChannel.postMessage(ansPayload); } catch(e) {}
-                try { syncChannel.postMessage(flashPayload); } catch(e) {}
+                if (isR3Bell) {
+                    const ansPayload = {
+                        type: 'PLAYER_SUBMIT_ANSWER',
+                        contestantId: currentContestantId,
+                        contestantName: contestantName,
+                        round: 'VS',
+                        isVongThi: true,
+                        answer: '',
+                        time: elapsedStr,
+                        roomCode: currentRoomCode,
+                        timestamp: Date.now()
+                    };
+                    const flashPayload = {
+                        type: 'S3_FLASH_SCOREBOARD',
+                        contestantId: currentContestantId,
+                        round: 'VUOT_SONG',
+                        timestamp: Date.now()
+                    };
+                    try { syncChannel.postMessage(ansPayload); } catch(e) {}
+                    try { syncChannel.postMessage(flashPayload); } catch(e) {}
+                }
             }
 
             try {
@@ -2209,7 +2297,11 @@
                 }
                 if (activeSceneNum === 1) {
                     e.preventDefault();
-                    triggerRandomDeFromPlayer();
+                    if (currentXuatPhatTurnIndex === 5) {
+                        ringBell('KD');
+                    } else {
+                        triggerRandomDeFromPlayer();
+                    }
                 }
             }
         });

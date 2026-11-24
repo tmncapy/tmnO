@@ -608,7 +608,7 @@
                     <div class="sub-info-item">Thời gian đếm ngược: <span class="time-badge-box" id="h1_time_box">--s</span></div>
                 </div>
 
-                <!-- 10 Question Pagination Buttons -->
+                <!-- Question Pagination Buttons (6 for Turns 1..4, 12 for Turn 5) -->
                 <div class="s1-pagination">
                     <button class="s1-page-btn" id="s1_btn_1" onclick="selectHostS1Question(1)">1</button>
                     <button class="s1-page-btn" id="s1_btn_2" onclick="selectHostS1Question(2)">2</button>
@@ -620,6 +620,8 @@
                     <button class="s1-page-btn" id="s1_btn_8" onclick="selectHostS1Question(8)">8</button>
                     <button class="s1-page-btn" id="s1_btn_9" onclick="selectHostS1Question(9)">9</button>
                     <button class="s1-page-btn" id="s1_btn_10" onclick="selectHostS1Question(10)">10</button>
+                    <button class="s1-page-btn" id="s1_btn_11" onclick="selectHostS1Question(11)">11</button>
+                    <button class="s1-page-btn" id="s1_btn_12" onclick="selectHostS1Question(12)">12</button>
                 </div>
 
                 <!-- Standard Question Box -->
@@ -634,10 +636,10 @@
                 </div>
             </div>
 
-            <!-- List of 10 questions in current set -->
+            <!-- List of questions in current set -->
             <div class="host-card">
                 <div class="card-header">
-                    <span>📋 BẢNG 10 CÂU HỎI BỘ ĐỀ <span id="h1_de_title">1</span></span>
+                    <span>📋 BẢNG CÂU HỎI BỘ ĐỀ <span id="h1_de_title">1</span></span>
                 </div>
                 <table class="q-table">
                     <thead>
@@ -849,6 +851,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-sync.js"></script>
-    <script src="host.js"></script>
+    <script src="host.js?v=20261124d"></script>
 </body>
 </html>
