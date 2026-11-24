@@ -1554,6 +1554,9 @@ app.set('trust proxy', true);
 function sendPageOrFallback(res, filename, fallbackRedirect = null) {
   const filePath = resolvePageFile(filename);
   if (fs.existsSync(filePath)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     return res.sendFile(filePath);
   }
   if (fallbackRedirect) {
@@ -1578,7 +1581,7 @@ app.get('/', (req, res) => { sendPageOrFallback(res, 'index.html', '/controller'
 server.listen(PORT, '0.0.0.0', () => {
   const lanAddresses = getLocalNetworkAddresses();
   console.log('================================================================');
-  console.log('  🎮 ĐƯỜNG ĐẾN VINH QUANG - MÁY CHỦ WEBSOCKET SẴN SÀNG HOẠT ĐỘNG');
+  console.log('  🎮 ĐƯỜNG LÊN ĐỈNH OLYMPIA - MÁY CHỦ WEBSOCKET SẴN SÀNG HOẠT ĐỘNG');
   console.log('================================================================');
   console.log(`  🏠 Cục bộ (Localhost) : http://localhost:${PORT}`);
   console.log(`  ⚡ WebSocket URL     : ws://localhost:${PORT}/ws`);

@@ -21,9 +21,9 @@ class PDFGuideGenerator {
             bufferPages: true,
             info: {
                 Title: 'SO TAY HUONG DAN SU DUNG BAN DIEU KHIEN CONTROLLER',
-                Author: 'Ban To Chuc Duong Den Vinh Quang',
+                Author: 'Ban To Chuc Duong Len Dinh Olympia',
                 Subject: 'Tai lieu chi tiet quy trinh thao tac ky thuat va van hanh tran dau',
-                Keywords: 'controller, huong dan, duong den vinh quang, thao tac nut bam'
+                Keywords: 'controller, huong dan, duong len dinh olympia, thao tac nut bam'
             }
         });
         this.writeStream = fs.createWriteStream(outputPath);
@@ -38,7 +38,7 @@ class PDFGuideGenerator {
         
         // Header
         doc.font(fontRegular).fontSize(8).fillColor('#64748b');
-        doc.text('DUONG DEN VINH QUANG - SO TAY DIEU HANH BAN DIEU KHIEN (CONTROLLER)', 40, 22, { width: 515, align: 'left' });
+        doc.text('DUONG LEN DINH OLYMPIA - SO TAY DIEU HANH BAN DIEU KHIEN (CONTROLLER)', 40, 22, { width: 515, align: 'left' });
         doc.text('HE THONG THI DAU 2026', 40, 22, { width: 515, align: 'right' });
         doc.strokeColor('#cbd5e1').lineWidth(0.5).moveTo(40, 32).lineTo(555, 32).stroke();
 
@@ -69,7 +69,7 @@ class PDFGuideGenerator {
         // Tieu de lon
         doc.moveDown(4.2);
         doc.font(fontBold).fontSize(25).fillColor('#ffffff');
-        doc.text('DUONG DEN VINH QUANG', { align: 'center' });
+        doc.text('DUONG LEN DINH OLYMPIA', { align: 'center' });
 
         doc.moveDown(0.4);
         doc.font(fontBold).fontSize(16.5).fillColor('#38bdf8');
@@ -432,7 +432,7 @@ class PDFGuideGenerator {
         this.doc.font(fontBold).fontSize(10).fillColor('#1e3a8a');
         this.doc.text('CHUC HOI THI DIEN RA THANH CONG TOT DEP!', { align: 'center' });
         this.doc.font(fontItalic).fontSize(8.5).fillColor('#64748b');
-        this.doc.text('Ban Ky thuat He thong Duong Den Vinh Quang - Nam 2026', { align: 'center' });
+        this.doc.text('Ban Ky thuat He thong Duong Len Dinh Olympia - Nam 2026', { align: 'center' });
 
         // Danh so trang toan bo tai lieu
         const pages = this.doc.bufferedPageRange();

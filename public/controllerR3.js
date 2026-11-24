@@ -28,7 +28,7 @@ function removeVietnameseTones(str) {
 
 function selectVSRow(row) {
     currentVSRow = row;
-    const buttons = document.querySelectorAll('#tab3-content .vs-row-btn');
+    const buttons = document.querySelectorAll('#tab2-content .vs-row-btn');
     buttons.forEach((btn, idx) => {
         if ((idx + 1 === row) || (row === 'center' && idx === 4)) {
             btn.style.background = '#0056b3';
@@ -59,9 +59,9 @@ function selectVSRow(row) {
     if (statusEl) statusEl.innerText = "20";
     
     if (row === 'center') {
-        if (titleEl) titleEl.innerText = "VÒNG THI VƯỢT SÓNG: Ô CHỮ TRUNG TÂM";
+        if (titleEl) titleEl.innerText = "VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT: Ô CHỮ TRUNG TÂM";
     } else {
-        if (titleEl) titleEl.innerText = `VÒNG THI VƯỢT SÓNG: HÀNG NGANG ${row}`;
+        if (titleEl) titleEl.innerText = `VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT: HÀNG NGANG ${row}`;
     }
     const q = row === 'center' ? (document.getElementById('vs_q_center')?.value || gameData.vuotSong?.center?.q || "") : (document.getElementById(`vs_q_${row}`)?.value || gameData.vuotSong?.[`h${row}`]?.q || "");
     const a = row === 'center' ? (document.getElementById('vs_a_center')?.value || gameData.vuotSong?.center?.a || "") : (document.getElementById(`vs_a_${row}`)?.value || gameData.vuotSong?.[`h${row}`]?.a || "");
@@ -87,6 +87,40 @@ function selectVSRow(row) {
     }
     showToast(`Đã chọn Hàng ngang ${row}`);
 }
+
+function onClickVSShowRows() {
+    if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
+        gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "" };
+    }
+    for (let i = 1; i <= 4; i++) {
+        const qEl = document.getElementById(`vs_q_${i}`);
+        const aEl = document.getElementById(`vs_a_${i}`);
+        if (qEl || aEl) {
+            const qVal = qEl ? qEl.value : (gameData.vuotSong[`h${i}`]?.q || '');
+            let aVal = aEl ? aEl.value : (gameData.vuotSong[`h${i}`]?.a || '');
+            if (!aVal.trim() && qVal.trim()) aVal = qVal;
+            gameData.vuotSong[`h${i}`] = { q: qVal, a: aVal };
+        }
+    }
+    if (typeof saveAllData === 'function') {
+        saveAllData(false);
+    }
+
+    const payload = {
+        type: 'VUOT_SONG_SHOW_ROWS',
+        round: 'VUOT_SONG',
+        activeRound: 'VUOT_SONG',
+        vuotSong: gameData.vuotSong,
+        contestants: gameData.contestants,
+        timestamp: Date.now()
+    };
+    sendToProjector('VUOT_SONG_SHOW_ROWS', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+    showToast('Đã hiện hàng ngang Vượt Chướng Ngại Vật trên Projector');
+}
+window.onClickVSShowRows = onClickVSShowRows;
 
 function onClickVSFlipRow() {
     sendToProjector('VUOT_SONG_SELECT_ROW', { row: currentVSRow });
@@ -114,7 +148,7 @@ function onClickVSOpenKeywordLetters() {
     const totalLen = cleanKw.length;
     
     if (totalLen === 0) {
-        showToast('Chưa nhập Từ khóa / Đáp án vòng thi Vượt Sóng!');
+        showToast('Chưa nhập Từ khóa / Đáp án vòng thi Vượt Chướng Ngại Vật!');
         return;
     }
 
@@ -167,7 +201,7 @@ function onClickVSOpenAllAnswers() {
         vsRevealedKeyIndices.push(i);
     }
     sendToProjector('VUOT_SONG_OPEN_ALL_ANSWERS', { vuotSong: gameData.vuotSong });
-    showToast('Đã mở đáp án Vòng thi Vượt Sóng!');
+    showToast('Đã mở đáp án Vòng thi Vượt Chướng Ngại Vật!');
 }
 
 function onClickVSShowQuestion() {
@@ -198,7 +232,7 @@ function onClickVSShowQuestion() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
-    showToast('Đã hiển thị câu hỏi Vượt Sóng trên Projector & Player');
+    showToast('Đã hiển thị câu hỏi Vượt Chướng Ngại Vật trên Projector & Player');
 }
 
 function onClickVSStartTimer() {
@@ -237,7 +271,7 @@ function onClickVSStartTimer() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
-    showToast('Bắt đầu 20s Vượt Sóng trên Projector');
+    showToast('Bắt đầu 20s Vượt Chướng Ngại Vật trên Projector');
 }
 
 function onClickVSReturnToGrid() {
@@ -306,7 +340,7 @@ function onClickVSShowAnswers() {
         });
     }
     sendToProjector('VUOT_SONG_SHOW_CONTESTANT_ANSWERS', { contestants: contestants });
-    showToast('Hiển thị đáp án thí sinh Vượt Sóng trên Projector');
+    showToast('Hiển thị đáp án thí sinh Vượt Chướng Ngại Vật trên Projector');
 }
 
 function updateVSBuzzerLabels() {
@@ -513,7 +547,7 @@ function onClickVSDatLai() {
     }
 
     currentVSRow = null;
-    const buttons = document.querySelectorAll('#tab3-content .vs-row-btn');
+    const buttons = document.querySelectorAll('#tab2-content .vs-row-btn');
     buttons.forEach((btn, idx) => {
         btn.style.background = idx === 4 ? '#38bdf8' : '#80bfff';
         btn.style.color = idx === 4 ? '#fff' : '#002060';
@@ -525,18 +559,19 @@ function onClickVSDatLai() {
     if (qTextEl) qTextEl.innerText = "Nội dung câu hỏi...";
     if (aTextEl) aTextEl.innerText = "Đáp án...";
     
-    sendToProjector('VUOT_SONG_RESET', { round: 'VUOT_SONG', activeRound: 'VUOT_SONG', vsQuestionShown: false });
+    sendToProjector('VUOT_SONG_RESET', { round: 'VUOT_SONG', activeRound: 'VUOT_SONG', vsQuestionShown: false, vuotSong: gameData.vuotSong });
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction({
             type: 'VUOT_SONG_RESET',
             round: 'VUOT_SONG',
             activeRound: 'VUOT_SONG',
             vsQuestionShown: false,
+            vuotSong: gameData.vuotSong,
             timestamp: Date.now()
         });
     }
 
-    showToast('Đã đặt lại vòng Vượt Sóng');
+    showToast('Đã đặt lại vòng Vượt Chướng Ngại Vật');
 }
 
 function onClickVSScoreKeyword() {
@@ -564,7 +599,7 @@ function onClickVSScoreKeyword() {
         defaultTs = buzzedOnly[0].idx.toString();
     }
 
-    let msg = `🎯 CHẤM ĐIỂM ĐÁP ÁN VÒNG THI VƯỢT SÓNG\n`;
+    let msg = `🎯 CHẤM ĐIỂM ĐÁP ÁN VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT\n`;
     msg += `Thang điểm theo thời điểm trả lời: 50 - 40 - 30 - 20 - 10\n\n`;
     msg += `Danh sách thí sinh:\n`;
     buzzedList.forEach(b => {

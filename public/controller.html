@@ -2,12 +2,12 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Giao diện Điều khiển Trò chơi - Đường Đến Vinh Quang</title>
-    <script src="designer-runtime.js?v=20261124b"></script>
-    <script src="media-preloader.js?v=20261124b"></script>
+    <title>Giao diện Điều khiển Trò chơi - Đường Lên Đỉnh Olympia</title>
+    <script src="designer-runtime.js?v=20261124e"></script>
+    <script src="media-preloader.js?v=20261124e"></script>
     <!-- SheetJS for Excel Import/Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="controller.css?v=20261124b">
+    <link rel="stylesheet" href="controller.css?v=20261124e">
     <script>
         function switchTab(index) {
             const navItems = document.querySelectorAll('.nav-item');
@@ -664,8 +664,8 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                <span style="font-weight: bold;">* Từ khóa Vượt Sóng:</span>
-                <input type="text" id="vs_keyword" style="flex: 1; padding: 4px; border: 1px solid #ccc;" placeholder="Từ khóa chính của vòng thi Vượt Sóng" oninput="updateVuotSongState()">
+                <span style="font-weight: bold;">* Từ khóa Vượt Chướng Ngại Vật:</span>
+                <input type="text" id="vs_keyword" style="flex: 1; padding: 4px; border: 1px solid #ccc;" placeholder="Từ khóa chính của vòng thi Vượt Chướng Ngại Vật" oninput="updateVuotSongState()">
                 <span class="char-count" id="vs_keyword_count">0 kí tự</span>
             </div>
 
@@ -1008,9 +1008,8 @@
         </div>
     </div>
 
-    <!-- TAB 2: RA KHƠI (TĂNG TỐC) -->
+    <!-- TAB 2: VƯỢT CHƯỚNG NGẠI VẬT -->
     <div class="tab-content" id="tab2-content" style="padding: 15px; flex-direction: column; background: #f8fafc; overflow-y: auto; box-sizing: border-box;">
-        
         <!-- TOP TOOLBAR FOR TAB 2: SCOREBOARD THUMBNAIL CONTROL -->
         <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #cbd5e1; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1038,7 +1037,290 @@
                 </span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
-                ĐIỀU KHIỂN VÒNG THI RA KHƠI
+                ĐIỀU KHIỂN VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT GRID: CONTESTANTS (LEFT) & ROW SELECTOR (RIGHT) -->
+        <div style="display: flex; gap: 20px; justify-content: space-between; margin-bottom: 20px;">
+            <!-- LEFT: CONTESTANT CARDS -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; max-width: 650px; min-width: 0;">
+                <!-- TS 1 -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        <span id="ts1_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
+                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(1)">✏️</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                        <div id="vs_hdr_1" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
+                            <input type="text" id="ts1_name_vs" value="Thí sinh 1" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
+                            <input type="text" id="ts1_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(1)">Chuông TS1</button>
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(1)" title="Reset chuông TS1 nếu bấm nhầm">Reset</button>
+                            <button id="btn_vs_lock_1" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(1)" title="Khóa / Mở máy TS1 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
+                        </div>
+                        <div id="vs_ans_wrap_1" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
+                            <input type="text" id="ts1_ans_vs" placeholder=" " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
+                        </div>
+                    </div>
+                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(1, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
+                            <button onclick="adjustScore(1, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
+                            <button onclick="adjustScore(1, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
+                        </div>
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(1, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
+                            <button onclick="adjustScore(1, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TS 2 -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        <span id="ts2_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
+                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(2)">✏️</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                        <div id="vs_hdr_2" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
+                            <input type="text" id="ts2_name_vs" value="Thí sinh 2" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
+                            <input type="text" id="ts2_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(2)">Chuông TS2</button>
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(2)" title="Reset chuông TS2 nếu bấm nhầm">Reset</button>
+                            <button id="btn_vs_lock_2" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(2)" title="Khóa / Mở máy TS2 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
+                        </div>
+                        <div id="vs_ans_wrap_2" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
+                            <input type="text" id="ts2_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
+                        </div>
+                    </div>
+                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(2, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
+                            <button onclick="adjustScore(2, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
+                            <button onclick="adjustScore(2, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
+                        </div>
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(2, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
+                            <button onclick="adjustScore(2, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TS 3 -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        <span id="ts3_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
+                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(3)">✏️</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                        <div id="vs_hdr_3" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
+                            <input type="text" id="ts3_name_vs" value="Thí sinh 3" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
+                            <input type="text" id="ts3_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(3)">Chuông TS3</button>
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(3)" title="Reset chuông TS3 nếu bấm nhầm">Reset</button>
+                            <button id="btn_vs_lock_3" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(3)" title="Khóa / Mở máy TS3 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
+                        </div>
+                        <div id="vs_ans_wrap_3" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
+                            <input type="text" id="ts3_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
+                        </div>
+                    </div>
+                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(3, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
+                            <button onclick="adjustScore(3, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
+                            <button onclick="adjustScore(3, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
+                        </div>
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(3, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
+                            <button onclick="adjustScore(3, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TS 4 -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        <span id="ts4_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
+                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(4)">✏️</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                        <div id="vs_hdr_4" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
+                            <input type="text" id="ts4_name_vs" value="Thí sinh 4" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
+                            <input type="text" id="ts4_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(4)">Chuông TS4</button>
+                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(4)" title="Reset chuông TS4 nếu bấm nhầm">Reset</button>
+                            <button id="btn_vs_lock_4" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(4)" title="Khóa / Mở máy TS4 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
+                        </div>
+                        <div id="vs_ans_wrap_4" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
+                            <input type="text" id="ts4_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
+                        </div>
+                    </div>
+                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(4, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
+                            <button onclick="adjustScore(4, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
+                            <button onclick="adjustScore(4, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
+                        </div>
+                        <div style="display: flex; gap: 3px;">
+                            <button onclick="adjustScore(4, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
+                            <button onclick="adjustScore(4, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: ROW SELECTOR (STANDARDIZED WIDTH 250px LIKE XUAT PHAT) -->
+            <div style="width: 250px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
+                <div class="vs-row-btn luot-thi-btn active" onclick="selectVSRow(1)">
+                    <span>Hàng ngang số 1</span> <span class="badge">1</span>
+                </div>
+                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(2)">
+                    <span>Hàng ngang số 2</span> <span class="badge">2</span>
+                </div>
+                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(3)">
+                    <span>Hàng ngang số 3</span> <span class="badge">3</span>
+                </div>
+                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(4)">
+                    <span>Hàng ngang số 4</span> <span class="badge">4</span>
+                </div>
+                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow('center')">
+                    <span>GỢI Ý CUỐI CÙNG</span> <span class="badge">TT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM SECTION: PREVIEW & ACTION CONTROLS -->
+        <div style="display: flex; gap: 15px; align-items: flex-end; justify-content: space-between; margin-top: auto;">
+            <!-- LEFT SLIDE CONTROLS (STANDARDIZED WIDTH 140px LIKE XUAT PHAT) -->
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 140px; flex-shrink: 0;">
+                <!-- Panel Phát Video Intro -->
+                <div style="background: #ffffff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; display: flex; flex-direction: column; gap: 5px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #555;">Phát Video Intro</div>
+                    <button class="ctrl-btn-sm" onclick="playIntroVideo('intro_media_v3')" style="font-weight: bold;">Phát V3</button>
+                    <button class="ctrl-btn-sm" onclick="stopIntroVideo()" style="font-weight: bold;">Dừng video</button>
+                </div>
+                <button class="ctrl-btn-sm" onclick="onClickPhatAmThanh()" style="width: 100%;">Phát âm thanh</button>
+            </div>
+
+            <!-- CENTER & RIGHT CONTROLS -->
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+                <!-- BLUE PREVIEW / STATUS DISPLAY CARD (STANDARDIZED 140px HEIGHT) -->
+                <div style="display: flex; gap: 8px; height: 140px;">
+                    <div style="flex: 1; min-width: 0; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
+                            <span id="vs_preview_title">HÀNG NGANG 1</span>
+                        </div>
+                        <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc; overflow: hidden; text-overflow: ellipsis;" id="vs_preview_q_text">
+                            Nội dung câu hỏi hàng ngang 1...
+                        </div>
+                        <div style="font-size: 13px; font-weight: bold; color: #e2e8f0; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="vs_preview_a_text">
+                            Đáp án: ... | Từ khóa CNV: [Chưa mở]
+                        </div>
+                    </div>
+
+                    <div style="width: 140px; flex-shrink: 0; background: #5b9bd5; border-radius: 4px; padding: 10px; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                        <div id="vs_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">20</div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS ROW 1 -->
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <button class="ctrl-btn-action" onclick="onClickVSFlipRow()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Chọn ô chữ
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSOpenRowAnswer()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Mở đáp án HN
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSOpenKeywordLetters()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Mở ô chữ đáp án
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSShowQuestion()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Hiện câu hỏi
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSShowAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Hiện ĐA thí sinh
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSOpenAllAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                        Mở đáp án Vòng thi
+                    </button>
+                    <button class="ctrl-btn-action" onclick="onClickVSScoreKeyword()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Chấm điểm Đáp án vòng thi theo thời điểm: 50 - 40 - 30 - 20 - 10">
+                        Chấm ĐA vòng thi
+                    </button>
+                    <button class="ctrl-btn-action" onclick="adjustScoreAll(10)" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Cộng 10 điểm cho cả 4 thí sinh cùng lúc">
+                        Cộng 10đ cả 4 TS
+                    </button>
+                </div>
+
+                <!-- ACTION BUTTONS ROW 2 -->
+                <div style="display: flex; gap: 6px; justify-content: space-between; flex-wrap: wrap;">
+                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(3)" title="Bắt đầu Vòng Vượt Chướng Ngại Vật, phát nhạc 2_StartRound.mp3 &amp; Ẩn toàn bộ Graphic trên Projector/Graphic">
+                        Vượt chướng ngại vật
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="onClickVSShowRows()" title="Hiện hàng ngang Vượt Chướng Ngại Vật và phát nhạc 2_RowShow.mp3">
+                        Hiện hàng ngang
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="onClickVSStartTimer()">
+                        Bắt đầu 20s
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="onClickVSReturnToGrid()" title="Quay lại giao diện các hàng ngang Vượt Chướng Ngại Vật">
+                        Quay lại hàng ngang
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="sendToProjector('STOP_SOUND'); showToast('Đã dừng nhạc')">
+                        Dừng nhạc
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="resetVSContestantBell('ALL')" title="Reset nút chuông cho tất cả thí sinh">
+                        Reset chuông
+                    </button>
+                    <button class="ctrl-btn-bottom" id="btn_vs_unlock_all" onclick="unlockAllVSContestants()" title="Mở lại máy cho tất cả thí sinh khi phần thi kết thúc">
+                        Mở máy TS
+                    </button>
+                    <button class="ctrl-btn-bottom" onclick="onClickVSDatLai()">
+                        Đặt lại
+                    </button>
+                    <button class="ctrl-btn-bottom btn-tong-ket" onclick="onClickTongKet()">
+                        Tổng kết
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: TĂNG TỐC (RA KHƠI) -->
+    <div class="tab-content" id="tab3-content" style="padding: 15px; flex-direction: column; background: #f8fafc; overflow-y: auto; box-sizing: border-box;">
+        
+        <!-- TOP TOOLBAR FOR TAB 3: SCOREBOARD THUMBNAIL CONTROL -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #cbd5e1; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-weight: bold; color: #475569; display: flex; align-items: center; gap: 5px;">
+                    THUMBNAIL BẢNG ĐIỂM:
+                </span>
+                <div style="display: flex; gap: 4px; align-items: center; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                    <span style="font-size: 11px; font-weight: bold; color: #334155;">Tất cả:</span>
+                    <button class="btn" onclick="toggleScoreboardThumbnail(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Hiển thị thumbnail đè bảng điểm tất cả thí sinh">
+                        Hiện tất cả
+                    </button>
+                    <button class="btn" onclick="toggleScoreboardThumbnail(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Ẩn thumbnail đè bảng điểm tất cả thí sinh">
+                        Ẩn tất cả
+                    </button>
+                </div>
+                <div style="display: flex; gap: 5px; align-items: center; flex-wrap: wrap;">
+                    <span style="font-size: 11px; font-weight: bold; color: #334155;">Chỉ định:</span>
+                    <button class="btn sb_thumb_btn_ts1" onclick="toggleScoreboardThumbnail(undefined, 1)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 1">TS1: Ẩn</button>
+                    <button class="btn sb_thumb_btn_ts2" onclick="toggleScoreboardThumbnail(undefined, 2)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 2">TS2: Ẩn</button>
+                    <button class="btn sb_thumb_btn_ts3" onclick="toggleScoreboardThumbnail(undefined, 3)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 3">TS3: Ẩn</button>
+                    <button class="btn sb_thumb_btn_ts4" onclick="toggleScoreboardThumbnail(undefined, 4)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 4">TS4: Ẩn</button>
+                </div>
+                <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
+                    Trạng thái: Ẩn tất cả
+                </span>
+            </div>
+            <div style="font-size: 12px; font-weight: bold; color: #475569;">
+                ĐIỀU KHIỂN VÒNG THI TĂNG TỐC
             </div>
         </div>
 
@@ -1198,11 +1480,11 @@
                 <div style="display: flex; gap: 8px; height: 140px;">
                     <div style="flex: 1; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
-                            <span id="rk_preview_title">VÒNG THI RA KHƠI: CÂU HỎI THỨ 1</span>
+                            <span id="rk_preview_title">VÒNG THI TĂNG TỐC: CÂU HỎI THỨ 1</span>
                             <span>CÂU HỎI: <span id="rk_preview_q_num">1</span>/4</span>
                         </div>
                         <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc;" id="rk_preview_q_text">
-                            Nội dung câu hỏi Ra Khơi số 1...
+                            Nội dung câu hỏi Tăng Tốc số 1...
                         </div>
                         <div style="font-size: 13px; font-weight: bold; color: #e2e8f0; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 4px;" id="rk_preview_a_text">
                             Đáp án: ...
@@ -1227,7 +1509,7 @@
 
                 <!-- ROW 2 CONTROLS: ACTION BUTTONS ROW -->
                 <div style="display: flex; gap: 6px; justify-content: space-between;">
-                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(2); onClickRKTangToc()">Ra khơi</button>
+                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(2); onClickRKTangToc()">Tăng tốc</button>
                     <button class="ctrl-btn-bottom" onclick="onClickBatDauDoanBang()">Đoạn băng</button>
                     <button class="ctrl-btn-bottom" onclick="onClickRKTinhThoiGian()">30s</button>
                     <button class="ctrl-btn-bottom" onclick="onClickRKDapAnTS()">Đáp án TS</button>
@@ -1235,285 +1517,6 @@
                     <button class="ctrl-btn-bottom" onclick="onClickDiemTS()">Điểm TS</button>
                     <button class="ctrl-btn-bottom" onclick="onClickRKDatLai()">Đặt lại</button>
                     <button class="ctrl-btn-bottom btn-tong-ket" onclick="onClickTongKet()">Tổng kết</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 3: VƯỢT SÓNG -->
-    <div class="tab-content" id="tab3-content" style="padding: 15px; flex-direction: column; background: #f8fafc; overflow-y: auto; box-sizing: border-box;">
-        <!-- TOP TOOLBAR FOR TAB 3: SCOREBOARD THUMBNAIL CONTROL -->
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 4px; border: 1px solid #cbd5e1; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex-shrink: 0; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <span style="font-weight: bold; color: #475569; display: flex; align-items: center; gap: 5px;">
-                    THUMBNAIL BẢNG ĐIỂM:
-                </span>
-                <div style="display: flex; gap: 4px; align-items: center; background: #f1f5f9; padding: 3px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
-                    <span style="font-size: 11px; font-weight: bold; color: #334155;">Tất cả:</span>
-                    <button class="btn" onclick="toggleScoreboardThumbnail(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Hiển thị thumbnail đè bảng điểm tất cả thí sinh">
-                        Hiện tất cả
-                    </button>
-                    <button class="btn" onclick="toggleScoreboardThumbnail(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Ẩn thumbnail đè bảng điểm tất cả thí sinh">
-                        Ẩn tất cả
-                    </button>
-                </div>
-                <div style="display: flex; gap: 5px; align-items: center; flex-wrap: wrap;">
-                    <span style="font-size: 11px; font-weight: bold; color: #334155;">Chỉ định:</span>
-                    <button class="btn sb_thumb_btn_ts1" onclick="toggleScoreboardThumbnail(undefined, 1)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 1">TS1: Ẩn</button>
-                    <button class="btn sb_thumb_btn_ts2" onclick="toggleScoreboardThumbnail(undefined, 2)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 2">TS2: Ẩn</button>
-                    <button class="btn sb_thumb_btn_ts3" onclick="toggleScoreboardThumbnail(undefined, 3)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 3">TS3: Ẩn</button>
-                    <button class="btn sb_thumb_btn_ts4" onclick="toggleScoreboardThumbnail(undefined, 4)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;" title="Bật/Tắt thumbnail Thí sinh 4">TS4: Ẩn</button>
-                </div>
-                <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
-                    Trạng thái: Ẩn tất cả
-                </span>
-            </div>
-            <div style="font-size: 12px; font-weight: bold; color: #475569;">
-                ĐIỀU KHIỂN VÒNG THI VƯỢT SÓNG
-            </div>
-        </div>
-
-        <!-- MAIN CONTENT GRID: CONTESTANTS (LEFT) & ROW SELECTOR (RIGHT) -->
-        <div style="display: flex; gap: 20px; justify-content: space-between; margin-bottom: 20px;">
-            <!-- LEFT: CONTESTANT CARDS -->
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; max-width: 650px; min-width: 0;">
-                <!-- TS 1 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                        <span id="ts1_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
-                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(1)">✏️</span>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div id="vs_hdr_1" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
-                            <input type="text" id="ts1_name_vs" value="Thí sinh 1" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts1_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(1)">Chuông TS1</button>
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(1)" title="Reset chuông TS1 nếu bấm nhầm">Reset</button>
-                            <button id="btn_vs_lock_1" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(1)" title="Khóa / Mở máy TS1 trong vòng Vượt Sóng">Khóa máy</button>
-                        </div>
-                        <div id="vs_ans_wrap_1" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
-                            <input type="text" id="ts1_ans_vs" placeholder=" " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
-                        </div>
-                    </div>
-                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(1, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
-                            <button onclick="adjustScore(1, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
-                            <button onclick="adjustScore(1, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
-                        </div>
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(1, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
-                            <button onclick="adjustScore(1, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TS 2 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                        <span id="ts2_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
-                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(2)">✏️</span>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div id="vs_hdr_2" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
-                            <input type="text" id="ts2_name_vs" value="Thí sinh 2" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts2_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(2)">Chuông TS2</button>
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(2)" title="Reset chuông TS2 nếu bấm nhầm">Reset</button>
-                            <button id="btn_vs_lock_2" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(2)" title="Khóa / Mở máy TS2 trong vòng Vượt Sóng">Khóa máy</button>
-                        </div>
-                        <div id="vs_ans_wrap_2" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
-                            <input type="text" id="ts2_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
-                        </div>
-                    </div>
-                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(2, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
-                            <button onclick="adjustScore(2, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
-                            <button onclick="adjustScore(2, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
-                        </div>
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(2, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
-                            <button onclick="adjustScore(2, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TS 3 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                        <span id="ts3_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
-                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(3)">✏️</span>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div id="vs_hdr_3" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
-                            <input type="text" id="ts3_name_vs" value="Thí sinh 3" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts3_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(3)">Chuông TS3</button>
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(3)" title="Reset chuông TS3 nếu bấm nhầm">Reset</button>
-                            <button id="btn_vs_lock_3" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(3)" title="Khóa / Mở máy TS3 trong vòng Vượt Sóng">Khóa máy</button>
-                        </div>
-                        <div id="vs_ans_wrap_3" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
-                            <input type="text" id="ts3_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
-                        </div>
-                    </div>
-                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(3, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
-                            <button onclick="adjustScore(3, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
-                            <button onclick="adjustScore(3, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
-                        </div>
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(3, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
-                            <button onclick="adjustScore(3, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TS 4 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
-                        <span id="ts4_score_disp_vs" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
-                        <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(4)">✏️</span>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div id="vs_hdr_4" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
-                            <input type="text" id="ts4_name_vs" value="Thí sinh 4" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts4_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(4)">Chuông TS4</button>
-                            <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(4)" title="Reset chuông TS4 nếu bấm nhầm">Reset</button>
-                            <button id="btn_vs_lock_4" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(4)" title="Khóa / Mở máy TS4 trong vòng Vượt Sóng">Khóa máy</button>
-                        </div>
-                        <div id="vs_ans_wrap_4" style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center; min-width: 0;">
-                            <input type="text" id="ts4_ans_vs" placeholder="  " style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none; min-width: 0;">
-                        </div>
-                    </div>
-                    <!-- Score Adding Grid for VS: 50, 40, 30, 20, 10 -->
-                    <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0;">
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(4, 50)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 50 điểm (Đáp án vòng thi - Thời điểm 1: Trước/trong khi mở Hàng ngang 1)">+50</button>
-                            <button onclick="adjustScore(4, 40)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 40 điểm (Đáp án vòng thi - Thời điểm 2: Sau Hàng ngang 1)">+40</button>
-                            <button onclick="adjustScore(4, 30)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 30 điểm (Đáp án vòng thi - Thời điểm 3: Sau Hàng ngang 2)">+30</button>
-                        </div>
-                        <div style="display: flex; gap: 3px;">
-                            <button onclick="adjustScore(4, 20)" style="width: 32px; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 20 điểm (Đáp án vòng thi - Thời điểm 4: Sau Hàng ngang 3)">+20</button>
-                            <button onclick="adjustScore(4, 10)" style="flex: 1; height: 26px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-weight: bold; font-size: 10px; cursor: pointer;" title="Cộng 10 điểm (Đáp án vòng thi thời điểm 5 / Đúng Hàng Ngang)">+10</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT: ROW SELECTOR (STANDARDIZED WIDTH 250px LIKE XUAT PHAT) -->
-            <div style="width: 250px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
-                <div class="vs-row-btn luot-thi-btn active" onclick="selectVSRow(1)">
-                    <span>Hàng ngang số 1</span> <span class="badge">1</span>
-                </div>
-                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(2)">
-                    <span>Hàng ngang số 2</span> <span class="badge">2</span>
-                </div>
-                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(3)">
-                    <span>Hàng ngang số 3</span> <span class="badge">3</span>
-                </div>
-                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow(4)">
-                    <span>Hàng ngang số 4</span> <span class="badge">4</span>
-                </div>
-                <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow('center')">
-                    <span>GỢI Ý CUỐI CÙNG</span> <span class="badge">TT</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- BOTTOM SECTION: PREVIEW & ACTION CONTROLS -->
-        <div style="display: flex; gap: 15px; align-items: flex-end; justify-content: space-between; margin-top: auto;">
-            <!-- LEFT SLIDE CONTROLS (STANDARDIZED WIDTH 140px LIKE XUAT PHAT) -->
-            <div style="display: flex; flex-direction: column; gap: 8px; width: 140px; flex-shrink: 0;">
-                <!-- Panel Phát Video Intro -->
-                <div style="background: #ffffff; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; display: flex; flex-direction: column; gap: 5px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #555;">Phát Video Intro</div>
-                    <button class="ctrl-btn-sm" onclick="playIntroVideo('intro_media_v3')" style="font-weight: bold;">Phát V3</button>
-                    <button class="ctrl-btn-sm" onclick="stopIntroVideo()" style="font-weight: bold;">Dừng video</button>
-                </div>
-                <button class="ctrl-btn-sm" onclick="onClickPhatAmThanh()" style="width: 100%;">Phát âm thanh</button>
-            </div>
-
-            <!-- CENTER & RIGHT CONTROLS -->
-            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
-                <!-- BLUE PREVIEW / STATUS DISPLAY CARD (STANDARDIZED 140px HEIGHT) -->
-                <div style="display: flex; gap: 8px; height: 140px;">
-                    <div style="flex: 1; min-width: 0; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
-                            <span id="vs_preview_title">HÀNG NGANG 1</span>
-                        </div>
-                        <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc; overflow: hidden; text-overflow: ellipsis;" id="vs_preview_q_text">
-                            Nội dung câu hỏi hàng ngang 1...
-                        </div>
-                        <div style="font-size: 13px; font-weight: bold; color: #e2e8f0; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="vs_preview_a_text">
-                            Đáp án: ... | Từ khóa CNV: [Chưa mở]
-                        </div>
-                    </div>
-
-                    <div style="width: 140px; flex-shrink: 0; background: #5b9bd5; border-radius: 4px; padding: 10px; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                        <div id="vs_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">20</div>
-                    </div>
-                </div>
-
-                <!-- ACTION BUTTONS ROW 1 -->
-                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <button class="ctrl-btn-action" onclick="onClickVSFlipRow()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Chọn ô chữ
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSOpenRowAnswer()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Mở đáp án HN
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSOpenKeywordLetters()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Mở ô chữ đáp án
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSShowQuestion()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Hiện câu hỏi
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSShowAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Hiện ĐA thí sinh
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSOpenAllAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Mở đáp án Vòng thi
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSScoreKeyword()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Chấm điểm Đáp án vòng thi theo thời điểm: 50 - 40 - 30 - 20 - 10">
-                        Chấm ĐA vòng thi
-                    </button>
-                    <button class="ctrl-btn-action" onclick="adjustScoreAll(10)" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Cộng 10 điểm cho cả 4 thí sinh cùng lúc">
-                        Cộng 10đ cả 4 TS
-                    </button>
-                </div>
-
-                <!-- ACTION BUTTONS ROW 2 -->
-                <div style="display: flex; gap: 6px; justify-content: space-between; flex-wrap: wrap;">
-                    <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(3)" title="Bắt đầu Vòng Vượt Sóng, phát nhạc showRound.mp3 & Ẩn toàn bộ Graphic trên Projector/Graphic">
-                        Vượt sóng
-                    </button>
-                    <button class="ctrl-btn-bottom" onclick="onClickVSStartTimer()">
-                        Bắt đầu 20s
-                    </button>
-                    <button class="ctrl-btn-bottom" onclick="onClickVSReturnToGrid()" title="Quay lại giao diện các hàng ngang Vượt Sóng">
-                        Quay lại hàng ngang
-                    </button>
-                    <button class="ctrl-btn-bottom" onclick="showToast('Đã dừng nhạc')">
-                        Dừng nhạc
-                    </button>
-                    <button class="ctrl-btn-bottom" onclick="resetVSContestantBell('ALL')" title="Reset nút chuông cho tất cả thí sinh">
-                        Reset chuông
-                    </button>
-                    <button class="ctrl-btn-bottom" id="btn_vs_unlock_all" onclick="unlockAllVSContestants()" title="Mở lại máy cho tất cả thí sinh khi phần thi kết thúc">
-                        Mở máy TS
-                    </button>
-                    <button class="ctrl-btn-bottom" onclick="onClickVSDatLai()">
-                        Đặt lại
-                    </button>
-                    <button class="ctrl-btn-bottom btn-tong-ket" onclick="onClickTongKet()">
-                        Tổng kết
-                    </button>
                 </div>
             </div>
         </div>
@@ -1907,8 +1910,8 @@
                         <tr style="background: #f1f5f9; color: #334155; border-bottom: 1.5px solid #cbd5e1;">
                             <th style="padding: 6px 6px; text-align: left; font-weight: bold;">Thí sinh</th>
                             <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Xuất Phát">XP</th>
-                            <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Ra Khơi">RK</th>
-                            <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Vượt Sóng">VS</th>
+                            <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Vượt Chướng Ngại Vật">VCNV</th>
+                            <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Tăng Tốc">TT</th>
                             <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Vinh Quang">VQ</th>
                             <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 44px;" title="Câu Hỏi Phụ">CHP</th>
                             <th style="padding: 6px 6px; text-align: center; font-weight: bold; width: 52px; color: #dc2626;">Tổng</th>
@@ -1918,8 +1921,8 @@
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td id="chp_rs_name_1" style="padding: 6px 6px; font-weight: bold; color: #0f172a; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">THÍ SINH 1</td>
                             <td id="chp_rs_1_xp" onclick="promptRoundScore(1, 'XP')" title="Nhấp để sửa điểm Xuất Phát" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_1_rk" onclick="promptRoundScore(1, 'RK')" title="Nhấp để sửa điểm Ra Khơi" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_1_vs" onclick="promptRoundScore(1, 'VS')" title="Nhấp để sửa điểm Vượt Sóng" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_1_vs" onclick="promptRoundScore(1, 'VS')" title="Nhấp để sửa điểm Vượt Chướng Ngại Vật" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_1_rk" onclick="promptRoundScore(1, 'RK')" title="Nhấp để sửa điểm Tăng Tốc" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_1_vq" onclick="promptRoundScore(1, 'VQ')" title="Nhấp để sửa điểm Vinh Quang" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_1_chp" onclick="promptRoundScore(1, 'CHP')" title="Nhấp để sửa điểm Câu Hỏi Phụ" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_1_total" style="padding: 6px 6px; text-align: center; font-weight: bold; color: #dc2626; background: #fef2f2; font-variant-numeric: tabular-nums;">0</td>
@@ -1927,8 +1930,8 @@
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td id="chp_rs_name_2" style="padding: 6px 6px; font-weight: bold; color: #0f172a; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">THÍ SINH 2</td>
                             <td id="chp_rs_2_xp" onclick="promptRoundScore(2, 'XP')" title="Nhấp để sửa điểm Xuất Phát" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_2_rk" onclick="promptRoundScore(2, 'RK')" title="Nhấp để sửa điểm Ra Khơi" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_2_vs" onclick="promptRoundScore(2, 'VS')" title="Nhấp để sửa điểm Vượt Sóng" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_2_vs" onclick="promptRoundScore(2, 'VS')" title="Nhấp để sửa điểm Vượt Chướng Ngại Vật" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_2_rk" onclick="promptRoundScore(2, 'RK')" title="Nhấp để sửa điểm Tăng Tốc" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_2_vq" onclick="promptRoundScore(2, 'VQ')" title="Nhấp để sửa điểm Vinh Quang" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_2_chp" onclick="promptRoundScore(2, 'CHP')" title="Nhấp để sửa điểm Câu Hỏi Phụ" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_2_total" style="padding: 6px 6px; text-align: center; font-weight: bold; color: #dc2626; background: #fef2f2; font-variant-numeric: tabular-nums;">0</td>
@@ -1936,8 +1939,8 @@
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td id="chp_rs_name_3" style="padding: 6px 6px; font-weight: bold; color: #0f172a; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">THÍ SINH 3</td>
                             <td id="chp_rs_3_xp" onclick="promptRoundScore(3, 'XP')" title="Nhấp để sửa điểm Xuất Phát" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_3_rk" onclick="promptRoundScore(3, 'RK')" title="Nhấp để sửa điểm Ra Khơi" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_3_vs" onclick="promptRoundScore(3, 'VS')" title="Nhấp để sửa điểm Vượt Sóng" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_3_vs" onclick="promptRoundScore(3, 'VS')" title="Nhấp để sửa điểm Vượt Chướng Ngại Vật" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_3_rk" onclick="promptRoundScore(3, 'RK')" title="Nhấp để sửa điểm Tăng Tốc" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_3_vq" onclick="promptRoundScore(3, 'VQ')" title="Nhấp để sửa điểm Vinh Quang" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_3_chp" onclick="promptRoundScore(3, 'CHP')" title="Nhấp để sửa điểm Câu Hỏi Phụ" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_3_total" style="padding: 6px 6px; text-align: center; font-weight: bold; color: #dc2626; background: #fef2f2; font-variant-numeric: tabular-nums;">0</td>
@@ -1945,8 +1948,8 @@
                         <tr>
                             <td id="chp_rs_name_4" style="padding: 6px 6px; font-weight: bold; color: #0f172a; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">THÍ SINH 4</td>
                             <td id="chp_rs_4_xp" onclick="promptRoundScore(4, 'XP')" title="Nhấp để sửa điểm Xuất Phát" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_4_rk" onclick="promptRoundScore(4, 'RK')" title="Nhấp để sửa điểm Ra Khơi" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
-                            <td id="chp_rs_4_vs" onclick="promptRoundScore(4, 'VS')" title="Nhấp để sửa điểm Vượt Sóng" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_4_vs" onclick="promptRoundScore(4, 'VS')" title="Nhấp để sửa điểm Vượt Chướng Ngại Vật" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
+                            <td id="chp_rs_4_rk" onclick="promptRoundScore(4, 'RK')" title="Nhấp để sửa điểm Tăng Tốc" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_4_vq" onclick="promptRoundScore(4, 'VQ')" title="Nhấp để sửa điểm Vinh Quang" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_4_chp" onclick="promptRoundScore(4, 'CHP')" title="Nhấp để sửa điểm Câu Hỏi Phụ" style="padding: 6px 4px; text-align: center; font-weight: bold; color: #334155; cursor: pointer; font-variant-numeric: tabular-nums;">0</td>
                             <td id="chp_rs_4_total" style="padding: 6px 6px; text-align: center; font-weight: bold; color: #dc2626; background: #fef2f2; font-variant-numeric: tabular-nums;">0</td>
@@ -2098,13 +2101,13 @@
 
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124d"></script>
-    <script src="setup.js?v=20261124d"></script>
-    <script src="setup_extra.js?v=20261124d"></script>
-    <script src="controllerR1.js?v=20261124d"></script>
-    <script src="controllerR2.js?v=20261124d"></script>
-    <script src="controllerR3.js?v=20261124d"></script>
-    <script src="controllerR4.js?v=20261124d"></script>
-    <script src="controllerRExtra.js?v=20261124d"></script>
+    <script src="supabase-sync.js?v=20261124e"></script>
+    <script src="setup.js?v=20261124e"></script>
+    <script src="setup_extra.js?v=20261124e"></script>
+    <script src="controllerR1.js?v=20261124e"></script>
+    <script src="controllerR2.js?v=20261124e"></script>
+    <script src="controllerR3.js?v=20261124e"></script>
+    <script src="controllerR4.js?v=20261124e"></script>
+    <script src="controllerRExtra.js?v=20261124e"></script>
 </body>
 </html>

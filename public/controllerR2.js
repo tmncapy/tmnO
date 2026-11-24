@@ -40,7 +40,7 @@ function selectRKQuestion(num) {
     const aInput = document.getElementById(`rk_a_${num}`);
     const qItem = (gameData.raKhoi && gameData.raKhoi[num - 1]) || {};
     const mediaUrl = (mInput && mInput.value.trim()) || qItem.m || qItem.mediaUrl || '';
-    const qText = (qInput && qInput.value.trim()) || qItem.q || `Nội dung câu hỏi Ra Khơi số ${num}`;
+    const qText = (qInput && qInput.value.trim()) || qItem.q || `Nội dung câu hỏi Tăng Tốc số ${num}`;
     const aText = (aInput && aInput.value.trim()) || qItem.a || '';
 
     const payload = {
@@ -72,11 +72,11 @@ function updateTab2Preview() {
     const qInput = document.getElementById(`rk_q_${currentRKQuestion}`);
     const aInput = document.getElementById(`rk_a_${currentRKQuestion}`);
     const qItem = (gameData.raKhoi && gameData.raKhoi[currentRKQuestion - 1]) || {};
-    const qText = (qInput && qInput.value.trim()) || qItem.q || `Nội dung câu hỏi Ra Khơi số ${currentRKQuestion}...`;
+    const qText = (qInput && qInput.value.trim()) || qItem.q || `Nội dung câu hỏi Tăng Tốc số ${currentRKQuestion}...`;
     const aText = (aInput && aInput.value.trim()) || qItem.a || '...';
 
     const titleEl = document.getElementById('rk_preview_title');
-    if (titleEl) titleEl.innerText = `VÒNG THI RA KHƠI: CÂU HỎI THỨ ${currentRKQuestion}`;
+    if (titleEl) titleEl.innerText = `VÒNG THI TĂNG TỐC: CÂU HỎI THỨ ${currentRKQuestion}`;
     const selectBarTitle = document.getElementById('rk_select_bar_title');
     if (selectBarTitle) selectBarTitle.innerText = `Câu hỏi thứ ${currentRKQuestion}`;
     const qTextEl = document.getElementById('rk_preview_q_text');
@@ -152,7 +152,7 @@ function onClickDiemTS() {
 
 function onClickRKTangToc() {
     sendToProjector('RA_KHOI_INTRO');
-    showToast('Hiển thị Tăng Tốc / Ra Khơi trên Projector');
+    showToast('Hiển thị Tăng Tốc trên Projector');
 }
 
 function onClickRKTinhThoiGian() {
@@ -180,7 +180,7 @@ function onClickRKTinhThoiGian() {
         type: 'RA_KHOI_START_TIMER',
         questionIndex: currentRKQuestion,
         duration: 30,
-        questionText: qItem.q || `Nội dung câu hỏi Ra Khơi số ${currentRKQuestion}`,
+        questionText: qItem.q || `Nội dung câu hỏi Tăng Tốc số ${currentRKQuestion}`,
         answerText: qItem.a || '',
         answer: qItem.a || '',
         timestamp: Date.now()
@@ -243,7 +243,7 @@ function onClickRKDapAnTS() {
     }
     const statusEl = document.getElementById('rk_preview_status');
     if (statusEl) statusEl.innerText = rkTimeLeft;
-    showToast('Hiển thị Scene Đáp án Thí Sinh Ra Khơi trên Projector');
+    showToast('Hiển thị Scene Đáp án Thí Sinh Tăng Tốc trên Projector');
 }
 
 function onClickRKHienDapAn() {
@@ -295,7 +295,7 @@ function onClickRKDatLai() {
         });
     }
 
-    showToast('Đã đặt lại vòng Ra Khơi');
+    showToast('Đã đặt lại vòng Tăng Tốc');
 }
 
 function onClickRKAutoScore() {
@@ -319,7 +319,7 @@ function onClickRKAutoScore() {
     // Sort by response time ascending (fastest first)
     list.sort((a, b) => a.timeNum - b.timeNum);
 
-    let promptMsg = `⚡ CHẤM ĐIỂM RA KHƠI (Thang điểm: 40 - 30 - 20 - 10)\n`;
+    let promptMsg = `⚡ CHẤM ĐIỂM TĂNG TỐC (Thang điểm: 40 - 30 - 20 - 10)\n`;
     if (correctAns) {
         promptMsg += `Đáp án đúng: "${correctAns}"\n\n`;
     }
@@ -352,7 +352,7 @@ function onClickRKAutoScore() {
     });
 
     if (typeof showToast === 'function') {
-        showToast(`Đã cộng điểm Ra Khơi: ${results.join(', ')}`);
+        showToast(`Đã cộng điểm Tăng Tốc: ${results.join(', ')}`);
     }
 }
 window.onClickRKAutoScore = onClickRKAutoScore;

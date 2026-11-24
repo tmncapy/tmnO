@@ -90,8 +90,8 @@ try {
 function onSwitchTabRound(index) {
     let roundName = 'HE_THONG';
     if (index === 1) roundName = 'XUAT_PHAT';
-    else if (index === 2) roundName = 'RA_KHOI';
-    else if (index === 3) roundName = 'VUOT_SONG';
+    else if (index === 2) roundName = 'VUOT_SONG';
+    else if (index === 3) roundName = 'RA_KHOI';
     else if (index === 4) roundName = 'VINH_QUANG';
     else if (index === 5) roundName = 'CAU_HOI_PHU';
 
@@ -115,13 +115,13 @@ function onSwitchTabRound(index) {
         if (typeof clearXPBuzzerUI === 'function') clearXPBuzzerUI();
         if (typeof updateTab1Preview === 'function') updateTab1Preview();
     } else if (index === 2) {
-        if (typeof setRKQuestionUI === 'function') {
-            setRKQuestionUI(typeof currentRKQuestion !== 'undefined' ? currentRKQuestion : 1);
-        }
-    } else if (index === 3) {
         window.vsRoundStartTime = Date.now();
         try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
         if (typeof updateVuotSongState === 'function') updateVuotSongState();
+    } else if (index === 3) {
+        if (typeof setRKQuestionUI === 'function') {
+            setRKQuestionUI(typeof currentRKQuestion !== 'undefined' ? currentRKQuestion : 1);
+        }
     }
 
     // Chỉ gửi tín hiệu chuyển vòng cho máy Thí sinh (Player) & Máy MC (Host), không động đến Projector
@@ -174,11 +174,11 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
     } else if (roundIndex === 2) {
         roundName = 'RA_KHOI';
         viewNum = 2;
-        label = 'Ra Khơi';
+        label = 'Tăng Tốc';
     } else if (roundIndex === 3) {
         roundName = 'VUOT_SONG';
         viewNum = 3;
-        label = 'Vượt Sóng';
+        label = 'Vượt Chướng Ngại Vật';
         window.vsRoundStartTime = Date.now();
         try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
     } else if (roundIndex === 4) {
@@ -219,6 +219,7 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         vsQuestionShown: false,
         vqQuestionShown: false,
         roundStartTime: roundIndex === 3 ? window.vsRoundStartTime : undefined,
+        vuotSong: roundIndex === 3 ? gameData.vuotSong : undefined,
         timestamp: Date.now()
     };
     sendToProjector('START_ROUND_CLEAN', payload);
@@ -241,8 +242,8 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         sendToProjector('RA_KHOI_RESET', { round: 'RA_KHOI', activeRound: 'RA_KHOI' });
     } else if (roundIndex === 3) {
         if (typeof updateVuotSongState === 'function') updateVuotSongState();
-        sendToProjector('VUOT_SONG_RESET', { round: 'VUOT_SONG', activeRound: 'VUOT_SONG', vsQuestionShown: false, roundStartTime: window.vsRoundStartTime });
-        sendToProjector('PLAY_SOUND', { sound: 'sounds/showRound.mp3' });
+        sendToProjector('VUOT_SONG_RESET', { round: 'VUOT_SONG', activeRound: 'VUOT_SONG', vsQuestionShown: false, roundStartTime: window.vsRoundStartTime, vuotSong: gameData.vuotSong, keepRoundStartSound: true });
+        sendToProjector('PLAY_SOUND', { sound: '/SFX/2_StartRound.mp3' });
     } else if (roundIndex === 4) {
         sendToProjector('VINH_QUANG_RESET', { round: 'VINH_QUANG', activeRound: 'VINH_QUANG', vqQuestionShown: false });
         sendToProjector('VINH_QUANG_HIDE_PACK', { round: 'VINH_QUANG', vqQuestionShown: false, silent: true });
@@ -1398,7 +1399,7 @@ function exportExcelFile() {
     const wsCHP = XLSX.utils.aoa_to_sheet(chpRows);
     XLSX.utils.book_append_sheet(wb, wsCHP, "CÂU HỎI PHỤ");
 
-    XLSX.writeFile(wb, "Bo_De_Duong_Den_Vinh_Quang.xlsx");
+    XLSX.writeFile(wb, "Bo_De_Duong_Len_Dinh_Olympia.xlsx");
     showToast("Đã xuất file Excel thành công!");
 }
 

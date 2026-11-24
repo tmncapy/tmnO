@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Màn Hình Chiếu - Đường Đến Vinh Quang</title>
+    <title>Màn Hình Chiếu - Đường Lên Đỉnh Olympia</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="designer-runtime.js?v=20261124a"></script>
+    <script src="designer-runtime.js?v=20261124e"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124a"></script>
+    <script src="supabase-sync.js?v=20261124e"></script>
     <style>
         @font-face {
             font-family: 'UTM Avo';
@@ -107,7 +107,7 @@
             height: 59.04px;
             z-index: 20;
             opacity: 0;
-            transition: opacity 0.45s ease;
+            transition: none;
             pointer-events: none;
             overflow: hidden;
         }
@@ -135,7 +135,7 @@
             gap: 10px;
             padding: 0 26px;
             opacity: 0;
-            transition: opacity 0.45s ease;
+            transition: none;
             pointer-events: none;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.65);
@@ -184,7 +184,7 @@
             justify-content: flex-start;
             padding: 16px 36px;
             opacity: 0;
-            transition: opacity 0.35s ease;
+            transition: none;
             pointer-events: none;
         }
 
@@ -199,6 +199,58 @@
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
             word-break: break-word;
             overflow: hidden;
+        }
+
+        /* Round 2: Vượt Chướng Ngại Vật (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, instant Appear - no fade) */
+        #view-file-2 {
+            background: #13ff08;
+        }
+
+        #vs_bg_img {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 10;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #vs_rows_container {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 20;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .vs-row-cell {
+            position: absolute;
+            width: 62.8128px;
+            height: 62.8128px;
+            display: block;
+            object-fit: contain;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #vs_count_img {
+            position: absolute;
+            left: 1653.4512px;
+            top: 236.5776px;
+            width: 62.2512px;
+            height: 317.8224px;
+            object-fit: fill;
+            z-index: 30;
+            display: none;
+            transition: none;
+            pointer-events: none;
         }
 
         /* Intro Media Overlay */
@@ -336,6 +388,13 @@
             </div>
         </div>
 
+        <!-- Round 2: Vượt Chướng Ngại Vật -->
+        <div id="view-file-2" class="projector-scene">
+            <img id="vs_bg_img" src="/Media/2.bg.png" alt="Vượt Chướng Ngại Vật Background">
+            <div id="vs_rows_container"></div>
+            <img id="vs_count_img" src="/Media/2.count.png" alt="Số hàng ngang">
+        </div>
+
         <!-- Intro Video / Image Overlay -->
         <div id="intro_video_overlay">
             <video id="intro_video_player" playsinline preload="auto"></video>
@@ -395,7 +454,7 @@
             }
         } catch (e) {}
 
-        // Preload Round 1 SFX
+        // Preload Round 1 & Round 2 SFX
         const SFX_PATHS = {
             startRound: '/SFX/1_StartRound.mp3',
             pStart: '/SFX/1_PStart.mp3',
@@ -407,8 +466,17 @@
             loop4: '/SFX/1_thinking_O10_loop_4.mp3',
             finish: '/SFX/1_Finish.mp3',
             right: '/SFX/1_Right.mp3',
-            wrong: '/SFX/1_Wrong.mp3'
+            wrong: '/SFX/1_Wrong.mp3',
+            r2StartRound: '/SFX/2_StartRound.mp3',
+            r2RowShow: '/SFX/2_RowShow.mp3',
+            r2RowChose: '/SFX/2_RowChose.mp3'
         };
+
+        // Preload Round 2 cell images for instant swap (Appear, no flicker)
+        ['/Media/2.bg.png', '/Media/2.count.png', '/Media/h1.png', '/Media/h2.png'].forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
 
         const sfxBank = {};
         Object.keys(SFX_PATHS).forEach(key => {
@@ -497,6 +565,12 @@
             activeThinkingLoop = 0;
         }
 
+        function stopAllRound2Audio() {
+            stopAudioItem(sfxBank.r2StartRound);
+            stopAudioItem(sfxBank.r2RowShow);
+            stopAudioItem(sfxBank.r2RowChose);
+        }
+
         function stopAllRound1Audio() {
             stopThinkingLoops();
             stopAudioItem(sfxBank.startRound);
@@ -507,6 +581,119 @@
             stopAudioItem(sfxBank.right);
             stopAudioItem(sfxBank.wrong);
             pendingBlockedAudio = null;
+        }
+
+        function switchProjectorScene(sceneNum) {
+            document.querySelectorAll('.projector-scene').forEach(el => {
+                el.classList.remove('active');
+            });
+            const target = document.getElementById(`view-file-${sceneNum}`);
+            if (target) {
+                target.classList.add('active');
+            }
+        }
+
+        // Round 2 (Vượt Chướng Ngại Vật) Exact PPT Coordinates (1" = 144px on 1920x1080)
+        const PPT_PPI = 144;
+        const R2_COL_X_IN = [
+            6.5277, 7.0151, 7.5025, 7.9899, 8.4773,
+            8.9647, 9.4521, 9.9395, 10.4269, 10.9143
+        ];
+        const R2_ROW_Y_IN = [1.6429, 2.2292, 2.8156, 3.4020];
+        let r2VuotSongData = null;
+        let isRound2RowsShown = false;
+        let r2SelectedRow = null;
+
+        function syncRound2Data(vsData) {
+            if (!vsData || typeof vsData !== 'object' || Array.isArray(vsData)) return;
+            r2VuotSongData = vsData;
+        }
+
+        function getRound2CellSrc(rowNum) {
+            return r2SelectedRow === rowNum ? '/Media/h2.png' : '/Media/h1.png';
+        }
+
+        function updateRound2RowGraphics() {
+            const container = document.getElementById('vs_rows_container');
+            if (!container) return;
+            const cells = container.querySelectorAll('.vs-row-cell');
+            if (!cells.length) {
+                renderRound2Rows(r2VuotSongData);
+                return;
+            }
+            cells.forEach(img => {
+                const rowNum = parseInt(img.dataset.row, 10);
+                const targetSrc = getRound2CellSrc(rowNum);
+                if (img.getAttribute('src') !== targetSrc) {
+                    img.setAttribute('src', targetSrc);
+                }
+            });
+        }
+
+        function renderRound2Rows(vsData) {
+            const container = document.getElementById('vs_rows_container');
+            if (!container) return;
+            const src = vsData || r2VuotSongData || {};
+
+            const rowCounts = [];
+            let hasAnyAnswer = false;
+            for (let r = 1; r <= 4; r++) {
+                const rawAns = (src[`h${r}`]?.a || '').toString().replace(/\s+/g, '');
+                const len = Math.min(rawAns.length, 10);
+                if (len > 0) hasAnyAnswer = true;
+                rowCounts.push(len);
+            }
+
+            const frag = document.createDocumentFragment();
+            for (let rowIdx = 0; rowIdx < 4; rowIdx++) {
+                const rowNum = rowIdx + 1;
+                const count = hasAnyAnswer ? rowCounts[rowIdx] : 10;
+                if (count <= 0) continue;
+                const startCol = 10 - count;
+                const topPx = R2_ROW_Y_IN[rowIdx] * PPT_PPI;
+                const cellSrc = getRound2CellSrc(rowNum);
+                for (let colIdx = startCol; colIdx < 10; colIdx++) {
+                    const img = document.createElement('img');
+                    img.className = 'vs-row-cell';
+                    img.dataset.row = String(rowNum);
+                    img.src = cellSrc;
+                    img.alt = `Ô ${rowIdx * 10 + colIdx + 1}`;
+                    img.style.left = `${(R2_COL_X_IN[colIdx] * PPT_PPI).toFixed(4)}px`;
+                    img.style.top = `${topPx.toFixed(4)}px`;
+                    frag.appendChild(img);
+                }
+            }
+            container.innerHTML = '';
+            container.appendChild(frag);
+        }
+
+        function showRound2Rows(data) {
+            if (data && data.vuotSong) {
+                syncRound2Data(data.vuotSong);
+            }
+            isRound2RowsShown = true;
+            renderRound2Rows(r2VuotSongData);
+
+            const bgImg = document.getElementById('vs_bg_img');
+            const rowsEl = document.getElementById('vs_rows_container');
+            const countImg = document.getElementById('vs_count_img');
+            if (bgImg) bgImg.style.display = 'block';
+            if (rowsEl) rowsEl.style.display = 'block';
+            if (countImg) countImg.style.display = 'block';
+        }
+
+        function hideAllRound2Graphics() {
+            isRound2RowsShown = false;
+            r2SelectedRow = null;
+            const bgImg = document.getElementById('vs_bg_img');
+            const rowsEl = document.getElementById('vs_rows_container');
+            const countImg = document.getElementById('vs_count_img');
+            if (bgImg) bgImg.style.display = 'none';
+            if (rowsEl) {
+                rowsEl.style.display = 'none';
+                rowsEl.innerHTML = '';
+            }
+            if (countImg) countImg.style.display = 'none';
         }
 
         // Round 1 State
@@ -715,7 +902,7 @@
                 } catch (e) {}
             }
 
-            // After 2.5s, fade in contestant names + scores; in Turns 1..4 show active turn highlight, in Turn 5 wait until fastest buzz
+            // After 2.5s, appear contestant names + scores; in Turns 1..4 show active turn highlight, in Turn 5 wait until fastest buzz
             metaRevealTimer = setTimeout(() => {
                 if (!isRound1GraphicsShown) return;
                 isRound1MetaRevealed = true;
@@ -883,13 +1070,76 @@
                     const summaryEl = document.getElementById('summary_overlay');
                     if (summaryEl) summaryEl.style.display = 'none';
                     if (data.contestants) syncContestantsData(data.contestants);
+                    if (data.vuotSong) syncRound2Data(data.vuotSong);
+
                     if (data.roundIndex === 1 || data.round === 'XUAT_PHAT' || data.activeRound === 'XUAT_PHAT') {
+                        switchProjectorScene(1);
                         activeTurnIndex = 0;
                         xpFastestWinner = 0;
                         xpBuzzerOpen = false;
                         hideAllRound1Graphics();
+                        hideAllRound2Graphics();
                         stopAllRound1Audio();
+                        stopAllRound2Audio();
                         playSfx('startRound', { loop: false });
+                    } else if (data.roundIndex === 3 || data.round === 'VUOT_SONG' || data.activeRound === 'VUOT_SONG') {
+                        switchProjectorScene(2);
+                        activeTurnIndex = 0;
+                        xpFastestWinner = 0;
+                        xpBuzzerOpen = false;
+                        hideAllRound1Graphics();
+                        hideAllRound2Graphics();
+                        stopAllRound1Audio();
+                        stopAllRound2Audio();
+                        playSfx('r2StartRound', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'VUOT_SONG_SHOW_ROWS': {
+                    handleIntroStop();
+                    const summaryEl = document.getElementById('summary_overlay');
+                    if (summaryEl) summaryEl.style.display = 'none';
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    switchProjectorScene(2);
+                    stopAllRound1Audio();
+                    stopAudioItem(sfxBank.r2StartRound);
+                    showRound2Rows(data);
+                    playSfx('r2RowShow', { loop: false });
+                    break;
+                }
+
+                case 'VUOT_SONG_SELECT_ROW': {
+                    const incomingVS = data.vuotSong || (data.gameData && data.gameData.vuotSong);
+                    if (incomingVS) syncRound2Data(incomingVS);
+                    const rowNum = parseInt(data.row, 10);
+                    r2SelectedRow = (rowNum >= 1 && rowNum <= 4) ? rowNum : null;
+                    if (isRound2RowsShown) {
+                        updateRound2RowGraphics();
+                    }
+                    if (rowNum >= 1 && rowNum <= 4) {
+                        stopAudioItem(sfxBank.r2RowShow);
+                        playSfx('r2RowChose', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'VUOT_SONG_SYNC_GRID': {
+                    if (data.vuotSong) {
+                        syncRound2Data(data.vuotSong);
+                        if (isRound2RowsShown) {
+                            renderRound2Rows(r2VuotSongData);
+                        }
+                    }
+                    break;
+                }
+
+                case 'VUOT_SONG_RESET': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    if (data.vuotSong) syncRound2Data(data.vuotSong);
+                    hideAllRound2Graphics();
+                    if (!data.keepRoundStartSound) {
+                        stopAllRound2Audio();
                     }
                     break;
                 }
@@ -1046,6 +1296,7 @@
                 case 'XUAT_PHAT_STOP_SOUND':
                 case 'STOP_SOUND': {
                     stopAllRound1Audio();
+                    stopAllRound2Audio();
                     break;
                 }
 
@@ -1055,6 +1306,18 @@
                 case 'FULL_STATE_SYNC': {
                     if (data.contestants) syncContestantsData(data.contestants);
                     else if (data.gameData && data.gameData.contestants) syncContestantsData(data.gameData.contestants);
+
+                    const incomingVS = data.vuotSong || (data.gameData && data.gameData.vuotSong);
+                    if (incomingVS) {
+                        syncRound2Data(incomingVS);
+                    }
+                    if (data.vuotSongRow !== undefined) {
+                        const rowNum = parseInt(data.vuotSongRow, 10);
+                        r2SelectedRow = (rowNum >= 1 && rowNum <= 4) ? rowNum : null;
+                    }
+                    if (isRound2RowsShown && (incomingVS || data.vuotSongRow !== undefined)) {
+                        renderRound2Rows(r2VuotSongData);
+                    }
                     break;
                 }
 
@@ -1086,8 +1349,11 @@
 
                 case 'RESET_ALL_DATA': {
                     activeTurnIndex = 0;
+                    switchProjectorScene(1);
                     hideAllRound1Graphics();
+                    hideAllRound2Graphics();
                     stopAllRound1Audio();
+                    stopAllRound2Audio();
                     r1Contestants = [
                         { name: 'Thí sinh 1', score: 0 },
                         { name: 'Thí sinh 2', score: 0 },
@@ -1130,6 +1396,10 @@
                 try {
                     const parsed = JSON.parse(event.newValue);
                     if (parsed && parsed.contestants) syncContestantsData(parsed.contestants);
+                    if (parsed && parsed.vuotSong) {
+                        syncRound2Data(parsed.vuotSong);
+                        if (isRound2RowsShown) renderRound2Rows(r2VuotSongData);
+                    }
                 } catch (e) {}
             }
         });
@@ -1147,6 +1417,7 @@
                 if (rawGameData) {
                     const parsed = JSON.parse(rawGameData);
                     if (parsed && parsed.contestants) syncContestantsData(parsed.contestants);
+                    if (parsed && parsed.vuotSong) syncRound2Data(parsed.vuotSong);
                 }
             } catch (e) {}
 
@@ -1158,6 +1429,16 @@
                         if (!state) return;
                         if (state.contestants) syncContestantsData(state.contestants);
                         else if (state.gameData && state.gameData.contestants) syncContestantsData(state.gameData.contestants);
+
+                        if (state.vuotSongRow !== undefined) {
+                            const rowNum = parseInt(state.vuotSongRow, 10);
+                            r2SelectedRow = (rowNum >= 1 && rowNum <= 4) ? rowNum : null;
+                        }
+                        const vs = state.vuotSong || (state.gameData && state.gameData.vuotSong);
+                        if (vs) {
+                            syncRound2Data(vs);
+                            if (isRound2RowsShown) renderRound2Rows(r2VuotSongData);
+                        }
                     })
                     .catch(() => {});
             }

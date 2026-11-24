@@ -1,4 +1,4 @@
-// media-preloader.js - High-Performance Media Asset Cache & Preloader for Đường Đến Vinh Quang
+// media-preloader.js - High-Performance Media Asset Cache & Preloader for Đường Lên Đỉnh Olympia
 (function() {
     'use strict';
 

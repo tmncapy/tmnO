@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Màn Hình MC (Host) - Đường Đến Vinh Quang</title>
+    <title>Màn Hình MC (Host) - Đường Lên Đỉnh Olympia</title>
     <script src="designer-runtime.js"></script>
     <style>
         * {
@@ -656,63 +656,24 @@
             </div>
         </div>
 
-        <!-- SCENE 2: V2: RA KHƠI -->
+        <!-- SCENE 2: V2: VƯỢT CHƯỚNG NGẠI VẬT -->
         <div id="host_scene_2" class="scene-view">
             <div class="host-card">
                 <div class="card-header">
-                    <span>🌊 VÒNG 2: RA KHƠI - CÂU HỎI HIỆN TẠI</span>
-                    <span id="h2_q_num_badge" style="background: #2563eb; color: #fff; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 800;">CÂU HỎI SỐ 1</span>
-                </div>
-
-                <!-- Uniform Sub-Info Bar -->
-                <div class="sub-info-bar">
-                    <div class="sub-info-item">Vòng thi: <strong>Ra Khơi (Tăng Tốc)</strong></div>
-                    <div class="sub-info-item">Thời gian làm bài: <span class="time-badge-box">30s</span></div>
-                    <div class="sub-info-item">Thời gian đếm ngược: <span class="time-badge-box" id="h2_time_box">--s</span></div>
-                </div>
-
-                <!-- Standard Question Box -->
-                <div class="question-box" id="h2_q_text">
-                    Đang chờ câu hỏi Ra Khơi...
-                </div>
-
-                <!-- Standard Prominent Full-Width Answer Display Box -->
-                <div class="answer-display-box">
-                    <span class="ans-label">ĐÁP ÁN CHÍNH XÁC:</span>
-                    <span class="ans-text" id="h2_a_text">--</span>
-                </div>
-
-                <div id="h2_media_preview" style="font-size: 13px; color: #94a3b8;"></div>
-            </div>
-
-            <div class="host-card">
-                <div class="card-header">
-                    <span>📱 BẢNG ĐÁP ÁN THÍ SINH NỘP (RA KHƠI)</span>
-                </div>
-                <div class="contestants-grid" id="h2_contestants_grid">
-                    <!-- TS 1..4 Cards -->
-                </div>
-            </div>
-        </div>
-
-        <!-- SCENE 3: V3: VƯỢT SÓNG -->
-        <div id="host_scene_3" class="scene-view">
-            <div class="host-card">
-                <div class="card-header">
-                    <span>🧩 VÒNG 3: VƯỢT SÓNG - CÂU HỎI HIỆN TẠI</span>
+                    <span>🧩 VÒNG 2: VƯỢT CHƯỚNG NGẠI VẬT - CÂU HỎI HIỆN TẠI</span>
                     <span id="h3_row_badge" style="background: #059669; color: #fff; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 800;">HÀNG NGANG 1</span>
                 </div>
 
                 <!-- Uniform Sub-Info Bar -->
                 <div class="sub-info-bar">
-                    <div class="sub-info-item">Vòng thi: <strong>Vượt Sóng (VCNV)</strong></div>
-                    <div class="sub-info-item">Thời gian suy nghĩ: <span class="time-badge-box">15s</span></div>
+                    <div class="sub-info-item">Vòng thi: <strong>Vượt Chướng Ngại Vật</strong></div>
+                    <div class="sub-info-item">Thời gian suy nghĩ: <span class="time-badge-box">20s</span></div>
                     <div class="sub-info-item">Thời gian đếm ngược: <span class="time-badge-box" id="h3_time_box">--s</span></div>
                 </div>
 
                 <!-- Standard Question Box -->
                 <div class="question-box" id="h3_q_text">
-                    Đang chờ chọn hàng ngang Vượt Sóng...
+                    Đang chờ chọn hàng ngang Vượt Chướng Ngại Vật...
                 </div>
 
                 <!-- Standard Prominent Full-Width Answer Display Box -->
@@ -748,16 +709,55 @@
 
                 <!-- All Rows reference for MC -->
                 <div style="background: #0f172a; padding: 14px; border-radius: 10px; border: 1px solid #334155;">
-                    <div style="font-size: 12px; font-weight: bold; color: #cbd5e1; margin-bottom: 8px;">🔑 TẤT CẢ HÀNG NGANG & TỪ KHÓA (DÀNH CHO MC):</div>
+                    <div style="font-size: 12px; font-weight: bold; color: #cbd5e1; margin-bottom: 8px;">🔑 TẤT CẢ HÀNG NGANG &amp; TỪ KHÓA (DÀNH CHO MC):</div>
                     <div id="h3_all_rows_list" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;"></div>
                 </div>
             </div>
 
             <div class="host-card">
                 <div class="card-header">
-                    <span>📱 BẢNG ĐÁP ÁN THÍ SINH NỘP & BẤM CHUÔNG (VƯỢT SÓNG)</span>
+                    <span>📱 BẢNG ĐÁP ÁN THÍ SINH NỘP &amp; BẤM CHUÔNG (VƯỢT CHƯỚNG NGẠI VẬT)</span>
                 </div>
                 <div class="contestants-grid" id="h3_contestants_grid">
+                    <!-- TS 1..4 Cards -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENE 3: V3: TĂNG TỐC -->
+        <div id="host_scene_3" class="scene-view">
+            <div class="host-card">
+                <div class="card-header">
+                    <span>🌊 VÒNG 3: TĂNG TỐC - CÂU HỎI HIỆN TẠI</span>
+                    <span id="h2_q_num_badge" style="background: #2563eb; color: #fff; padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 800;">CÂU HỎI SỐ 1</span>
+                </div>
+
+                <!-- Uniform Sub-Info Bar -->
+                <div class="sub-info-bar">
+                    <div class="sub-info-item">Vòng thi: <strong>Tăng Tốc</strong></div>
+                    <div class="sub-info-item">Thời gian làm bài: <span class="time-badge-box">30s</span></div>
+                    <div class="sub-info-item">Thời gian đếm ngược: <span class="time-badge-box" id="h2_time_box">--s</span></div>
+                </div>
+
+                <!-- Standard Question Box -->
+                <div class="question-box" id="h2_q_text">
+                    Đang chờ câu hỏi Tăng Tốc...
+                </div>
+
+                <!-- Standard Prominent Full-Width Answer Display Box -->
+                <div class="answer-display-box">
+                    <span class="ans-label">ĐÁP ÁN CHÍNH XÁC:</span>
+                    <span class="ans-text" id="h2_a_text">--</span>
+                </div>
+
+                <div id="h2_media_preview" style="font-size: 13px; color: #94a3b8;"></div>
+            </div>
+
+            <div class="host-card">
+                <div class="card-header">
+                    <span>📱 BẢNG ĐÁP ÁN THÍ SINH NỘP (TĂNG TỐC)</span>
+                </div>
+                <div class="contestants-grid" id="h2_contestants_grid">
                     <!-- TS 1..4 Cards -->
                 </div>
             </div>
@@ -850,7 +850,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js"></script>
-    <script src="host.js?v=20261124d"></script>
+    <script src="supabase-sync.js?v=20261124e"></script>
+    <script src="host.js?v=20261124e"></script>
 </body>
 </html>

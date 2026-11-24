@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Màn Hình Thí Sinh - Đường Đến Vinh Quang</title>
+    <title>Màn Hình Thí Sinh - Đường Lên Đỉnh Olympia</title>
     <script src="designer-runtime.js"></script>
     <script src="media-preloader.js"></script>
     <style>
@@ -673,11 +673,11 @@
             </div>
         </div>
 
-        <!-- SCENE 2: RA KHƠI -->
+        <!-- SCENE 2: TĂNG TỐC (RA KHƠI) -->
         <div class="scene-container" id="scene-2">
             <div class="scene-header">
-                <div class="section-label">Ra Khơi</div>
-                <div class="scene-title">VÒNG THI RA KHƠI</div>
+                <div class="section-label">Tăng Tốc</div>
+                <div class="scene-title">VÒNG THI TĂNG TỐC</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
@@ -695,7 +695,7 @@
 
             <div class="scene-main">
                 <div class="question-area">
-                    <div class="row-label" id="s2_row_label">Câu hỏi Ra Khơi</div>
+                    <div class="row-label" id="s2_row_label">Câu hỏi Tăng Tốc</div>
                     <div class="black-box" id="s2_q_text" style="height: 240px;"></div>
                 </div>
 
@@ -710,20 +710,20 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px;">
-                        <button class="btn-bell" id="s2_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="submitPlayerAnswer('RA_KHOI')">GỬI ĐÁP ÁN RA KHƠI</button>
+                        <button class="btn-bell" id="s2_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="submitPlayerAnswer('RA_KHOI')">GỬI ĐÁP ÁN TĂNG TỐC</button>
                     </div>
                     <div class="bell-feedback" id="s2_bell_feedback" style="display: none; margin-top: 6px;">
-                        ✅ ĐÃ GỬI ĐÁP ÁN RA KHƠI!
+                        ✅ ĐÃ GỬI ĐÁP ÁN TĂNG TỐC!
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SCENE 3: VƯỢT SÓNG -->
+        <!-- SCENE 3: VƯỢT CHƯỚNG NGẠI VẬT -->
         <div class="scene-container" id="scene-3">
             <div class="scene-header">
-                <div class="section-label">Vượt Sóng</div>
-                <div class="scene-title">VÒNG THI VƯỢT SÓNG</div>
+                <div class="section-label">Vượt Chướng Ngại Vật</div>
+                <div class="scene-title">VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
@@ -1474,7 +1474,7 @@
                     }
                     if (data.questionIndex !== undefined) {
                         const rLabel = document.getElementById('s2_row_label');
-                        if (rLabel) rLabel.innerText = `Câu hỏi Ra khơi số ${data.questionIndex}`;
+                        if (rLabel) rLabel.innerText = `Câu hỏi Tăng Tốc số ${data.questionIndex}`;
                     }
                     if (data.duration) {
                         startSceneTimer(2, data.duration);
@@ -2307,6 +2307,6 @@
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js"></script>
+    <script src="supabase-sync.js?v=20261124e"></script>
 </body>
 </html>

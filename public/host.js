@@ -318,6 +318,14 @@ function processHostAction(data) {
         else if (data.type.startsWith('VUOT_SONG_')) switchHostScene(2);
         else if (data.type.startsWith('RA_KHOI_')) switchHostScene(3);
         else if (data.type.startsWith('VINH_QUANG_')) switchHostScene(4);
+        else if (data.type === 'SWITCH_ROUND_PLAYER_MC' || data.type === 'START_ROUND_CLEAN') {
+            const r = String(data.round || data.activeRound || '').toUpperCase();
+            if (r === 'XUAT_PHAT') switchHostScene(1);
+            else if (r === 'VUOT_SONG') switchHostScene(2);
+            else if (r === 'RA_KHOI') switchHostScene(3);
+            else if (r === 'VINH_QUANG') switchHostScene(4);
+            else if (r === 'CAU_HOI_PHU' || r === 'CHP') switchHostScene(5);
+        }
     }
 
     if (data.type === 'XUAT_PHAT_SELECT_CHUNG') {
@@ -481,7 +489,7 @@ function renderHostScene2() {
             if (matched) qItem = matched;
         }
         if (qItem) {
-            if (!qText || qText === 'Đang chờ câu hỏi Ra Khơi...' || qText.includes('🔒') || qText.includes('Nội dung câu hỏi')) {
+            if (!qText || qText === 'Đang chờ câu hỏi Ra Khơi...' || qText === 'Đang chờ câu hỏi Tăng Tốc...' || qText.includes('🔒') || qText.includes('Nội dung câu hỏi')) {
                 qText = qItem.q || qItem.question || qText;
             }
             if (!ansVal || ansVal === '--' || ansVal.includes('🔒') || ansVal === 'Đáp án') {
@@ -490,7 +498,7 @@ function renderHostScene2() {
         }
     }
 
-    if (textEl) textEl.innerText = qText || 'Đang chờ câu hỏi Ra Khơi...';
+    if (textEl) textEl.innerText = qText || 'Đang chờ câu hỏi Tăng Tốc...';
     let cleanAns2 = ansVal ? ansVal.replace(/^ĐÁP ÁN:\s*/i, '').trim() : '';
     if (ansEl) ansEl.innerText = cleanAns2 || '--';
     if (badge) badge.innerText = `CÂU HỎI SỐ ${qIndex}`;
@@ -511,7 +519,7 @@ function renderHostScene3() {
     if (gData && gData.vuotSong) {
         const vsData = gData.vuotSong;
         if (rowVal === 'center') {
-            if ((!qText || qText === 'Đang chờ chọn hàng ngang Vượt Sóng...' || qText.includes('🔒')) && vsData.center) {
+            if ((!qText || qText === 'Đang chờ chọn hàng ngang Vượt Sóng...' || qText === 'Đang chờ chọn hàng ngang Vượt Chướng Ngại Vật...' || qText.includes('🔒')) && vsData.center) {
                 qText = vsData.center.q || vsData.center.question || qText;
             }
             if ((!ansVal || ansVal === '--' || ansVal.includes('🔒') || ansVal === 'Đáp án') && vsData.center) {
@@ -520,7 +528,7 @@ function renderHostScene3() {
         } else {
             const hKey = `h${rowVal}`;
             if (vsData[hKey]) {
-                if (!qText || qText === 'Đang chờ chọn hàng ngang Vượt Sóng...' || qText.includes('🔒')) {
+                if (!qText || qText === 'Đang chờ chọn hàng ngang Vượt Sóng...' || qText === 'Đang chờ chọn hàng ngang Vượt Chướng Ngại Vật...' || qText.includes('🔒')) {
                     qText = vsData[hKey].q || vsData[hKey].question || qText;
                 }
                 if (!ansVal || ansVal === '--' || ansVal.includes('🔒') || ansVal === 'Đáp án') {
@@ -530,7 +538,7 @@ function renderHostScene3() {
         }
     }
 
-    if (textEl) textEl.innerText = qText || 'Đang chờ chọn hàng ngang Vượt Sóng...';
+    if (textEl) textEl.innerText = qText || 'Đang chờ chọn hàng ngang Vượt Chướng Ngại Vật...';
     let cleanAns3 = ansVal ? ansVal.replace(/^ĐÁP ÁN:\s*/i, '').trim() : '';
     if (ansEl) ansEl.innerText = cleanAns3 || '--';
     if (badge) badge.innerText = `HÀNG NGANG SỐ ${rowVal === 'center' ? 'TRUNG TÂM' : rowVal}`;
