@@ -3,7 +3,7 @@ let gameData = {
     xuatPhat: {}, // Turn 1..8 -> [ { q: "", a: "" }, ... 10 items ]
     raKhoi: [
         { q: "", a: "", m: "./cau1.mp4", am: "" },
-        { q: "", a: "", m: "./cau2.mp4", am: "" },
+        { q: "", a: "", m: "./cau2.mp4", am: "", },
         { q: "", a: "", m: "./cau3.mp4", am: "" },
         { q: "", a: "", m: "./cau4.mp4", am: "" }
     ],
@@ -13,12 +13,15 @@ let gameData = {
         h3: { q: "", a: "" },
         h4: { q: "", a: "" },
         center: { q: "", a: "" },
-        keyword: ""
+        keyword: "",
+        hintImage: ""
     },
     vinhQuang: {
-        10: [],
-        20: [],
-        30: []
+        1: [],
+        2: [],
+        3: [],
+        4: [],
+        5: []
     },
     cauHoiPhu: [
         { q: "", a: "" },
@@ -496,16 +499,16 @@ function updateVuotSongState() {
     }, 200);
 }
 
-// Vinh Quang 3 packs (10, 20, 30 point tiers x 12 questions each)
+// Vinh Quang 5 packs (Gói 1..5 x 6 questions each: 3x20Đ and 3x30Đ)
 function initVinhQuangData() {
     if (!gameData.vinhQuang || typeof gameData.vinhQuang !== 'object') {
-        gameData.vinhQuang = { 10: [], 20: [], 30: [] };
+        gameData.vinhQuang = { 1: [], 2: [], 3: [], 4: [], 5: [] };
     }
-    for (let pt of [10, 20, 30]) {
+    for (let pt of [1, 2, 3, 4, 5]) {
         if (!gameData.vinhQuang[pt] || !Array.isArray(gameData.vinhQuang[pt])) {
             gameData.vinhQuang[pt] = [];
         }
-        while (gameData.vinhQuang[pt].length < 12) {
+        while (gameData.vinhQuang[pt].length < 6) {
             gameData.vinhQuang[pt].push({ m: '', q: '', a: '' });
         }
     }
@@ -519,12 +522,10 @@ function switchVinhQuangPack(pack) {
 function renderVinhQuangPackUI(pack) {
     initVinhQuangData();
     
-    // Sync radio buttons in Tab 0 and Tab 4
     document.querySelectorAll('input[name="vq_pack"], input[name="tab0_vq_pack"]').forEach(radio => {
         radio.checked = (parseInt(radio.value) === pack);
     });
 
-    // Render Contestants
     const vqContestants = document.getElementById('vq_contestants');
     if (vqContestants) {
         vqContestants.innerHTML = '';
@@ -558,44 +559,51 @@ function renderVinhQuangPackUI(pack) {
         if (!container) return;
         container.innerHTML = '';
 
-        let color = '#0056b3';
-        if (pack === 20) color = '#d97706';
-        if (pack === 30) color = '#dc2626';
-
-        // Header row for input columns
         const headerRow = document.createElement('div');
         headerRow.style.display = 'grid';
-        headerRow.style.gridTemplateColumns = '130px 1.5fr 3fr 1.5fr';
+        headerRow.style.gridTemplateColumns = '140px 1fr 1fr';
         headerRow.style.gap = '10px';
-        headerRow.style.fontWeight = 'bold';
+        headerRow.style.fontWeight = 'normal';
+        headerRow.style.fontStyle = 'italic';
         headerRow.style.color = '#333';
-        headerRow.style.marginBottom = '8px';
+        headerRow.style.marginBottom = '6px';
         headerRow.style.paddingBottom = '4px';
-        headerRow.style.borderBottom = '2px solid #cbd5e1';
         headerRow.innerHTML = `
-            <span>GÓI ${pack} ĐIỂM</span>
-            <span>MÔN HỌC</span>
-            <span>NỘI DUNG CÂU HỎI</span>
-            <span>ĐÁP ÁN</span>
+            <span></span>
+            <span style="text-align: left;">Câu hỏi</span>
+            <span style="text-align: left;">Đáp án</span>
         `;
         container.appendChild(headerRow);
 
         const questions = gameData.vinhQuang[pack] || [];
 
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 6; i++) {
+            if (i === 3) {
+                const hr = document.createElement('hr');
+                hr.style.margin = '10px 0';
+                hr.style.border = '1px solid #cbd5e1';
+                container.appendChild(hr);
+            }
             const item = questions[i] || { m: '', q: '', a: '' };
+            const labelText = i < 3 ? `Câu 20Đ - ${i + 1}` : `Câu 30Đ - ${i - 2}`;
             const row = document.createElement('div');
-            row.className = 'vq-q-row';
+            row.style.display = 'grid';
+            row.style.gridTemplateColumns = '140px 1fr 1fr';
+            row.style.gap = '10px';
+            row.style.alignItems = 'center';
+            row.style.marginBottom = '8px';
             row.innerHTML = `
-                <span style="font-weight: bold; color: ${color}; width: 130px;">Câu ${i + 1}</span>
-                <div>
-                    <input type="text" value="${escapeHtml(item.m || '')}" placeholder="Môn học (Category...)" oninput="updateVinhQuangItem(${pack}, ${i}, 'm', this.value)">
+                <span style="font-weight: bold; color: #1e293b;">${labelText}</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <input type="text" value="${escapeHtml(item.q || '')}" placeholder="Nội dung ${labelText}" oninput="updateVinhQuangItem(${pack}, ${i}, 'q', this.value)" style="padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <button type="button" class="btn" style="font-size: 11px; padding: 3px 8px;" onclick="triggerFilePicker('vq_m_${pack}_${i}', 'image/*,video/*')">Chọn ảnh hoặc video</button>
+                        <span id="vq_m_${pack}_${i}_lbl" style="font-size: 11px; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${item.m ? item.m.split('/').pop() : '...'}</span>
+                        <input type="hidden" id="vq_m_${pack}_${i}" value="${escapeHtml(item.m || '')}" onchange="updateVinhQuangItem(${pack}, ${i}, 'm', this.value)">
+                    </div>
                 </div>
                 <div>
-                    <input type="text" value="${escapeHtml(item.q || '')}" placeholder="Nội dung câu ${pack}đ - ${i + 1}" oninput="updateVinhQuangItem(${pack}, ${i}, 'q', this.value)">
-                </div>
-                <div>
-                    <input type="text" value="${escapeHtml(item.a || '')}" placeholder="Đáp án câu ${pack}đ - ${i + 1}" oninput="updateVinhQuangItem(${pack}, ${i}, 'a', this.value)">
+                    <input type="text" value="${escapeHtml(item.a || '')}" placeholder="Đáp án ${labelText}" oninput="updateVinhQuangItem(${pack}, ${i}, 'a', this.value)" style="padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100%;">
                 </div>
             `;
             container.appendChild(row);

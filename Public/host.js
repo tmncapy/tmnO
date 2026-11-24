@@ -315,8 +315,8 @@ function processHostAction(data) {
     // Auto round tab switching
     if (hostAutoSync && data.type) {
         if (data.type.startsWith('XUAT_PHAT_')) switchHostScene(1);
-        else if (data.type.startsWith('RA_KHOI_')) switchHostScene(2);
-        else if (data.type.startsWith('VUOT_SONG_')) switchHostScene(3);
+        else if (data.type.startsWith('VUOT_SONG_')) switchHostScene(2);
+        else if (data.type.startsWith('RA_KHOI_')) switchHostScene(3);
         else if (data.type.startsWith('VINH_QUANG_')) switchHostScene(4);
     }
 

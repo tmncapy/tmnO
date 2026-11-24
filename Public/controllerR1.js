@@ -35,6 +35,9 @@ function changeXuatPhatDe(val) {
 
 function selectLuotThi(turnIndex) {
     currentXuatPhatTurn = Math.min(4, Math.max(1, turnIndex));
+    if (turnIndex >= 1 && turnIndex <= 4) {
+        currentXuatPhatDe = turnIndex;
+    }
     currentXuatPhatQIndex = 0;
     isXuatPhatStarted = false;
 

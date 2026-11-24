@@ -52,12 +52,12 @@
     <!-- Thanh điều hướng trên cùng & Thanh Tải lại Vai trò nhanh (Reload Roles) -->
     <div style="background: #f8fafc; border-bottom: 1.5px solid #cbd5e1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 0 10px; gap: 8px;">
         <!-- Tabs Navigation -->
-        <div class="navbar" style="background: transparent; border: none; margin: 0; flex: 1; min-width: 500px; max-width: 650px;">
+        <div class="navbar" style="background: transparent; border: none; margin: 0; flex: 1; min-width: 500px; max-width: 750px;">
             <div class="nav-item active" onclick="switchTab(0)">HỆ THỐNG</div>
-            <div class="nav-item" onclick="switchTab(1)">XUẤT PHÁT</div>
-            <div class="nav-item" onclick="switchTab(2)">RA KHƠI</div>
-            <div class="nav-item" onclick="switchTab(3)">VƯỢT SÓNG</div>
-            <div class="nav-item" onclick="switchTab(4)">VINH QUANG</div>
+            <div class="nav-item" onclick="switchTab(1)">KHỞI ĐỘNG</div>
+            <div class="nav-item" onclick="switchTab(2)">VƯỢT CHƯỚNG NGẠI VẬT</div>
+            <div class="nav-item" onclick="switchTab(3)">TĂNG TỐC</div>
+            <div class="nav-item" onclick="switchTab(4)">VỀ ĐÍCH</div>
             <div class="nav-item" onclick="switchTab(5)">CÂU HỎI PHỤ</div>
         </div>
 
@@ -536,8 +536,8 @@
         <div class="right-col">
             <div style="font-weight: bold; margin-bottom: 8px;">Dữ liệu Câu hỏi Các Vòng Thi</div>
             
-            <!-- PHẦN THI XUẤT PHÁT -->
-            <div class="sub-section-title">... Phần thi XUẤT PHÁT ...</div>
+            <!-- PHẦN THI KHỞI ĐỘNG -->
+            <div class="sub-section-title">... Phần thi KHỞI ĐỘNG ...</div>
             <div class="kd-tabs" id="xuatPhatTabHeader">
                 <div class="kd-tab active" onclick="switchXuatPhatTurn(1)">Bộ đề 1</div>
                 <div class="kd-tab" onclick="switchXuatPhatTurn(2)">Bộ đề 2</div>
@@ -562,8 +562,115 @@
                 </div>
             </div>
 
-            <!-- PHẦN THI RA KHƠI (DẠNG ĐOẠN BĂNG / MEDIA CLIP) -->
-            <div class="sub-section-title">... Phần thi RA KHƠI ...</div>
+            <!-- PHẦN THI VƯỢT CHƯỚNG NGẠI VẬT (VƯỢT SÓNG) -->
+            <div class="sub-section-title">... Phần thi VƯỢT CHƯỚNG NGẠI VẬT ...</div>
+            <div style="font-weight: bold; margin-bottom: 6px;">* Câu hỏi & Hàng ngang Ô chữ</div>
+
+            <div style="display: grid; grid-template-columns: 75px 1.3fr 1fr 220px; gap: 10px; font-weight: bold; color: #0056b3; margin-bottom: 6px; font-size: 13px; background: #e0f2fe; padding: 6px 10px; border-radius: 4px; border: 1px solid #7dd3fc;">
+                <span>Vị trí</span>
+                <span>Nội dung Câu hỏi</span>
+                <span>Đáp án Ô chữ (Hàng ngang)</span>
+                <span>Audio Voice</span>
+            </div>
+
+            <div class="vcnv-row">
+                <span style="font-weight: bold;">Hàng 1</span>
+                <input type="text" id="vs_q_1" placeholder="Nội dung câu hỏi hàng 1" oninput="updateVuotSongState()">
+                <input type="text" id="vs_a_1" placeholder="Đáp án ô chữ hàng 1 (VD: ACESTUDIO)" oninput="updateVuotSongState()">
+                <div class="voice-input-group">
+                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_1', 'audio/*')" title="Tải file audio voice hàng 1">🎙️ Audio</button>
+                    <input type="text" id="vs_v_1" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_1');">
+                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_1', this)" title="Nghe thử Audio Voice">▶</button>
+                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_1')" title="Xóa Audio Voice">✕</button>
+                </div>
+            </div>
+            <div class="vcnv-row">
+                <span style="font-weight: bold;">Hàng 2</span>
+                <input type="text" id="vs_q_2" placeholder="Nội dung câu hỏi hàng 2" oninput="updateVuotSongState()">
+                <input type="text" id="vs_a_2" placeholder="Đáp án ô chữ hàng 2" oninput="updateVuotSongState()">
+                <div class="voice-input-group">
+                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_2', 'audio/*')" title="Tải file audio voice hàng 2">🎙️ Audio</button>
+                    <input type="text" id="vs_v_2" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_2');">
+                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_2', this)" title="Nghe thử Audio Voice">▶</button>
+                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_2')" title="Xóa Audio Voice">✕</button>
+                </div>
+            </div>
+            <div class="vcnv-row">
+                <span style="font-weight: bold;">Hàng 3</span>
+                <input type="text" id="vs_q_3" placeholder="Nội dung câu hỏi hàng 3" oninput="updateVuotSongState()">
+                <input type="text" id="vs_a_3" placeholder="Đáp án ô chữ hàng 3" oninput="updateVuotSongState()">
+                <div class="voice-input-group">
+                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_3', 'audio/*')" title="Tải file audio voice hàng 3">🎙️ Audio</button>
+                    <input type="text" id="vs_v_3" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_3');">
+                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_3', this)" title="Nghe thử Audio Voice">▶</button>
+                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_3')" title="Xóa Audio Voice">✕</button>
+                </div>
+            </div>
+            <div class="vcnv-row">
+                <span style="font-weight: bold;">Hàng 4</span>
+                <input type="text" id="vs_q_4" placeholder="Nội dung câu hỏi hàng 4" oninput="updateVuotSongState()">
+                <input type="text" id="vs_a_4" placeholder="Đáp án ô chữ hàng 4" oninput="updateVuotSongState()">
+                <div class="voice-input-group">
+                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_4', 'audio/*')" title="Tải file audio voice hàng 4">🎙️ Audio</button>
+                    <input type="text" id="vs_v_4" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_4');">
+                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_4', this)" title="Nghe thử Audio Voice">▶</button>
+                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_4')" title="Xóa Audio Voice">✕</button>
+                </div>
+            </div>
+            <div class="vcnv-center-row">
+                <span style="font-weight: bold; color: #dc2626;">GỢI Ý CUỐI CÙNG</span>
+                <input type="text" id="vs_q_center" placeholder="GỢI Ý CUỐI CÙNG" oninput="updateVuotSongState()">
+                <input type="text" id="vs_a_center" placeholder="GỢI Ý CUỐI CÙNG" oninput="updateVuotSongState()">
+                <div class="voice-input-group">
+                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_center', 'audio/*')" title="Tải file audio voice trung tâm">🎙️ Audio</button>
+                    <input type="text" id="vs_v_center" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_center');">
+                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_center', this)" title="Nghe thử Audio Voice">▶</button>
+                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_center')" title="Xóa Audio Voice">✕</button>
+                </div>
+            </div>
+
+            <!-- Tải ảnh CNV (5 mảnh ghép) -->
+            <div style="margin: 10px 0; background: #f0f9ff; padding: 8px; border-radius: 6px; border: 1px solid #bae6fd;">
+                <div style="font-weight: bold; margin-bottom: 4px; color: #0369a1;">🖼️ Ảnh gợi ý Chướng Ngại Vật (CNV - 5 mảnh ghép):</div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="btn" style="background: #0284c7; color: white;" onclick="triggerFilePicker('vs_hint_image', 'image/*')">Tải ảnh CNV</button>
+                    <input type="text" id="vs_hint_image" placeholder="URL ảnh gợi ý Chướng Ngại Vật" oninput="updateVuotSongState()" onchange="updateVuotSongState()" style="flex: 1; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <button class="btn" onclick="previewVideoModal('vs_hint_image')">👁️ Xem</button>
+                </div>
+            </div>
+
+            <div style="font-weight: bold; margin: 10px 0 5px 0;">* Ô chữ đáp án vòng thi:</div>
+            <div class="grid-boxes">
+                <div class="grid-row-boxes">
+                    <span style="width: 50px; font-weight: bold;">Hàng 1:</span>
+                    <div style="display: flex; gap: 3px;" id="vs_box_1"></div>
+                    <span class="char-count" id="vs_count_1">0 kí tự</span>
+                </div>
+                <div class="grid-row-boxes">
+                    <span style="width: 50px; font-weight: bold;">Hàng 2:</span>
+                    <div style="display: flex; gap: 3px;" id="vs_box_2"></div>
+                    <span class="char-count" id="vs_count_2">0 kí tự</span>
+                </div>
+                <div class="grid-row-boxes">
+                    <span style="width: 50px; font-weight: bold;">Hàng 3:</span>
+                    <div style="display: flex; gap: 3px;" id="vs_box_3"></div>
+                    <span class="char-count" id="vs_count_3">0 kí tự</span>
+                </div>
+                <div class="grid-row-boxes">
+                    <span style="width: 50px; font-weight: bold;">Hàng 4:</span>
+                    <div style="display: flex; gap: 3px;" id="vs_box_4"></div>
+                    <span class="char-count" id="vs_count_4">0 kí tự</span>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <span style="font-weight: bold;">* Từ khóa Vượt Sóng:</span>
+                <input type="text" id="vs_keyword" style="flex: 1; padding: 4px; border: 1px solid #ccc;" placeholder="Từ khóa chính của vòng thi Vượt Sóng" oninput="updateVuotSongState()">
+                <span class="char-count" id="vs_keyword_count">0 kí tự</span>
+            </div>
+
+            <!-- PHẦN THI TĂNG TỐC (RA KHƠI) -->
+            <div class="sub-section-title">... Phần thi TĂNG TỐC ...</div>
 
             <div style="display: flex; justify-content: space-between; font-weight: bold; color: #555; margin-bottom: 5px;">
                 <span>Nội dung câu hỏi & Media đoạn băng</span>
@@ -650,115 +757,24 @@
                 </div>
             </div>
 
-            <!-- PHẦN THI VƯỢT SÓNG (GIẢI Ô CHỮ) -->
-            <div class="sub-section-title">... Phần thi VƯỢT SÓNG ...</div>
-            <div style="font-weight: bold; margin-bottom: 6px;">* Câu hỏi & Hàng ngang Ô chữ</div>
-
-            <div style="display: grid; grid-template-columns: 75px 1.3fr 1fr 220px; gap: 10px; font-weight: bold; color: #0056b3; margin-bottom: 6px; font-size: 13px; background: #e0f2fe; padding: 6px 10px; border-radius: 4px; border: 1px solid #7dd3fc;">
-                <span>Vị trí</span>
-                <span>Nội dung Câu hỏi</span>
-                <span>Đáp án Ô chữ (Hàng ngang)</span>
-                <span>Audio Voice</span>
-            </div>
-
-            <div class="vcnv-row">
-                <span style="font-weight: bold;">Hàng 1</span>
-                <input type="text" id="vs_q_1" placeholder="Nội dung câu hỏi hàng 1" oninput="updateVuotSongState()">
-                <input type="text" id="vs_a_1" placeholder="Đáp án ô chữ hàng 1 (VD: ACESTUDIO)" oninput="updateVuotSongState()">
-                <div class="voice-input-group">
-                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_1', 'audio/*')" title="Tải file audio voice hàng 1">🎙️ Audio</button>
-                    <input type="text" id="vs_v_1" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_1');">
-                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_1', this)" title="Nghe thử Audio Voice">▶</button>
-                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_1')" title="Xóa Audio Voice">✕</button>
-                </div>
-            </div>
-            <div class="vcnv-row">
-                <span style="font-weight: bold;">Hàng 2</span>
-                <input type="text" id="vs_q_2" placeholder="Nội dung câu hỏi hàng 2" oninput="updateVuotSongState()">
-                <input type="text" id="vs_a_2" placeholder="Đáp án ô chữ hàng 2" oninput="updateVuotSongState()">
-                <div class="voice-input-group">
-                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_2', 'audio/*')" title="Tải file audio voice hàng 2">🎙️ Audio</button>
-                    <input type="text" id="vs_v_2" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_2');">
-                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_2', this)" title="Nghe thử Audio Voice">▶</button>
-                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_2')" title="Xóa Audio Voice">✕</button>
-                </div>
-            </div>
-            <div class="vcnv-row">
-                <span style="font-weight: bold;">Hàng 3</span>
-                <input type="text" id="vs_q_3" placeholder="Nội dung câu hỏi hàng 3" oninput="updateVuotSongState()">
-                <input type="text" id="vs_a_3" placeholder="Đáp án ô chữ hàng 3" oninput="updateVuotSongState()">
-                <div class="voice-input-group">
-                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_3', 'audio/*')" title="Tải file audio voice hàng 3">🎙️ Audio</button>
-                    <input type="text" id="vs_v_3" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_3');">
-                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_3', this)" title="Nghe thử Audio Voice">▶</button>
-                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_3')" title="Xóa Audio Voice">✕</button>
-                </div>
-            </div>
-            <div class="vcnv-row">
-                <span style="font-weight: bold;">Hàng 4</span>
-                <input type="text" id="vs_q_4" placeholder="Nội dung câu hỏi hàng 4" oninput="updateVuotSongState()">
-                <input type="text" id="vs_a_4" placeholder="Đáp án ô chữ hàng 4" oninput="updateVuotSongState()">
-                <div class="voice-input-group">
-                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_4', 'audio/*')" title="Tải file audio voice hàng 4">🎙️ Audio</button>
-                    <input type="text" id="vs_v_4" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_4');">
-                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_4', this)" title="Nghe thử Audio Voice">▶</button>
-                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_4')" title="Xóa Audio Voice">✕</button>
-                </div>
-            </div>
-            <div class="vcnv-center-row">
-                <span style="font-weight: bold; color: #dc2626;">GỢI Ý CUỐI CÙNG</span>
-                <input type="text" id="vs_q_center" placeholder="GỢI Ý CUỐI CÙNG" oninput="updateVuotSongState()">
-                <input type="text" id="vs_a_center" placeholder="GỢI Ý CUỐI CÙNG" oninput="updateVuotSongState()">
-                <div class="voice-input-group">
-                    <button type="button" class="btn voice-btn-upload" onclick="triggerFilePicker('vs_v_center', 'audio/*')" title="Tải file audio voice trung tâm">🎙️ Audio</button>
-                    <input type="text" id="vs_v_center" placeholder="URL / thả file audio" oninput="updateVuotSongState()" onchange="updateVuotSongState()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'vs_v_center');">
-                    <button type="button" class="btn voice-btn-preview" onclick="previewAudioVoice('vs_v_center', this)" title="Nghe thử Audio Voice">▶</button>
-                    <button type="button" class="btn voice-btn-clear" onclick="clearAudioVoice('vs_v_center')" title="Xóa Audio Voice">✕</button>
-                </div>
-            </div>
-
-            <div style="font-weight: bold; margin: 10px 0 5px 0;">* Ô chữ đáp án vòng thi:</div>
-            <div class="grid-boxes">
-                <div class="grid-row-boxes">
-                    <span style="width: 50px; font-weight: bold;">Hàng 1:</span>
-                    <div style="display: flex; gap: 3px;" id="vs_box_1"></div>
-                    <span class="char-count" id="vs_count_1">0 kí tự</span>
-                </div>
-                <div class="grid-row-boxes">
-                    <span style="width: 50px; font-weight: bold;">Hàng 2:</span>
-                    <div style="display: flex; gap: 3px;" id="vs_box_2"></div>
-                    <span class="char-count" id="vs_count_2">0 kí tự</span>
-                </div>
-                <div class="grid-row-boxes">
-                    <span style="width: 50px; font-weight: bold;">Hàng 3:</span>
-                    <div style="display: flex; gap: 3px;" id="vs_box_3"></div>
-                    <span class="char-count" id="vs_count_3">0 kí tự</span>
-                </div>
-                <div class="grid-row-boxes">
-                    <span style="width: 50px; font-weight: bold;">Hàng 4:</span>
-                    <div style="display: flex; gap: 3px;" id="vs_box_4"></div>
-                    <span class="char-count" id="vs_count_4">0 kí tự</span>
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
-                <span style="font-weight: bold;">* Từ khóa Vượt Sóng:</span>
-                <input type="text" id="vs_keyword" style="flex: 1; padding: 4px; border: 1px solid #ccc;" placeholder="Từ khóa chính của vòng thi Vượt Sóng" oninput="updateVuotSongState()">
-                <span class="char-count" id="vs_keyword_count">0 kí tự</span>
-            </div>
-
-            <!-- PHẦN THI VINH QUANG (NHẬP ĐỀ CÂU HỎI) -->
-            <div class="sub-section-title" style="color: #dc2626;">... Phần thi VINH QUANG (NHẬP ĐỀ CÂU HỎI) ...</div>
-            <div class="packages" style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center; background: #e0f2fe; padding: 10px; border-radius: 6px;">
+            <!-- PHẦN THI VỀ ĐÍCH (VINH QUANG) -->
+            <div class="sub-section-title" style="color: #dc2626;">--- Phần thi Về Đích ---</div>
+            <div class="packages" style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center; background: #e0f2fe; padding: 10px; border-radius: 6px; flex-wrap: wrap;">
                 <span style="font-weight: bold; color: #0369a1;">Chọn gói điểm:</span>
                 <label style="cursor: pointer; font-weight: bold; color: #0056b3;">
-                    <input type="radio" name="tab0_vq_pack" value="10" checked onclick="switchVinhQuangPack(10)"> Gói 10 Điểm (20 câu)
+                    <input type="radio" name="tab0_vq_pack" value="1" checked onclick="switchVinhQuangPack(1)"> Gói 1
                 </label>
-                <label style="cursor: pointer; font-weight: bold; color: #d97706;">
-                    <input type="radio" name="tab0_vq_pack" value="20" onclick="switchVinhQuangPack(20)"> Gói 20 Điểm (20 câu)
+                <label style="cursor: pointer; font-weight: bold; color: #0056b3;">
+                    <input type="radio" name="tab0_vq_pack" value="2" onclick="switchVinhQuangPack(2)"> Gói 2
                 </label>
-                <label style="cursor: pointer; font-weight: bold; color: #dc2626;">
-                    <input type="radio" name="tab0_vq_pack" value="30" onclick="switchVinhQuangPack(30)"> Gói 30 Điểm (20 câu)
+                <label style="cursor: pointer; font-weight: bold; color: #0056b3;">
+                    <input type="radio" name="tab0_vq_pack" value="3" onclick="switchVinhQuangPack(3)"> Gói 3
+                </label>
+                <label style="cursor: pointer; font-weight: bold; color: #0056b3;">
+                    <input type="radio" name="tab0_vq_pack" value="4" onclick="switchVinhQuangPack(4)"> Gói 4
+                </label>
+                <label style="cursor: pointer; font-weight: bold; color: #0056b3;">
+                    <input type="radio" name="tab0_vq_pack" value="5" onclick="switchVinhQuangPack(5)"> Gói 5
                 </label>
             </div>
             <div id="tab0_vinhQuangRows" style="margin-bottom: 15px;"></div>
