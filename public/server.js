@@ -673,7 +673,7 @@ function handleIncomingAction(action, senderWs = null) {
       questionText: action.questionText || ''
     };
   } else if (type === 'VUOT_SONG_START_TIMER') {
-    const dur = action.duration || 20;
+    const dur = action.duration || 15;
     const start = action.startTime || now;
     serverState.currentTimer = {
       round: 'VUOT_SONG',

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Giao diện Điều khiển Trò chơi - Đường Lên Đỉnh Olympia</title>
-    <script src="designer-runtime.js?v=20261124e"></script>
-    <script src="media-preloader.js?v=20261124e"></script>
+    <script src="designer-runtime.js?v=20261124g"></script>
+    <script src="media-preloader.js?v=20261124g"></script>
     <!-- SheetJS for Excel Import/Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="controller.css?v=20261124e">
+    <link rel="stylesheet" href="controller.css?v=20261124g">
     <script>
         function switchTab(index) {
             const navItems = document.querySelectorAll('.nav-item');
@@ -1054,7 +1054,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                         <div id="vs_hdr_1" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
                             <input type="text" id="ts1_name_vs" value="Thí sinh 1" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts1_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <input type="text" id="ts1_extra_vs" placeholder="15s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (15s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(1)">Chuông TS1</button>
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(1)" title="Reset chuông TS1 nếu bấm nhầm">Reset</button>
                             <button id="btn_vs_lock_1" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(1)" title="Khóa / Mở máy TS1 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
@@ -1086,7 +1086,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                         <div id="vs_hdr_2" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
                             <input type="text" id="ts2_name_vs" value="Thí sinh 2" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts2_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <input type="text" id="ts2_extra_vs" placeholder="15s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (15s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(2)">Chuông TS2</button>
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(2)" title="Reset chuông TS2 nếu bấm nhầm">Reset</button>
                             <button id="btn_vs_lock_2" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(2)" title="Khóa / Mở máy TS2 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
@@ -1118,7 +1118,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                         <div id="vs_hdr_3" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
                             <input type="text" id="ts3_name_vs" value="Thí sinh 3" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts3_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <input type="text" id="ts3_extra_vs" placeholder="15s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (15s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(3)">Chuông TS3</button>
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(3)" title="Reset chuông TS3 nếu bấm nhầm">Reset</button>
                             <button id="btn_vs_lock_3" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(3)" title="Khóa / Mở máy TS3 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
@@ -1150,7 +1150,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                         <div id="vs_hdr_4" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 4px; border: 2px solid #cbd5e1; border-bottom: none; min-width: 0;">
                             <input type="text" id="ts4_name_vs" value="Thí sinh 4" title="Tên thí sinh và thời gian bấm chuông vòng thi (chữ đỏ)" oninput="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; width: 0; text-overflow: ellipsis; outline: none;">
-                            <input type="text" id="ts4_extra_vs" placeholder="20s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (20s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
+                            <input type="text" id="ts4_extra_vs" placeholder="15s: 00.00" title="Thời gian trả lời câu hỏi hàng ngang (15s)" style="width: 68px; flex-shrink: 0; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 11px; border-radius: 2px; text-align: center; font-weight: bold; color: #1e3a8a;">
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="triggerVSBell(4)">Chuông TS4</button>
                             <button class="btn" style="padding: 0 6px; height: 22px; font-size: 11px; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="resetVSContestantBell(4)" title="Reset chuông TS4 nếu bấm nhầm">Reset</button>
                             <button id="btn_vs_lock_4" class="btn" style="padding: 0 6px; height: 22px; min-width: 62px; font-size: 11px; font-weight: bold; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" onclick="toggleVSContestantLock(4)" title="Khóa / Mở máy TS4 trong vòng Vượt Chướng Ngại Vật">Khóa máy</button>
@@ -1174,7 +1174,7 @@
                 </div>
             </div>
 
-            <!-- RIGHT: ROW SELECTOR (STANDARDIZED WIDTH 250px LIKE XUAT PHAT) -->
+            <!-- RIGHT: ROW SELECTOR & PIECE REVEAL BUTTONS (STANDARDIZED WIDTH 250px) -->
             <div style="width: 250px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
                 <div class="vs-row-btn luot-thi-btn active" onclick="selectVSRow(1)">
                     <span>Hàng ngang số 1</span> <span class="badge">1</span>
@@ -1190,6 +1190,17 @@
                 </div>
                 <div class="vs-row-btn luot-thi-btn" onclick="selectVSRow('center')">
                     <span>GỢI Ý CUỐI CÙNG</span> <span class="badge">TT</span>
+                </div>
+
+                <div style="margin-top: 4px; padding-top: 8px; border-top: 1.5px dashed #cbd5e1; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.4px;">Mở mảnh ghép (2_ShowPiece)</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                        <button type="button" id="btn_vs_piece_1" class="btn vs-piece-btn" onclick="onClickVSOpenPiece(1)" style="padding: 7px 6px; font-size: 12px; font-weight: 700;" title="Mở mảnh ghép 1 (ẩn Manh1.png & phát 2_ShowPiece.mp3)">Mở mảnh 1</button>
+                        <button type="button" id="btn_vs_piece_2" class="btn vs-piece-btn" onclick="onClickVSOpenPiece(2)" style="padding: 7px 6px; font-size: 12px; font-weight: 700;" title="Mở mảnh ghép 2 (ẩn Manh2.png & phát 2_ShowPiece.mp3)">Mở mảnh 2</button>
+                        <button type="button" id="btn_vs_piece_3" class="btn vs-piece-btn" onclick="onClickVSOpenPiece(3)" style="padding: 7px 6px; font-size: 12px; font-weight: 700;" title="Mở mảnh ghép 3 (ẩn Manh3.png & phát 2_ShowPiece.mp3)">Mở mảnh 3</button>
+                        <button type="button" id="btn_vs_piece_4" class="btn vs-piece-btn" onclick="onClickVSOpenPiece(4)" style="padding: 7px 6px; font-size: 12px; font-weight: 700;" title="Mở mảnh ghép 4 (ẩn Manh4.png & phát 2_ShowPiece.mp3)">Mở mảnh 4</button>
+                    </div>
+                    <button type="button" id="btn_vs_piece_5" class="btn vs-piece-btn" onclick="onClickVSOpenPiece(5)" style="width: 100%; padding: 7px 8px; font-size: 12px; font-weight: 700;" title="Mở mảnh ghép ô trung tâm (ẩn Manh5.png & phát 2_ShowPiece.mp3)">Mở mảnh 5 (Ô trung tâm)</button>
                 </div>
             </div>
         </div>
@@ -1224,7 +1235,7 @@
                     </div>
 
                     <div style="width: 140px; flex-shrink: 0; background: #5b9bd5; border-radius: 4px; padding: 10px; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                        <div id="vs_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">20</div>
+                        <div id="vs_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">15</div>
                     </div>
                 </div>
 
@@ -1264,8 +1275,8 @@
                     <button class="ctrl-btn-bottom" onclick="onClickVSShowRows()" title="Hiện hàng ngang Vượt Chướng Ngại Vật và phát nhạc 2_RowShow.mp3">
                         Hiện hàng ngang
                     </button>
-                    <button class="ctrl-btn-bottom" onclick="onClickVSStartTimer()">
-                        Bắt đầu 20s
+                    <button class="ctrl-btn-bottom" onclick="onClickVSStartTimer()" title="Bắt đầu đếm giờ 15s, phát 2_OnTime.mp3 & video 2_15s.mp4">
+                        Bắt đầu 15s
                     </button>
                     <button class="ctrl-btn-bottom" onclick="onClickVSReturnToGrid()" title="Quay lại giao diện các hàng ngang Vượt Chướng Ngại Vật">
                         Quay lại hàng ngang
@@ -2101,13 +2112,13 @@
 
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124e"></script>
-    <script src="setup.js?v=20261124e"></script>
-    <script src="setup_extra.js?v=20261124e"></script>
-    <script src="controllerR1.js?v=20261124e"></script>
-    <script src="controllerR2.js?v=20261124e"></script>
-    <script src="controllerR3.js?v=20261124e"></script>
-    <script src="controllerR4.js?v=20261124e"></script>
-    <script src="controllerRExtra.js?v=20261124e"></script>
+    <script src="supabase-sync.js?v=20261124g"></script>
+    <script src="setup.js?v=20261124g"></script>
+    <script src="setup_extra.js?v=20261124g"></script>
+    <script src="controllerR1.js?v=20261124g"></script>
+    <script src="controllerR2.js?v=20261124g"></script>
+    <script src="controllerR3.js?v=20261124g"></script>
+    <script src="controllerR4.js?v=20261124g"></script>
+    <script src="controllerRExtra.js?v=20261124g"></script>
 </body>
 </html>

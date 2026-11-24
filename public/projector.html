@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="designer-runtime.js?v=20261124e"></script>
+    <script src="designer-runtime.js?v=20261124g"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124e"></script>
+    <script src="supabase-sync.js?v=20261124g"></script>
     <style>
         @font-face {
             font-family: 'UTM Avo';
@@ -219,6 +219,40 @@
             pointer-events: none;
         }
 
+        #vs_timer_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 15;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Obstacle Hint Image & 5 Puzzle Pieces measured in PPT (1" = 144px): Height 3.25" x Width 5.24", X 1.00" x Y 0.92" */
+        #vs_hint_img,
+        .vs-piece-img {
+            position: absolute;
+            left: 144px;
+            top: 132.48px;
+            width: 754.56px;
+            height: 468px;
+            object-fit: fill;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #vs_hint_img { z-index: 18; }
+        #vs_piece_1 { z-index: 22; }
+        #vs_piece_2 { z-index: 23; }
+        #vs_piece_3 { z-index: 24; }
+        #vs_piece_4 { z-index: 25; }
+        #vs_piece_5 { z-index: 26; }
+
         #vs_rows_container {
             position: absolute;
             inset: 0;
@@ -251,6 +285,36 @@
             display: none;
             transition: none;
             pointer-events: none;
+        }
+
+        /* Question Textbox measured in PPT (1" = 144px): Height 2.43" x Width 5.97", X 1.13" x Y 4.49" */
+        #vs_question_box {
+            position: absolute;
+            left: 162.72px;
+            top: 646.56px;
+            width: 859.68px;
+            height: 349.92px;
+            z-index: 40;
+            display: none;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 18px 28px;
+            transition: none;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #vs_question_text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.35;
+            text-align: left;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            word-break: break-word;
+            overflow: hidden;
         }
 
         /* Intro Media Overlay */
@@ -391,8 +455,18 @@
         <!-- Round 2: Vượt Chướng Ngại Vật -->
         <div id="view-file-2" class="projector-scene">
             <img id="vs_bg_img" src="/Media/2.bg.png" alt="Vượt Chướng Ngại Vật Background">
+            <video id="vs_timer_video" src="/Media/2_15s.mp4" muted playsinline preload="auto"></video>
+            <img id="vs_hint_img" alt="Ảnh gợi ý Chướng Ngại Vật">
+            <img id="vs_piece_1" class="vs-piece-img" src="/Media/Manh1.png" alt="Mảnh ghép 1">
+            <img id="vs_piece_2" class="vs-piece-img" src="/Media/Manh2.png" alt="Mảnh ghép 2">
+            <img id="vs_piece_3" class="vs-piece-img" src="/Media/Manh3.png" alt="Mảnh ghép 3">
+            <img id="vs_piece_4" class="vs-piece-img" src="/Media/Manh4.png" alt="Mảnh ghép 4">
+            <img id="vs_piece_5" class="vs-piece-img" src="/Media/Manh5.png" alt="Mảnh ghép 5 (Trung tâm)">
             <div id="vs_rows_container"></div>
             <img id="vs_count_img" src="/Media/2.count.png" alt="Số hàng ngang">
+            <div id="vs_question_box">
+                <div id="vs_question_text"></div>
+            </div>
         </div>
 
         <!-- Intro Video / Image Overlay -->
@@ -469,11 +543,24 @@
             wrong: '/SFX/1_Wrong.mp3',
             r2StartRound: '/SFX/2_StartRound.mp3',
             r2RowShow: '/SFX/2_RowShow.mp3',
-            r2RowChose: '/SFX/2_RowChose.mp3'
+            r2RowChose: '/SFX/2_RowChose.mp3',
+            r2RowQues: '/SFX/2_RowQues.mp3',
+            r2OnTime: '/SFX/2_OnTime.mp3',
+            r2ShowPiece: '/SFX/2_ShowPiece.mp3'
         };
 
-        // Preload Round 2 cell images for instant swap (Appear, no flicker)
-        ['/Media/2.bg.png', '/Media/2.count.png', '/Media/h1.png', '/Media/h2.png'].forEach(src => {
+        // Preload Round 2 cell & puzzle piece images for instant swap (Appear, no flicker)
+        [
+            '/Media/2.bg.png',
+            '/Media/2.count.png',
+            '/Media/h1.png',
+            '/Media/h2.png',
+            '/Media/Manh1.png',
+            '/Media/Manh2.png',
+            '/Media/Manh3.png',
+            '/Media/Manh4.png',
+            '/Media/Manh5.png'
+        ].forEach(src => {
             const img = new Image();
             img.src = src;
         });
@@ -569,6 +656,9 @@
             stopAudioItem(sfxBank.r2StartRound);
             stopAudioItem(sfxBank.r2RowShow);
             stopAudioItem(sfxBank.r2RowChose);
+            stopAudioItem(sfxBank.r2RowQues);
+            stopAudioItem(sfxBank.r2OnTime);
+            stopAudioItem(sfxBank.r2ShowPiece);
         }
 
         function stopAllRound1Audio() {
@@ -603,10 +693,36 @@
         let r2VuotSongData = null;
         let isRound2RowsShown = false;
         let r2SelectedRow = null;
+        let r2OpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
 
         function syncRound2Data(vsData) {
             if (!vsData || typeof vsData !== 'object' || Array.isArray(vsData)) return;
             r2VuotSongData = vsData;
+            updateRound2HintImage();
+        }
+
+        function updateRound2HintImage() {
+            const hintImg = document.getElementById('vs_hint_img');
+            if (!hintImg) return;
+            const hintUrl = (r2VuotSongData && r2VuotSongData.hintImage ? String(r2VuotSongData.hintImage).trim() : '');
+            if (hintUrl) {
+                if (hintImg.getAttribute('src') !== hintUrl) {
+                    hintImg.setAttribute('src', hintUrl);
+                }
+                hintImg.style.display = isRound2RowsShown ? 'block' : 'none';
+            } else {
+                hintImg.style.display = 'none';
+                hintImg.removeAttribute('src');
+            }
+        }
+
+        function updateRound2PiecesVisibility() {
+            for (let i = 1; i <= 5; i++) {
+                const pieceEl = document.getElementById(`vs_piece_${i}`);
+                if (!pieceEl) continue;
+                const shouldShow = isRound2RowsShown && !r2OpenedPieces[i];
+                pieceEl.style.display = shouldShow ? 'block' : 'none';
+            }
         }
 
         function getRound2CellSrc(rowNum) {
@@ -667,7 +783,59 @@
             container.appendChild(frag);
         }
 
+        const vsTimerVideo = document.getElementById('vs_timer_video');
+        if (vsTimerVideo) {
+            vsTimerVideo.addEventListener('ended', () => {
+                try {
+                    vsTimerVideo.pause();
+                } catch (e) {}
+            });
+        }
+
+        function setRound2QuestionText(text) {
+            const textEl = document.getElementById('vs_question_text');
+            if (!textEl) return;
+            const cleanText = (text || '').toString().trim();
+            textEl.textContent = cleanText;
+
+            const len = cleanText.length;
+            if (len > 320) {
+                textEl.style.fontSize = '20px';
+                textEl.style.lineHeight = '1.26';
+            } else if (len > 220) {
+                textEl.style.fontSize = '23px';
+                textEl.style.lineHeight = '1.3';
+            } else if (len > 140) {
+                textEl.style.fontSize = '26px';
+                textEl.style.lineHeight = '1.33';
+            } else {
+                textEl.style.fontSize = '28px';
+                textEl.style.lineHeight = '1.35';
+            }
+        }
+
+        function hideRound2QuestionBox() {
+            const qBox = document.getElementById('vs_question_box');
+            const qText = document.getElementById('vs_question_text');
+            if (qBox) qBox.style.display = 'none';
+            if (qText) qText.textContent = '';
+        }
+
+        function stopRound2TimerVideo() {
+            if (!vsTimerVideo) return;
+            vsTimerVideo.style.display = 'none';
+            try {
+                vsTimerVideo.pause();
+                vsTimerVideo.currentTime = 0;
+            } catch (e) {}
+        }
+
         function showRound2Rows(data) {
+            if (data && data.openedPieces && typeof data.openedPieces === 'object') {
+                for (let i = 1; i <= 5; i++) {
+                    r2OpenedPieces[i] = !!data.openedPieces[i];
+                }
+            }
             if (data && data.vuotSong) {
                 syncRound2Data(data.vuotSong);
             }
@@ -680,11 +848,122 @@
             if (bgImg) bgImg.style.display = 'block';
             if (rowsEl) rowsEl.style.display = 'block';
             if (countImg) countImg.style.display = 'block';
+            updateRound2HintImage();
+            updateRound2PiecesVisibility();
+        }
+
+        function handleRound2OpenPiece(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+
+            const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
+            if (incomingVS) syncRound2Data(incomingVS);
+
+            switchProjectorScene(2);
+            stopAllRound1Audio();
+
+            if (!isRound2RowsShown) {
+                showRound2Rows(data);
+            }
+
+            const p = parseInt(data && data.piece, 10);
+            if (p >= 1 && p <= 5) {
+                r2OpenedPieces[p] = true;
+            }
+            if (data && data.openedPieces && typeof data.openedPieces === 'object') {
+                for (let i = 1; i <= 5; i++) {
+                    r2OpenedPieces[i] = !!data.openedPieces[i];
+                }
+            }
+
+            updateRound2HintImage();
+            updateRound2PiecesVisibility();
+            playSfx('r2ShowPiece', { loop: false });
+        }
+
+        function handleRound2ShowQuestion(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data && data.contestants) syncContestantsData(data.contestants);
+            const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
+            if (incomingVS) syncRound2Data(incomingVS);
+
+            switchProjectorScene(2);
+            stopAllRound1Audio();
+            stopRound2TimerVideo();
+
+            if (!isRound2RowsShown) {
+                showRound2Rows(data);
+            }
+
+            if (data && data.row !== undefined) {
+                const rowNum = parseInt(data.row, 10);
+                if (rowNum >= 1 && rowNum <= 4) {
+                    r2SelectedRow = rowNum;
+                    updateRound2RowGraphics();
+                }
+            }
+
+            setRound2QuestionText(data ? data.questionText : '');
+            const qBox = document.getElementById('vs_question_box');
+            if (qBox) qBox.style.display = 'flex';
+
+            stopAudioItem(sfxBank.r2StartRound);
+            stopAudioItem(sfxBank.r2RowShow);
+            stopAudioItem(sfxBank.r2RowChose);
+            stopAudioItem(sfxBank.r2OnTime);
+            playSfx('r2RowQues', { loop: false });
+        }
+
+        function handleRound2StartTimer(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data && data.contestants) syncContestantsData(data.contestants);
+
+            switchProjectorScene(2);
+            stopAllRound1Audio();
+
+            if (!isRound2RowsShown) {
+                showRound2Rows(data);
+            }
+
+            if (data && data.questionText) {
+                const qBox = document.getElementById('vs_question_box');
+                const qText = document.getElementById('vs_question_text');
+                if (qText && !qText.textContent.trim()) {
+                    setRound2QuestionText(data.questionText);
+                }
+                if (qBox && qText && qText.textContent.trim()) {
+                    qBox.style.display = 'flex';
+                }
+            }
+
+            if (vsTimerVideo) {
+                vsTimerVideo.style.display = 'block';
+                try {
+                    vsTimerVideo.currentTime = 0;
+                    const vp = vsTimerVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+
+            stopAudioItem(sfxBank.r2RowQues);
+            stopAudioItem(sfxBank.r2RowChose);
+            stopAudioItem(sfxBank.r2RowShow);
+            playSfx('r2OnTime', { loop: false });
         }
 
         function hideAllRound2Graphics() {
             isRound2RowsShown = false;
             r2SelectedRow = null;
+            r2OpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
+            stopRound2TimerVideo();
+            hideRound2QuestionBox();
+            updateRound2HintImage();
+            updateRound2PiecesVisibility();
             const bgImg = document.getElementById('vs_bg_img');
             const rowsEl = document.getElementById('vs_rows_container');
             const countImg = document.getElementById('vs_count_img');
@@ -1114,6 +1393,8 @@
                     if (incomingVS) syncRound2Data(incomingVS);
                     const rowNum = parseInt(data.row, 10);
                     r2SelectedRow = (rowNum >= 1 && rowNum <= 4) ? rowNum : null;
+                    stopRound2TimerVideo();
+                    hideRound2QuestionBox();
                     if (isRound2RowsShown) {
                         updateRound2RowGraphics();
                     }
@@ -1121,6 +1402,29 @@
                         stopAudioItem(sfxBank.r2RowShow);
                         playSfx('r2RowChose', { loop: false });
                     }
+                    break;
+                }
+
+                case 'VUOT_SONG_SHOW_QUESTION': {
+                    handleRound2ShowQuestion(data);
+                    break;
+                }
+
+                case 'VUOT_SONG_START_TIMER': {
+                    handleRound2StartTimer(data);
+                    break;
+                }
+
+                case 'VUOT_SONG_RETURN_GRID': {
+                    stopRound2TimerVideo();
+                    hideRound2QuestionBox();
+                    stopAudioItem(sfxBank.r2RowQues);
+                    stopAudioItem(sfxBank.r2OnTime);
+                    break;
+                }
+
+                case 'VUOT_SONG_OPEN_PIECE': {
+                    handleRound2OpenPiece(data);
                     break;
                 }
 

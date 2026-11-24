@@ -180,6 +180,8 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         viewNum = 3;
         label = 'Vượt Chướng Ngại Vật';
         window.vsRoundStartTime = Date.now();
+        window.vsOpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
+        if (typeof syncVSPieceButtonsUI === 'function') syncVSPieceButtonsUI();
         try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
     } else if (roundIndex === 4) {
         roundName = 'VINH_QUANG';
@@ -512,6 +514,11 @@ function updateVuotSongState() {
     if (kwSpan) {
         const kwVal = gameData.vuotSong.keyword || gameData.vuotSong.center?.a || gameData.vuotSong.center?.q || '';
         kwSpan.innerText = `${kwVal.replace(/\s+/g, '').length} kí tự`;
+    }
+
+    const hintEl = document.getElementById('vs_hint_image');
+    if (hintEl) {
+        gameData.vuotSong.hintImage = hintEl.value.trim();
     }
 
     if (vsSyncTimeout) clearTimeout(vsSyncTimeout);
@@ -874,6 +881,9 @@ function fillVuotSongInputs() {
 
     const kw = document.getElementById('vs_keyword');
     if (kw) kw.value = gameData.vuotSong.keyword || '';
+
+    const hintEl = document.getElementById('vs_hint_image');
+    if (hintEl) hintEl.value = gameData.vuotSong.hintImage || '';
 }
 
 function fillCauHoiPhuInputs() {
@@ -964,6 +974,10 @@ function saveAllData(notify = false) {
         const kwEl = document.getElementById('vs_keyword');
         if (kwEl) {
             gameData.vuotSong.keyword = kwEl.value;
+        }
+        const hintEl = document.getElementById('vs_hint_image');
+        if (hintEl) {
+            gameData.vuotSong.hintImage = hintEl.value.trim();
         }
 
         initVinhQuangData();
