@@ -53,7 +53,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: #000000;
+            background: transparent;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             display: flex;
             align-items: center;
@@ -67,7 +67,7 @@
             height: 1080px;
             transform-origin: center center;
             overflow: hidden;
-            background: #13ff08;
+            background: transparent;
             flex-shrink: 0;
         }
 
@@ -77,15 +77,30 @@
             width: 1920px;
             height: 1080px;
             display: none;
+            background: transparent;
         }
 
         .projector-scene.active {
             display: block;
         }
 
-        /* Round 1: Khởi Động (#13ff08 matches 1_showques_4P.mp4 chroma key background) */
+        .chroma-key-hidden-video {
+            visibility: hidden !important;
+        }
+
+        .chroma-key-canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            pointer-events: none;
+            transition: none;
+        }
+
+        /* Round 1: Khởi Động (Transparent background with chroma-keyed video overlays) */
         #view-file-1 {
-            background: #13ff08;
+            background: transparent;
         }
 
         #xp_showques_video {
@@ -174,10 +189,10 @@
 
         #xp_question_box {
             position: absolute;
-            left: 270.72px;
-            top: 818.60px;
-            width: 1397.48px;
-            height: 169.16px;
+            left: 253.72px;
+            top: 801.60px;
+            width: 1409.48px;
+            height: 171.16px;
             z-index: 30;
             display: flex;
             align-items: flex-start;
@@ -203,7 +218,7 @@
 
         /* Round 2: Vượt Chướng Ngại Vật (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, instant Appear - no fade) */
         #view-file-2 {
-            background: #13ff08;
+            background: transparent;
         }
 
         #vs_bg_img {
@@ -376,7 +391,7 @@
 
         /* Round 2 Answer Scene (#view-file-2-answers): Exact PPT 16:9 (1" = 144px, Appear - no fade) */
         #view-file-2-answers {
-            background: #13ff08;
+            background: transparent;
         }
 
         #vs_answer_video {
@@ -418,16 +433,20 @@
         }
 
         .vs-ans-box-text {
-            width: 100%;
+            width: auto;
+            display: inline-block;
+            flex: 0 0 auto;
             color: #ffffff;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
-            font-size: 30px;
+            font-size: 48px;
             font-weight: 700;
             line-height: 1.15;
             text-align: center;
+            text-transform: uppercase;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            text-overflow: clip;
+            transform-origin: center center;
             text-shadow: 0 2px 5px rgba(0, 0, 0, 0.65);
         }
 
@@ -504,7 +523,7 @@
 
         /* Round 3: Tăng Tốc (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, 1pt = 2px) */
         #view-file-3 {
-            background: #13ff08;
+            background: transparent;
         }
 
         #r3_showques_video {
@@ -592,7 +611,7 @@
 
         /* Round 3 Answer Scene (#view-file-3-answers): Exact PPT 16:9 (1" = 144px, Appear - no fade) */
         #view-file-3-answers {
-            background: #13ff08;
+            background: transparent;
         }
 
         #r3_answer_video {
@@ -607,6 +626,23 @@
             transition: none;
             pointer-events: none;
         }
+
+        /* Round 3 Wrong Answer Gray Graphic: 0.88" x 7.57" (126.72px x 1090.08px) at X 2.88" (414.72px) */
+        .r3-wrong-overlay {
+            position: absolute;
+            left: 414.72px;
+            width: 1090.08px;
+            height: 126.72px;
+            object-fit: fill;
+            z-index: 15;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+        #r3_wrong_overlay_1 { top: 259.20px; } /* Row A: 1.8" */
+        #r3_wrong_overlay_2 { top: 408.96px; } /* Row B: 2.84" */
+        #r3_wrong_overlay_3 { top: 548.64px; } /* Row C: 3.81" */
+        #r3_wrong_overlay_4 { top: 694.08px; } /* Row D: 4.82" */
 
         #r3_answer_text_layer {
             position: absolute;
@@ -662,6 +698,7 @@
             font-weight: 700;
             line-height: 1.15;
             text-align: center;
+            text-transform: uppercase;
             white-space: nowrap;
             overflow: visible;
             text-overflow: clip;
@@ -675,13 +712,263 @@
         #r3_ans_p3, #r3_ans_a3, #r3_ans_t3 { top: 557.1360px; }
         #r3_ans_p4, #r3_ans_a4, #r3_ans_t4 { top: 699.3504px; }
 
+        #r3_ans_p4, #r3_ans_a4, #r3_ans_t4 { top: 699.3504px; }
+
+        /* Round 4: Về Đích / Vinh Quang (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, instant Appear - no fade) */
+        #view-file-4 {
+            background: transparent;
+        }
+
+        #r4_showpack_video,
+        #r4_showques_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r4_showpack_video { z-index: 10; }
+        #r4_showques_video { z-index: 20; }
+
+        .r4-timer-video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 22;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .r4-cau-hl {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 26;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Pack point highlights (4.20.1..3.png, 4.30.1..3.png) aligned to 4_showpack.mp4 cells */
+        #r4_pack_highlights_layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 15;
+            display: none;
+            pointer-events: none;
+        }
+
+        .r4-pack-hl-img {
+            position: absolute;
+            object-fit: fill;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .r4-pack-hl-text {
+            position: absolute;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 56px;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 16;
+        }
+
+        /* 4_showpack highlight exact positions (from Slide 4 PPT coords) */
+        #r4_pack_hl_20_1 { left: 529.10px; top: 753.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_hl_20_2 { left: 819.56px; top: 753.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_hl_20_3 { left: 1110.86px; top: 753.74px; width: 279.78px; height: 131.66px; }
+        #r4_pack_hl_30_1 { left: 529.10px; top: 895.26px; width: 279.78px; height: 131.66px; }
+        #r4_pack_hl_30_2 { left: 771.84px; top: 895.26px; width: 328.32px; height: 131.66px; }
+        #r4_pack_hl_30_3 { left: 1062.30px; top: 895.26px; width: 328.32px; height: 131.66px; }
+
+        #r4_pack_txt_20_1 { left: 523.46px; top: 753.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_txt_20_2 { left: 817.90px; top: 753.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_txt_20_3 { left: 1091.76px; top: 753.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_txt_30_1 { left: 499.24px; top: 897.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_txt_30_2 { left: 767.36px; top: 897.74px; width: 328.32px; height: 131.66px; }
+        #r4_pack_txt_30_3 { left: 1051.60px; top: 897.74px; width: 328.32px; height: 131.66px; }
+
+        /* Main Contestant & Buzzer Highlights (H=0.4115" 59.256px, W=2.2099" 318.2256px, Y=5.2194" 751.5936px) */
+        .r4-ts-hl,
+        .r4-chuong-hl {
+            position: absolute;
+            top: 751.5936px;
+            width: 318.2256px;
+            height: 59.2560px;
+            object-fit: fill;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+        .r4-ts-hl { z-index: 25; }
+        .r4-chuong-hl { z-index: 27; }
+
+        #r4_ts_hl_1, #r4_chuong_hl_1 { left: 258.6096px; }
+        #r4_ts_hl_2, #r4_chuong_hl_2 { left: 564.8256px; }
+        #r4_ts_hl_3, #r4_chuong_hl_3 { left: 875.2032px; }
+        #r4_ts_hl_4, #r4_chuong_hl_4 { left: 1181.4336px; }
+
+        /* Ngôi sao hy vọng (star.gif): H=1.62" (233.28px), W=2.82" (406.08px), X=9.61" (1383.84px), Y=3.75" (540.00px) */
+        #r4_star_gif {
+            position: absolute;
+            left: 1383.84px;
+            top: 540px;
+            width: 406.08px;
+            height: 233.28px;
+            object-fit: fill;
+            z-index: 35;
+            display: none;
+            pointer-events: none;
+        }
+
+        #r4_meta_layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 30;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* Contestant Names (H=0.4051" 58.3344px, W=2.1266" 306.2304px, Y=5.2194" 751.5936px) */
+        .r4-ts-name-box {
+            position: absolute;
+            top: 751.5936px;
+            width: 306.2304px;
+            height: 58.3344px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #r4_ts_name_box_1 { left: 278.8848px; }
+        #r4_ts_name_box_2 { left: 585.1152px; }
+        #r4_ts_name_box_3 { left: 891.3456px; }
+        #r4_ts_name_box_4 { left: 1197.5760px; }
+
+        .r4-ts-name-text {
+            display: inline-block;
+            flex: 0 0 auto;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.15;
+            white-space: nowrap;
+            text-align: center;
+            transform-origin: center center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Main Contestant Score (H=1.3408" 193.0752px, W=0.9536" 137.3184px, X=10.4430" 1503.792px, Y=5.4204" 780.5376px) */
+        #r4_main_score_box {
+            position: absolute;
+            left: 1503.7920px;
+            top: 780.5376px;
+            width: 137.3184px;
+            height: 193.0752px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        #r4_main_score_text {
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 88px;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+        }
+
+        /* 3 Question Point Boxes (H=0.3762" 54.1728px, W=0.5692" 81.9648px, Y=6.7612" 973.6128px) */
+        .r4-q-point-box {
+            position: absolute;
+            top: 973.6128px;
+            width: 81.9648px;
+            height: 54.1728px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        #r4_q_point_box_1 { left: 1413.8928px; }
+        #r4_q_point_box_2 { left: 1495.8576px; }
+        #r4_q_point_box_3 { left: 1577.8224px; }
+
+        .r4-q-point-text {
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Question Textbox (H=1.4000" 201.6000px, W=7.9352" 1142.6688px, X=1.8836" 271.2384px, Y=5.6486" 813.3984px) */
+        #r4_question_box {
+            position: absolute;
+            left: 271.2384px;
+            top: 813.3984px;
+            width: 1142.6688px;
+            height: 201.6000px;
+            z-index: 32;
+            display: none;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 14px 28px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        #r4_question_text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.32;
+            text-align: left;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            word-break: break-word;
+            overflow: hidden;
+        }
+
         /* Intro Media Overlay */
         #intro_video_overlay {
             position: absolute;
             inset: 0;
             width: 1920px;
             height: 1080px;
-            background: #000000;
+            background: transparent;
             z-index: 80;
             display: none;
             align-items: center;
@@ -754,34 +1041,14 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* Autoplay Audio Unlock Banner (only shown if browser blocks audio playback) */
-        #audio_unlock_banner {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background: rgba(15, 23, 42, 0.92);
-            color: #facc15;
-            border: 2px solid #facc15;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: none;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
     </style>
 </head>
 <body>
-    <button id="audio_unlock_banner" type="button" onclick="unlockProjectorAudio()">
-        Nhấn vào đây để bật âm thanh Máy Chiếu
-    </button>
 
     <div id="stage-wrapper">
         <!-- Round 1: Khởi Động -->
         <div id="view-file-1" class="projector-scene active">
-            <video id="xp_showques_video" src="/Media/1_showques_4P.mp4" muted playsinline preload="auto"></video>
+            <video id="xp_showques_video" src="/Media/1_showques_4P.webm" muted playsinline preload="auto"></video>
 
             <div id="xp_highlight_1" class="xp-highlight"><img src="/Media/1.s1.png" alt="Highlight 1"></div>
             <div id="xp_highlight_2" class="xp-highlight"><img src="/Media/1.s2.png" alt="Highlight 2"></div>
@@ -874,6 +1141,10 @@
         <!-- Round 3: Đáp Án Thí Sinh (Tăng Tốc - A, B, C, D nhanh đến chậm) -->
         <div id="view-file-3-answers" class="projector-scene">
             <video id="r3_answer_video" src="/Media/3_answer_4P.mp4" muted playsinline preload="auto"></video>
+            <img id="r3_wrong_overlay_1" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh A trả lời sai">
+            <img id="r3_wrong_overlay_2" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh B trả lời sai">
+            <img id="r3_wrong_overlay_3" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh C trả lời sai">
+            <img id="r3_wrong_overlay_4" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh D trả lời sai">
             <div id="r3_answer_text_layer">
                 <div id="r3_ans_p1" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p1_text" class="r3-ans-box-text"></span></div>
                 <div id="r3_ans_a1" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a1_text" class="r3-ans-box-text"></span></div>
@@ -891,6 +1162,62 @@
                 <div id="r3_ans_a4" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a4_text" class="r3-ans-box-text"></span></div>
                 <div id="r3_ans_t4" class="r3-ans-box r3-ans-time-box"><span id="r3_ans_t4_text" class="r3-ans-box-text"></span></div>
             </div>
+        </div>
+
+        <!-- Round 4: Về Đích / Vinh Quang -->
+        <div id="view-file-4" class="projector-scene">
+            <video id="r4_showpack_video" src="/Media/4_showpack.mp4" muted playsinline preload="auto"></video>
+            <div id="r4_pack_highlights_layer">
+                <img id="r4_pack_hl_20_1" class="r4-pack-hl-img" src="/Media/4.20.1.png" alt="Câu 1 - 20 điểm">
+                <span id="r4_pack_txt_20_1" class="r4-pack-hl-text">20</span>
+                <img id="r4_pack_hl_20_2" class="r4-pack-hl-img" src="/Media/4.20.2.png" alt="Câu 2 - 20 điểm">
+                <span id="r4_pack_txt_20_2" class="r4-pack-hl-text">20</span>
+                <img id="r4_pack_hl_20_3" class="r4-pack-hl-img" src="/Media/4.20.3.png" alt="Câu 3 - 20 điểm">
+                <span id="r4_pack_txt_20_3" class="r4-pack-hl-text">20</span>
+                <img id="r4_pack_hl_30_1" class="r4-pack-hl-img" src="/Media/4.30.1.png" alt="Câu 1 - 30 điểm">
+                <span id="r4_pack_txt_30_1" class="r4-pack-hl-text">30</span>
+                <img id="r4_pack_hl_30_2" class="r4-pack-hl-img" src="/Media/4.30.2.png" alt="Câu 2 - 30 điểm">
+                <span id="r4_pack_txt_30_2" class="r4-pack-hl-text">30</span>
+                <img id="r4_pack_hl_30_3" class="r4-pack-hl-img" src="/Media/4.30.3.png" alt="Câu 3 - 30 điểm">
+                <span id="r4_pack_txt_30_3" class="r4-pack-hl-text">30</span>
+            </div>
+
+            <video id="r4_showques_video" src="/Media/4_showques_4P.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_timer_15s_video" class="r4-timer-video" src="/Media/4.15s.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_timer_20s_video" class="r4-timer-video" src="/Media/4.20s.mp4" muted playsinline preload="auto"></video>
+
+            <img id="r4_cau_hl_1" class="r4-cau-hl" src="/Media/4.cau1.png" alt="Highlight câu hỏi 1">
+            <img id="r4_cau_hl_2" class="r4-cau-hl" src="/Media/4.cau2.png" alt="Highlight câu hỏi 2">
+            <img id="r4_cau_hl_3" class="r4-cau-hl" src="/Media/4.cau3.png" alt="Highlight câu hỏi 3">
+
+            <img id="r4_ts_hl_1" class="r4-ts-hl" src="/Media/4.ts1.png" alt="Thí sinh chính 1">
+            <img id="r4_ts_hl_2" class="r4-ts-hl" src="/Media/4.ts2.png" alt="Thí sinh chính 2">
+            <img id="r4_ts_hl_3" class="r4-ts-hl" src="/Media/4.ts3.png" alt="Thí sinh chính 3">
+            <img id="r4_ts_hl_4" class="r4-ts-hl" src="/Media/4.ts4.png" alt="Thí sinh chính 4">
+
+            <img id="r4_chuong_hl_1" class="r4-chuong-hl" src="/Media/4.chuong1.png" alt="Bấm chuông 1">
+            <img id="r4_chuong_hl_2" class="r4-chuong-hl" src="/Media/4.chuong2.png" alt="Bấm chuông 2">
+            <img id="r4_chuong_hl_3" class="r4-chuong-hl" src="/Media/4.chuong3.png" alt="Bấm chuông 3">
+            <img id="r4_chuong_hl_4" class="r4-chuong-hl" src="/Media/4.chuong4.png" alt="Bấm chuông 4">
+
+            <div id="r4_meta_layer">
+                <div id="r4_ts_name_box_1" class="r4-ts-name-box"><span id="r4_ts_name_text_1" class="r4-ts-name-text"></span></div>
+                <div id="r4_ts_name_box_2" class="r4-ts-name-box"><span id="r4_ts_name_text_2" class="r4-ts-name-text"></span></div>
+                <div id="r4_ts_name_box_3" class="r4-ts-name-box"><span id="r4_ts_name_text_3" class="r4-ts-name-text"></span></div>
+                <div id="r4_ts_name_box_4" class="r4-ts-name-box"><span id="r4_ts_name_text_4" class="r4-ts-name-text"></span></div>
+
+                <div id="r4_main_score_box"><span id="r4_main_score_text">0</span></div>
+
+                <div id="r4_q_point_box_1" class="r4-q-point-box"><span id="r4_q_point_text_1" class="r4-q-point-text"></span></div>
+                <div id="r4_q_point_box_2" class="r4-q-point-box"><span id="r4_q_point_text_2" class="r4-q-point-text"></span></div>
+                <div id="r4_q_point_box_3" class="r4-q-point-box"><span id="r4_q_point_text_3" class="r4-q-point-text"></span></div>
+            </div>
+
+            <div id="r4_question_box">
+                <div id="r4_question_text"></div>
+            </div>
+
+            <img id="r4_star_gif" src="/Media/star.gif" alt="Ngôi sao hy vọng">
         </div>
 
         <!-- Intro Video / Image Overlay -->
@@ -965,6 +1292,7 @@
             finish: '/SFX/1_Finish.mp3',
             right: '/SFX/1_Right.mp3',
             wrong: '/SFX/1_Wrong.mp3',
+            r1Timer5s: '/SFX/1_Start.mp3',
             r2StartRound: '/SFX/2_StartRound.mp3',
             r2RowShow: '/SFX/2_RowShow.mp3',
             r2RowChose: '/SFX/2_RowChose.mp3',
@@ -981,10 +1309,23 @@
             r3Time30: '/SFX/3_30.mp3',
             r3Answer: '/SFX/3_Answer.mp3',
             r3Right: '/SFX/3_Right.mp3',
-            r3Wrong: '/SFX/3_Wrong.mp3'
+            r3Wrong: '/SFX/3_Wrong.mp3',
+            r4StartRound: '/SFX/4_StartRound.mp3',
+            r4Player: '/SFX/4_Player.mp3',
+            r4Show: '/SFX/4_Show.mp3',
+            r4Pick: '/SFX/4_Pick.mp3',
+            r4Choose: '/SFX/4_Choose.mp3',
+            r4Right: '/SFX/4_Right.mp3',
+            r4Wrong: '/SFX/4_Wrong.mp3',
+            r4Star: '/SFX/4_Star.mp3',
+            r4Time15: '/SFX/4_15s.mp3',
+            r4Time20: '/SFX/4_20s.mp3',
+            r4Other: '/SFX/4_Other.mp3',
+            r4Chance: '/SFX/4_Chance.mp3',
+            r4Finish: '/SFX/4_Finish.mp3'
         };
 
-        // Preload Round 2 cell & puzzle piece images for instant swap (Appear, no flicker)
+        // Preload Round 2, 3, 4 images for instant swap (Appear, no flicker)
         [
             '/Media/2.bg.png',
             '/Media/2.count.png',
@@ -996,7 +1337,26 @@
             '/Media/Manh2.png',
             '/Media/Manh3.png',
             '/Media/Manh4.png',
-            '/Media/Manh5.png'
+            '/Media/Manh5.png',
+            '/Media/3_wrong.png',
+            '/Media/4.20.1.png',
+            '/Media/4.20.2.png',
+            '/Media/4.20.3.png',
+            '/Media/4.30.1.png',
+            '/Media/4.30.2.png',
+            '/Media/4.30.3.png',
+            '/Media/4.cau1.png',
+            '/Media/4.cau2.png',
+            '/Media/4.cau3.png',
+            '/Media/4.ts1.png',
+            '/Media/4.ts2.png',
+            '/Media/4.ts3.png',
+            '/Media/4.ts4.png',
+            '/Media/4.chuong1.png',
+            '/Media/4.chuong2.png',
+            '/Media/4.chuong3.png',
+            '/Media/4.chuong4.png',
+            '/Media/star.gif'
         ].forEach(src => {
             const img = new Image();
             img.src = src;
@@ -1015,8 +1375,6 @@
         let pendingBlockedAudio = null;
 
         function unlockProjectorAudio() {
-            const banner = document.getElementById('audio_unlock_banner');
-            if (banner) banner.style.display = 'none';
             if (pendingBlockedAudio) {
                 const { key, loop } = pendingBlockedAudio;
                 pendingBlockedAudio = null;
@@ -1078,8 +1436,6 @@
                     p.catch(err => {
                         if (err && err.name === 'NotAllowedError') {
                             pendingBlockedAudio = { key, loop: !!audio.loop };
-                            const banner = document.getElementById('audio_unlock_banner');
-                            if (banner) banner.style.display = 'block';
                         }
                     });
                 }
@@ -1119,6 +1475,24 @@
             stopAudioItem(sfxBank.r3Wrong);
         }
 
+        function stopAllRound4Audio(keepStartRound = false) {
+            if (!keepStartRound) {
+                stopAudioItem(sfxBank.r4StartRound);
+            }
+            stopAudioItem(sfxBank.r4Player);
+            stopAudioItem(sfxBank.r4Show);
+            stopAudioItem(sfxBank.r4Pick);
+            stopAudioItem(sfxBank.r4Choose);
+            stopAudioItem(sfxBank.r4Right);
+            stopAudioItem(sfxBank.r4Wrong);
+            stopAudioItem(sfxBank.r4Star);
+            stopAudioItem(sfxBank.r4Time15);
+            stopAudioItem(sfxBank.r4Time20);
+            stopAudioItem(sfxBank.r4Other);
+            stopAudioItem(sfxBank.r4Chance);
+            stopAudioItem(sfxBank.r4Finish);
+        }
+
         function stopAllRound1Audio() {
             stopThinkingLoops();
             stopAudioItem(sfxBank.startRound);
@@ -1128,6 +1502,7 @@
             stopAudioItem(sfxBank.finish);
             stopAudioItem(sfxBank.right);
             stopAudioItem(sfxBank.wrong);
+            stopAudioItem(sfxBank.r1Timer5s);
             pendingBlockedAudio = null;
         }
 
@@ -1540,20 +1915,38 @@
             }
         }
 
+        function applyRound2AnswerWarp(el) {
+            if (!el) return;
+            const box = el.parentElement;
+            if (!box) return;
+            el.style.fontSize = '48px';
+            el.style.transform = 'none';
+            const cs = window.getComputedStyle(box);
+            const padLeft = parseFloat(cs.paddingLeft) || 0;
+            const padRight = parseFloat(cs.paddingRight) || 0;
+            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight);
+            const boxRectWidth = box.getBoundingClientRect().width;
+            const stageScale = (box.offsetWidth > 0 && boxRectWidth > 0)
+                ? (boxRectWidth / box.offsetWidth)
+                : 1;
+            const rectWidth = el.getBoundingClientRect().width;
+            const textWidth = (rectWidth > 0 && stageScale > 0)
+                ? (rectWidth / stageScale)
+                : (el.scrollWidth || el.offsetWidth || 0);
+            if (textWidth > maxWidth && textWidth > 0) {
+                const ratio = maxWidth / textWidth;
+                el.style.transform = `scaleX(${ratio})`;
+            } else {
+                el.style.transform = 'none';
+            }
+        }
+
         function fitRound2AnswerText(el, text) {
             if (!el) return;
-            const clean = (text || '').toString().replace(/[\r\n\t]+/g, ' ').trim();
+            const clean = (text || '').toString().replace(/[\r\n\t]+/g, ' ').trim().toLocaleUpperCase('vi-VN');
             el.textContent = clean;
-            const len = clean.length;
-            if (len > 42) {
-                el.style.fontSize = '19px';
-            } else if (len > 28) {
-                el.style.fontSize = '22px';
-            } else if (len > 18) {
-                el.style.fontSize = '26px';
-            } else {
-                el.style.fontSize = '30px';
-            }
+            el.style.fontSize = '48px';
+            el.style.transform = 'none';
         }
 
         function handleRound2PrepareAnswers(data) {
@@ -1607,6 +2000,10 @@
                 const textLayer = document.getElementById('vs_answer_text_layer');
                 if (textLayer) {
                     textLayer.style.display = 'block';
+                    for (let i = 1; i <= 4; i++) {
+                        applyRound2AnswerWarp(document.getElementById(`vs_ans_p${i}_text`));
+                        applyRound2AnswerWarp(document.getElementById(`vs_ans_a${i}_text`));
+                    }
                 }
             }, 1750);
         }
@@ -1881,6 +2278,8 @@
             });
         }
 
+        let r3DisplayedRows = [];
+
         function hideRound3AnswerSceneContent() {
             if (r3AnswerRevealTimer) {
                 clearTimeout(r3AnswerRevealTimer);
@@ -1895,7 +2294,10 @@
             }
             const textLayer = document.getElementById('r3_answer_text_layer');
             if (textLayer) textLayer.style.display = 'none';
+            r3DisplayedRows = [];
             for (let i = 1; i <= 4; i++) {
+                const wrongImg = document.getElementById(`r3_wrong_overlay_${i}`);
+                if (wrongImg) wrongImg.style.display = 'none';
                 const pEl = document.getElementById(`r3_ans_p${i}_text`);
                 const aEl = document.getElementById(`r3_ans_a${i}_text`);
                 const tEl = document.getElementById(`r3_ans_t${i}_text`);
@@ -2143,6 +2545,7 @@
                     : '00.00';
 
                 items.push({
+                    id: parseInt(ts.id, 10) || (i + 1),
                     name: pName,
                     answer: ansText,
                     time: formattedTime,
@@ -2178,23 +2581,24 @@
             switchProjectorScene('3-answers');
 
             const sorted = sortRound3ContestantsForDisplay(data && data.contestants);
+            r3DisplayedRows = sorted;
             for (let i = 1; i <= 4; i++) {
                 const entry = sorted[i - 1] || { name: `Thí sinh ${i}`, answer: '', time: '00.00' };
                 const nameEl = document.getElementById(`r3_ans_p${i}_text`);
                 if (nameEl) {
-                    nameEl.textContent = (entry.name || '').toString().trim();
+                    nameEl.textContent = (entry.name || '').toString().trim().toLocaleUpperCase('vi-VN');
                     nameEl.style.fontSize = '48px';
                     nameEl.style.transform = 'none';
                 }
                 const ansEl = document.getElementById(`r3_ans_a${i}_text`);
                 if (ansEl) {
-                    ansEl.textContent = (entry.answer || '').toString().trim();
+                    ansEl.textContent = (entry.answer || '').toString().trim().toLocaleUpperCase('vi-VN');
                     ansEl.style.fontSize = '48px';
                     ansEl.style.transform = 'none';
                 }
                 const timeEl = document.getElementById(`r3_ans_t${i}_text`);
                 if (timeEl) {
-                    timeEl.textContent = (entry.time || '').toString().trim();
+                    timeEl.textContent = (entry.time || '').toString().trim().toLocaleUpperCase('vi-VN');
                     timeEl.style.fontSize = '48px';
                     timeEl.style.transform = 'none';
                 }
@@ -2294,6 +2698,470 @@
                 if (sumName) sumName.textContent = `${i}. ${item.name}`;
                 if (sumScore) sumScore.textContent = `${item.score ?? 0}`;
             }
+            if (typeof updateRound4MetaUI === 'function' && r4MetaRevealed) {
+                updateRound4MetaUI();
+            }
+        }
+
+        // Round 4 (Về Đích / Vinh Quang) State & Handlers
+        let r4MainContestant = 0; // 1..4
+        let r4SlotPoints = { 1: null, 2: null, 3: null }; // 20 | 30 | null
+        let r4MetaRevealed = false;
+        let r4MetaRevealTimer = null;
+        let r4LastStartRoundAt = 0;
+        let r4CurrentSlot = 0; // 1..3
+        let r4StealWinner = 0; // 1..4
+        let r4StarActive = false;
+
+        const r4ShowPackVideo = document.getElementById('r4_showpack_video');
+        if (r4ShowPackVideo) {
+            r4ShowPackVideo.addEventListener('ended', () => {
+                try { r4ShowPackVideo.pause(); } catch (e) {}
+            });
+        }
+
+        const r4ShowQuesVideo = document.getElementById('r4_showques_video');
+        if (r4ShowQuesVideo) {
+            // Pause on hold frame (~15s) before 4_showques_4P.mp4 animates out at 21s
+            r4ShowQuesVideo.addEventListener('timeupdate', () => {
+                if (r4ShowQuesVideo.currentTime >= 15.0 && !r4ShowQuesVideo.paused) {
+                    try { r4ShowQuesVideo.pause(); } catch (e) {}
+                }
+            });
+            r4ShowQuesVideo.addEventListener('ended', () => {
+                try { r4ShowQuesVideo.pause(); } catch (e) {}
+            });
+        }
+
+        const r4Timer15Video = document.getElementById('r4_timer_15s_video');
+        if (r4Timer15Video) {
+            r4Timer15Video.addEventListener('ended', () => {
+                try { r4Timer15Video.pause(); } catch (e) {}
+            });
+        }
+
+        const r4Timer20Video = document.getElementById('r4_timer_20s_video');
+        if (r4Timer20Video) {
+            r4Timer20Video.addEventListener('ended', () => {
+                try { r4Timer20Video.pause(); } catch (e) {}
+            });
+        }
+
+        function clearRound4Timers() {
+            if (r4MetaRevealTimer) {
+                clearTimeout(r4MetaRevealTimer);
+                r4MetaRevealTimer = null;
+            }
+        }
+
+        function hideRound4CauHighlights() {
+            for (let s = 1; s <= 3; s++) {
+                const el = document.getElementById(`r4_cau_hl_${s}`);
+                if (el) el.style.display = 'none';
+            }
+        }
+
+        function stopRound4TimerVideos() {
+            [r4Timer15Video, r4Timer20Video].forEach(vid => {
+                if (vid) {
+                    vid.style.display = 'none';
+                    try { vid.pause(); vid.currentTime = 0; } catch (e) {}
+                }
+            });
+        }
+
+        function hideRound4BellHighlights() {
+            for (let i = 1; i <= 4; i++) {
+                const chHl = document.getElementById(`r4_chuong_hl_${i}`);
+                if (chHl) chHl.style.display = 'none';
+            }
+        }
+
+        function setRound4StarVisible(visible, playSound = false) {
+            const wasActive = r4StarActive;
+            r4StarActive = !!visible;
+            const starEl = document.getElementById('r4_star_gif');
+            if (starEl) {
+                if (r4StarActive) {
+                    if (!wasActive) {
+                        starEl.src = '';
+                        starEl.src = '/Media/star.gif';
+                    }
+                    starEl.style.display = 'block';
+                } else {
+                    starEl.style.display = 'none';
+                }
+            }
+            if (r4StarActive && playSound) {
+                stopAudioItem(sfxBank.r4Star);
+                playSfx('r4Star', { loop: false });
+            } else if (!r4StarActive) {
+                stopAudioItem(sfxBank.r4Star);
+            }
+        }
+
+        function hideRound4PackHighlights() {
+            const layer = document.getElementById('r4_pack_highlights_layer');
+            if (layer) layer.style.display = 'none';
+            for (let s = 1; s <= 3; s++) {
+                [20, 30].forEach(pt => {
+                    const img = document.getElementById(`r4_pack_hl_${pt}_${s}`);
+                    const txt = document.getElementById(`r4_pack_txt_${pt}_${s}`);
+                    if (img) img.style.display = 'none';
+                    if (txt) txt.style.display = 'none';
+                });
+            }
+        }
+
+        function renderRound4PackHighlights() {
+            const layer = document.getElementById('r4_pack_highlights_layer');
+            if (!layer) return;
+            let anyShown = false;
+            for (let s = 1; s <= 3; s++) {
+                const pts = parseInt(r4SlotPoints[s], 10) || null;
+                [20, 30].forEach(pt => {
+                    const img = document.getElementById(`r4_pack_hl_${pt}_${s}`);
+                    const txt = document.getElementById(`r4_pack_txt_${pt}_${s}`);
+                    const show = (pts === pt);
+                    if (show) anyShown = true;
+                    if (img) img.style.display = show ? 'block' : 'none';
+                    if (txt) txt.style.display = show ? 'flex' : 'none';
+                });
+            }
+            layer.style.display = anyShown ? 'block' : 'none';
+        }
+
+        function applyRound4NameFit(textEl) {
+            if (!textEl || !textEl.parentElement) return;
+            textEl.style.transform = 'scaleX(1)';
+            const box = textEl.parentElement;
+            const cs = window.getComputedStyle(box);
+            const padL = parseFloat(cs.paddingLeft) || 0;
+            const padR = parseFloat(cs.paddingRight) || 0;
+            const avail = box.clientWidth - padL - padR;
+            const natural = textEl.scrollWidth || textEl.getBoundingClientRect().width;
+            if (avail > 0 && natural > avail) {
+                const ratio = Math.max(0.35, avail / natural);
+                textEl.style.transform = `scaleX(${ratio.toFixed(4)})`;
+            }
+        }
+
+        function updateRound4MetaUI() {
+            const mainIdx = (r4MainContestant >= 1 && r4MainContestant <= 4) ? r4MainContestant : 1;
+            for (let i = 1; i <= 4; i++) {
+                const c = r1Contestants[i - 1] || { name: `Thí sinh ${i}`, score: 0 };
+                const nameTextEl = document.getElementById(`r4_ts_name_text_${i}`);
+                if (nameTextEl) {
+                    nameTextEl.textContent = (i === mainIdx)
+                        ? `${c.name}`
+                        : `${c.name} (${c.score ?? 0})`;
+                    applyRound4NameFit(nameTextEl);
+                }
+                const tsHl = document.getElementById(`r4_ts_hl_${i}`);
+                if (tsHl) {
+                    tsHl.style.display = (r4MetaRevealed && i === mainIdx) ? 'block' : 'none';
+                }
+            }
+            const mainItem = r1Contestants[mainIdx - 1] || { name: `Thí sinh ${mainIdx}`, score: 0 };
+            const mainScoreEl = document.getElementById('r4_main_score_text');
+            if (mainScoreEl) {
+                mainScoreEl.textContent = `${mainItem.score ?? 0}`;
+            }
+            for (let s = 1; s <= 3; s++) {
+                const pEl = document.getElementById(`r4_q_point_text_${s}`);
+                if (pEl) {
+                    pEl.textContent = r4SlotPoints[s] ? `${r4SlotPoints[s]}` : '';
+                }
+            }
+        }
+
+        function syncRound4SlotsFromData(slotsObj) {
+            if (!slotsObj || typeof slotsObj !== 'object') return;
+            for (let s = 1; s <= 3; s++) {
+                const raw = slotsObj[s];
+                const pts = raw && typeof raw === 'object' ? parseInt(raw.points, 10) : parseInt(raw, 10);
+                r4SlotPoints[s] = (pts === 20 || pts === 30) ? pts : null;
+            }
+        }
+
+        function hideAllRound4Graphics() {
+            clearRound4Timers();
+            r4MetaRevealed = false;
+            r4CurrentSlot = 0;
+            r4StealWinner = 0;
+            if (r4ShowPackVideo) {
+                r4ShowPackVideo.style.display = 'none';
+                try { r4ShowPackVideo.pause(); r4ShowPackVideo.currentTime = 0; } catch (e) {}
+            }
+            if (r4ShowQuesVideo) {
+                r4ShowQuesVideo.style.display = 'none';
+                try { r4ShowQuesVideo.pause(); r4ShowQuesVideo.currentTime = 0; } catch (e) {}
+            }
+            stopRound4TimerVideos();
+            hideRound4PackHighlights();
+            hideRound4CauHighlights();
+            hideRound4BellHighlights();
+            setRound4StarVisible(false, false);
+            for (let i = 1; i <= 4; i++) {
+                const tsHl = document.getElementById(`r4_ts_hl_${i}`);
+                if (tsHl) tsHl.style.display = 'none';
+            }
+            const metaLayer = document.getElementById('r4_meta_layer');
+            if (metaLayer) metaLayer.style.display = 'none';
+            const qBox = document.getElementById('r4_question_box');
+            const qText = document.getElementById('r4_question_text');
+            if (qBox) qBox.style.display = 'none';
+            if (qText) qText.textContent = '';
+        }
+
+        function handleRound4ShowPacks(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data.contestants) syncContestantsData(data.contestants);
+            if (data.mainContestant) {
+                const mc = parseInt(data.mainContestant, 10);
+                if (mc >= 1 && mc <= 4) r4MainContestant = mc;
+            }
+            if (data.slots) syncRound4SlotsFromData(data.slots);
+
+            switchProjectorScene(4);
+            clearRound4Timers();
+            r4MetaRevealed = false;
+            r4CurrentSlot = 0;
+            r4StealWinner = 0;
+
+            if (r4ShowQuesVideo) {
+                r4ShowQuesVideo.style.display = 'none';
+                try { r4ShowQuesVideo.pause(); r4ShowQuesVideo.currentTime = 0; } catch (e) {}
+            }
+            stopRound4TimerVideos();
+            hideRound4CauHighlights();
+            hideRound4BellHighlights();
+            setRound4StarVisible(false, false);
+            for (let i = 1; i <= 4; i++) {
+                const tsHl = document.getElementById(`r4_ts_hl_${i}`);
+                if (tsHl) tsHl.style.display = 'none';
+            }
+            const metaLayer = document.getElementById('r4_meta_layer');
+            if (metaLayer) metaLayer.style.display = 'none';
+            const qBox = document.getElementById('r4_question_box');
+            if (qBox) qBox.style.display = 'none';
+
+            if (r4ShowPackVideo) {
+                r4ShowPackVideo.style.display = 'block';
+                try {
+                    r4ShowPackVideo.currentTime = 0;
+                    const vp = r4ShowPackVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+            renderRound4PackHighlights();
+
+            stopAudioItem(sfxBank.r4StartRound);
+            stopAudioItem(sfxBank.r4Player);
+            stopAudioItem(sfxBank.r4Choose);
+            stopAudioItem(sfxBank.r4Show);
+            playSfx('r4Show', { loop: false });
+        }
+
+        function handleRound4PickPoint(data) {
+            switchProjectorScene(4);
+            if (data.slots) {
+                syncRound4SlotsFromData(data.slots);
+            } else if (data.slot) {
+                const s = parseInt(data.slot, 10);
+                if (s >= 1 && s <= 3) {
+                    const pt = parseInt(data.points, 10);
+                    r4SlotPoints[s] = (pt === 20 || pt === 30) ? pt : null;
+                }
+            }
+            renderRound4PackHighlights();
+            if (data.playPickSound) {
+                stopAudioItem(sfxBank.r4Pick);
+                playSfx('r4Pick', { loop: false });
+            }
+        }
+
+        function handleRound4ChoosePack(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data.contestants) syncContestantsData(data.contestants);
+            if (data.mainContestant) {
+                const mc = parseInt(data.mainContestant, 10);
+                if (mc >= 1 && mc <= 4) r4MainContestant = mc;
+            }
+            if (data.slots) syncRound4SlotsFromData(data.slots);
+
+            switchProjectorScene(4);
+            clearRound4Timers();
+            r4MetaRevealed = false;
+            r4CurrentSlot = 0;
+            r4StealWinner = 0;
+
+            // Hide pack highlight overlays and 4_showpack.mp4
+            hideRound4PackHighlights();
+            stopRound4TimerVideos();
+            hideRound4CauHighlights();
+            hideRound4BellHighlights();
+            setRound4StarVisible(false, false);
+            if (r4ShowPackVideo) {
+                r4ShowPackVideo.style.display = 'none';
+                try { r4ShowPackVideo.pause(); r4ShowPackVideo.currentTime = 0; } catch (e) {}
+            }
+            for (let i = 1; i <= 4; i++) {
+                const tsHl = document.getElementById(`r4_ts_hl_${i}`);
+                if (tsHl) tsHl.style.display = 'none';
+            }
+            const metaLayer = document.getElementById('r4_meta_layer');
+            if (metaLayer) metaLayer.style.display = 'none';
+            const qBox = document.getElementById('r4_question_box');
+            const qText = document.getElementById('r4_question_text');
+            if (qBox) qBox.style.display = 'none';
+            if (qText) qText.textContent = '';
+
+            // Play 4_Choose.mp3 and 4_showques_4P.mp4
+            stopAudioItem(sfxBank.r4StartRound);
+            stopAudioItem(sfxBank.r4Player);
+            stopAudioItem(sfxBank.r4Show);
+            stopAudioItem(sfxBank.r4Pick);
+            stopAudioItem(sfxBank.r4Choose);
+            playSfx('r4Choose', { loop: false });
+
+            if (r4ShowQuesVideo) {
+                r4ShowQuesVideo.style.display = 'block';
+                try {
+                    r4ShowQuesVideo.currentTime = 0;
+                    const vp = r4ShowQuesVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+
+            // Reveal names, main contestant highlight, main score, and 3 question points after 2.5s
+            r4MetaRevealTimer = setTimeout(() => {
+                r4MetaRevealed = true;
+                const layer = document.getElementById('r4_meta_layer');
+                if (layer) layer.style.display = 'block';
+                updateRound4MetaUI();
+            }, 2500);
+        }
+
+        function handleRound4ShowQuestion(data) {
+            if (data.contestants) syncContestantsData(data.contestants);
+            if (data.mainContestant) {
+                const mc = parseInt(data.mainContestant, 10);
+                if (mc >= 1 && mc <= 4) r4MainContestant = mc;
+            }
+            if (data.slots) syncRound4SlotsFromData(data.slots);
+            const slotNum = parseInt(data.slot, 10);
+            if (slotNum >= 1 && slotNum <= 3) {
+                r4CurrentSlot = slotNum;
+            } else if (!r4CurrentSlot) {
+                r4CurrentSlot = 1;
+            }
+
+            switchProjectorScene(4);
+            r4StealWinner = 0;
+            stopRound4TimerVideos();
+            hideRound4BellHighlights();
+            hideRound4CauHighlights();
+            if (r4CurrentSlot >= 1 && r4CurrentSlot <= 3) {
+                const cauHl = document.getElementById(`r4_cau_hl_${r4CurrentSlot}`);
+                if (cauHl) cauHl.style.display = 'block';
+            }
+
+            if (r4ShowQuesVideo && r4ShowQuesVideo.style.display !== 'block') {
+                r4ShowQuesVideo.style.display = 'block';
+                try {
+                    r4ShowQuesVideo.currentTime = 15.0;
+                    r4ShowQuesVideo.pause();
+                } catch (e) {}
+            }
+            clearRound4Timers();
+            r4MetaRevealed = true;
+            const layer = document.getElementById('r4_meta_layer');
+            if (layer) layer.style.display = 'block';
+            updateRound4MetaUI();
+
+            const qBox = document.getElementById('r4_question_box');
+            const qText = document.getElementById('r4_question_text');
+            if (qText) {
+                const txt = (data.questionText || '').toString().trim();
+                qText.textContent = txt;
+            }
+            if (qBox) {
+                qBox.style.display = 'flex';
+            }
+            if (data.hasStar !== undefined || data.starActive !== undefined) {
+                const nextStar = (data.hasStar !== undefined) ? !!data.hasStar : !!data.starActive;
+                setRound4StarVisible(nextStar, false);
+            }
+        }
+
+        function handleRound4StartTimer(data) {
+            switchProjectorScene(4);
+            if (data.mainContestant) {
+                const mc = parseInt(data.mainContestant, 10);
+                if (mc >= 1 && mc <= 4) r4MainContestant = mc;
+            }
+            r4StealWinner = 0;
+            hideRound4BellHighlights();
+            stopRound4TimerVideos();
+            stopAudioItem(sfxBank.r4Time15);
+            stopAudioItem(sfxBank.r4Time20);
+            stopAudioItem(sfxBank.r4Other);
+            stopAudioItem(sfxBank.r4Chance);
+
+            const dur = parseInt(data.duration, 10) || 0;
+            const pts = parseInt(data.pack, 10) || 0;
+            const is20s = (dur === 20 || (dur === 0 && pts === 30));
+
+            const targetVid = is20s ? r4Timer20Video : r4Timer15Video;
+            if (targetVid) {
+                targetVid.style.display = 'block';
+                try {
+                    targetVid.currentTime = 0;
+                    const vp = targetVid.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+            playSfx(is20s ? 'r4Time20' : 'r4Time15', { loop: false });
+        }
+
+        function handleRound4Start5s(data) {
+            switchProjectorScene(4);
+            if (data && data.contestants) {
+                syncContestantsData(data.contestants);
+                if (r4MetaRevealed) updateRound4MetaUI();
+            }
+            if (data && data.mainContestant) {
+                const mc = parseInt(data.mainContestant, 10);
+                if (mc >= 1 && mc <= 4) r4MainContestant = mc;
+            }
+            r4StealWinner = 0;
+            hideRound4BellHighlights();
+            stopAudioItem(sfxBank.r4Time15);
+            stopAudioItem(sfxBank.r4Time20);
+            stopAudioItem(sfxBank.r4Other);
+            stopAudioItem(sfxBank.r4Chance);
+            playSfx('r4Other', { loop: false });
+        }
+
+        function handleRound4BuzzerPress(winnerId) {
+            const id = parseInt(winnerId, 10) || 0;
+            if (id < 1 || id > 4) return;
+            if (id === r4MainContestant) return;
+            if (r4StealWinner !== 0) return;
+
+            switchProjectorScene(4);
+            r4StealWinner = id;
+            hideRound4BellHighlights();
+            const chHl = document.getElementById(`r4_chuong_hl_${id}`);
+            if (chHl) chHl.style.display = 'block';
+
+            stopAudioItem(sfxBank.r4Chance);
+            playSfx('r4Chance', { loop: false });
         }
 
         function updateActiveHighlight(turnIdx) {
@@ -2324,18 +3192,8 @@
 
             const cleanText = (text || '').toString().trim();
             textEl.textContent = cleanText;
-
-            const len = cleanText.length;
-            if (len > 360) {
-                textEl.style.fontSize = '22px';
-                textEl.style.lineHeight = '1.25';
-            } else if (len > 260) {
-                textEl.style.fontSize = '25px';
-                textEl.style.lineHeight = '1.28';
-            } else {
-                textEl.style.fontSize = '28px';
-                textEl.style.lineHeight = '1.32';
-            }
+            textEl.style.fontSize = '28px';
+            textEl.style.lineHeight = '1.32';
         }
 
         function hideAllRound1Graphics() {
@@ -2458,7 +3316,7 @@
             }
             isRound1GraphicsShown = true;
             xpFastestWinner = 0;
-            xpBuzzerOpen = (activeTurnIndex === 5);
+            xpBuzzerOpen = (activeTurnIndex === 5 && data.unlockBells !== false);
 
             if (activeTurnIndex === 5) {
                 updateActiveHighlight(0);
@@ -2486,7 +3344,7 @@
                 activeTurnIndex = parseInt(data.turnIndex, 10) || activeTurnIndex;
             }
             xpFastestWinner = 0;
-            xpBuzzerOpen = (activeTurnIndex === 5);
+            xpBuzzerOpen = (activeTurnIndex === 5 && data.unlockBells !== false);
             if (activeTurnIndex === 5) {
                 updateActiveHighlight(0);
             }
@@ -2640,11 +3498,184 @@
                         hideAllRound1Graphics();
                         hideAllRound2Graphics();
                         hideAllRound3Graphics();
+                        hideAllRound4Graphics();
                         stopAllRound1Audio();
                         stopAllRound2Audio();
                         stopAllRound3Audio();
+                        stopAllRound4Audio();
                         playSfx('r2StartRound', { loop: false });
+                    } else if (data.roundIndex === 4 || data.round === 'VINH_QUANG' || data.activeRound === 'VINH_QUANG') {
+                        switchProjectorScene(4);
+                        activeTurnIndex = 0;
+                        xpFastestWinner = 0;
+                        xpBuzzerOpen = false;
+                        hideAllRound1Graphics();
+                        hideAllRound2Graphics();
+                        hideAllRound3Graphics();
+                        hideAllRound4Graphics();
+                        stopAllRound1Audio();
+                        stopAllRound2Audio();
+                        stopAllRound3Audio();
+                        stopAllRound4Audio();
+                        r4LastStartRoundAt = Date.now();
+                        playSfx('r4StartRound', { loop: false });
                     }
+                    break;
+                }
+
+                case 'VINH_QUANG_INTRO': {
+                    handleIntroStop();
+                    const summaryEl = document.getElementById('summary_overlay');
+                    if (summaryEl) summaryEl.style.display = 'none';
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    switchProjectorScene(4);
+                    hideAllRound1Graphics();
+                    hideAllRound2Graphics();
+                    hideAllRound3Graphics();
+                    hideAllRound4Graphics();
+                    stopAllRound1Audio();
+                    stopAllRound2Audio();
+                    stopAllRound3Audio();
+                    if (Date.now() - r4LastStartRoundAt > 800) {
+                        stopAllRound4Audio();
+                        r4LastStartRoundAt = Date.now();
+                        playSfx('r4StartRound', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'VINH_QUANG_SELECT_PLAYER': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    const mc = parseInt(data.contestantIndex || data.mainContestant, 10) || 0;
+                    if (mc >= 1 && mc <= 4) {
+                        r4MainContestant = mc;
+                    }
+                    switchProjectorScene(4);
+                    if (r4MetaRevealed) {
+                        updateRound4MetaUI();
+                    }
+                    stopAudioItem(sfxBank.r4StartRound);
+                    stopAudioItem(sfxBank.r4Player);
+                    playSfx('r4Player', { loop: false });
+                    break;
+                }
+
+                case 'VINH_QUANG_SHOW_PACKS': {
+                    handleRound4ShowPacks(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_PICK_POINT': {
+                    handleRound4PickPoint(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_CHOOSE_PACK': {
+                    handleRound4ChoosePack(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_SHOW_QUESTION': {
+                    handleRound4ShowQuestion(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_START_TIMER': {
+                    handleRound4StartTimer(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_START_TIMER_5S':
+                case 'VINH_QUANG_UNLOCK_BELLS': {
+                    handleRound4Start5s(data);
+                    break;
+                }
+
+                case 'VINH_QUANG_SHOW_FASTEST_HL': {
+                    const wId = data.winnerId || data.contestantId || data.contestantIndex || data.whoBuzzed;
+                    handleRound4BuzzerPress(wId);
+                    break;
+                }
+
+                case 'VINH_QUANG_LOCK_BELLS': {
+                    break;
+                }
+
+                case 'VINH_QUANG_STAR_OF_HOPE': {
+                    switchProjectorScene(4);
+                    const nextActive = (data.active !== undefined)
+                        ? !!data.active
+                        : (data.hasStar !== undefined ? !!data.hasStar : !r4StarActive);
+                    setRound4StarVisible(nextActive, nextActive);
+                    break;
+                }
+
+                case 'VINH_QUANG_RIGHT': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    else if (data.gameData && data.gameData.contestants) syncContestantsData(data.gameData.contestants);
+                    if (r4MetaRevealed) updateRound4MetaUI();
+                    stopRound4TimerVideos();
+                    stopAudioItem(sfxBank.r4Time15);
+                    stopAudioItem(sfxBank.r4Time20);
+                    stopAudioItem(sfxBank.r4Other);
+                    stopAudioItem(sfxBank.r4Right);
+                    stopAudioItem(sfxBank.r4Wrong);
+                    playSfx('r4Right', { loop: false });
+                    break;
+                }
+
+                case 'VINH_QUANG_WRONG': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    else if (data.gameData && data.gameData.contestants) syncContestantsData(data.gameData.contestants);
+                    if (r4MetaRevealed) updateRound4MetaUI();
+                    stopRound4TimerVideos();
+                    stopAudioItem(sfxBank.r4Time15);
+                    stopAudioItem(sfxBank.r4Time20);
+                    stopAudioItem(sfxBank.r4Other);
+                    stopAudioItem(sfxBank.r4Right);
+                    stopAudioItem(sfxBank.r4Wrong);
+                    playSfx('r4Wrong', { loop: false });
+                    break;
+                }
+
+                case 'VINH_QUANG_HIDE_QUESTION': {
+                    const qBox = document.getElementById('r4_question_box');
+                    if (qBox) qBox.style.display = 'none';
+                    hideRound4CauHighlights();
+                    stopRound4TimerVideos();
+                    hideRound4BellHighlights();
+                    r4StealWinner = 0;
+                    break;
+                }
+
+                case 'VINH_QUANG_HIDE_ALL': {
+                    switchProjectorScene(4);
+                    hideAllRound4Graphics();
+                    stopAllRound4Audio();
+                    break;
+                }
+
+                case 'VINH_QUANG_FINISH': {
+                    handleIntroStop();
+                    const summaryEl = document.getElementById('summary_overlay');
+                    if (summaryEl) summaryEl.style.display = 'none';
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    r4MainContestant = 0;
+                    r4SlotPoints = { 1: null, 2: null, 3: null };
+                    switchProjectorScene(4);
+                    hideAllRound4Graphics();
+                    stopAllRound4Audio();
+                    playSfx('r4Finish', { loop: false });
+                    break;
+                }
+
+                case 'VINH_QUANG_RESET': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    r4MainContestant = 0;
+                    r4SlotPoints = { 1: null, 2: null, 3: null };
+                    switchProjectorScene(4);
+                    hideAllRound4Graphics();
+                    stopAllRound4Audio(!!data.keepRoundStartSound);
                     break;
                 }
 
@@ -2694,6 +3725,27 @@
 
                 case 'RA_KHOI_GRADE_RESULT': {
                     if (data.contestants) syncContestantsData(data.contestants);
+                    const correctIds = Array.isArray(data.correctIds)
+                        ? data.correctIds.map(id => parseInt(id, 10)).filter(n => n >= 1 && n <= 4)
+                        : [];
+                    const wrongRows = Array.isArray(data.wrongRows)
+                        ? data.wrongRows.map(r => parseInt(r, 10)).filter(n => n >= 1 && n <= 4)
+                        : null;
+
+                    for (let rowIdx = 1; rowIdx <= 4; rowIdx++) {
+                        const wrongImg = document.getElementById(`r3_wrong_overlay_${rowIdx}`);
+                        if (!wrongImg) continue;
+                        let isWrong = false;
+                        if (r3DisplayedRows && r3DisplayedRows[rowIdx - 1] && r3DisplayedRows[rowIdx - 1].id) {
+                            isWrong = !correctIds.includes(r3DisplayedRows[rowIdx - 1].id);
+                        } else if (wrongRows !== null) {
+                            isWrong = wrongRows.includes(rowIdx);
+                        } else {
+                            isWrong = !data.hasCorrect;
+                        }
+                        wrongImg.style.display = isWrong ? 'block' : 'none';
+                    }
+
                     stopAudioItem(sfxBank.r3Right);
                     stopAudioItem(sfxBank.r3Wrong);
                     if (data.hasCorrect) {
@@ -2911,18 +3963,29 @@
                     break;
                 }
 
+                case 'XUAT_PHAT_START_TIMER': {
+                    stopThinkingLoops();
+                    playSfx('r1Timer5s', { loop: false });
+                    break;
+                }
+
                 case 'PLAYER_RING_BELL':
                 case 'RING_BELL': {
                     const r = (data.round || '').toString().toUpperCase();
                     const isR2SceneActive =
                         document.getElementById('view-file-2')?.classList.contains('active') ||
                         document.getElementById('view-file-2-answers')?.classList.contains('active');
-                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && !isR2SceneActive && activeTurnIndex === 5)) {
+                    const isR4SceneActive =
+                        document.getElementById('view-file-4')?.classList.contains('active');
+                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && !isR2SceneActive && !isR4SceneActive && activeTurnIndex === 5)) {
                         const winner = data.winnerId || data.contestantId || data.contestantIndex;
                         handleXuatPhatFastestBuzz(winner, false);
                     } else if (r === 'VS' || r === 'VUOT_SONG' || r === 'VCNV' || r === 'CNV' || (!r && isR2SceneActive)) {
                         const buzzTs = data.contestantId || data.winnerId || data.contestantIndex;
                         handleRound2BuzzerPress(buzzTs, data.contestantName);
+                    } else if (r === 'VQ' || r === 'VINH_QUANG' || r === 'VE_DICH' || (!r && isR4SceneActive)) {
+                        const buzzTs = data.winnerId || data.contestantId || data.contestantIndex;
+                        handleRound4BuzzerPress(buzzTs);
                     }
                     break;
                 }
@@ -3033,6 +4096,7 @@
                     stopAllRound1Audio();
                     stopAllRound2Audio();
                     stopAllRound3Audio();
+                    stopAllRound4Audio();
                     break;
                 }
 
@@ -3085,13 +4149,17 @@
 
                 case 'RESET_ALL_DATA': {
                     activeTurnIndex = 0;
+                    r4MainContestant = 0;
+                    r4SlotPoints = { 1: null, 2: null, 3: null };
                     switchProjectorScene(1);
                     hideAllRound1Graphics();
                     hideAllRound2Graphics();
                     hideAllRound3Graphics();
+                    hideAllRound4Graphics();
                     stopAllRound1Audio();
                     stopAllRound2Audio();
                     stopAllRound3Audio();
+                    stopAllRound4Audio();
                     r1Contestants = [
                         { name: 'Thí sinh 1', score: 0 },
                         { name: 'Thí sinh 2', score: 0 },
@@ -3198,7 +4266,196 @@
             }
         }
 
+        // Transparent Chroma-Key Renderer for green-screen (#13ff08) MP4 overlay videos
+        function initChromaKeyOverlayVideos() {
+            const videoIds = [
+                'r4_showpack_video',
+                'r4_showques_video',
+                'r4_timer_15s_video',
+                'r4_timer_20s_video'
+            ];
+            const videos = videoIds.map(id => document.getElementById(id)).filter(Boolean);
+            if (videos.length === 0) return;
+
+            const glCanvas = document.createElement('canvas');
+            glCanvas.width = 1920;
+            glCanvas.height = 1080;
+            const gl = glCanvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true })
+                || glCanvas.getContext('experimental-webgl', { alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true });
+            if (!gl) return;
+
+            const vsSrc = `
+                attribute vec2 a_pos;
+                varying vec2 v_uv;
+                void main() {
+                    v_uv = vec2((a_pos.x + 1.0) * 0.5, 1.0 - (a_pos.y + 1.0) * 0.5);
+                    gl_Position = vec4(a_pos, 0.0, 1.0);
+                }
+            `;
+            const fsSrc = `
+                precision mediump float;
+                uniform sampler2D u_tex;
+                varying vec2 v_uv;
+                void main() {
+                    vec4 c = texture2D(u_tex, v_uv);
+                    float maxRB = max(c.r, c.b);
+                    float greenness = c.g - maxRB;
+                    float alpha = 1.0 - smoothstep(0.14, 0.36, greenness);
+                    if (alpha <= 0.01) {
+                        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                        return;
+                    }
+                    if (alpha < 0.99 && c.g > maxRB) {
+                        c.g = mix(c.g, maxRB + 0.02, 1.0 - alpha);
+                    }
+                    gl_FragColor = vec4(c.rgb * alpha, alpha);
+                }
+            `;
+
+            function compileShader(type, src) {
+                const s = gl.createShader(type);
+                gl.shaderSource(s, src);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                    gl.deleteShader(s);
+                    return null;
+                }
+                return s;
+            }
+
+            const vs = compileShader(gl.VERTEX_SHADER, vsSrc);
+            const fs = compileShader(gl.FRAGMENT_SHADER, fsSrc);
+            if (!vs || !fs) return;
+
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+            gl.useProgram(prog);
+
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+            const posLoc = gl.getAttribLocation(prog, 'a_pos');
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            const tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+            const entries = videos.map(video => {
+                const canvas = document.createElement('canvas');
+                canvas.id = `${video.id}_chroma_canvas`;
+                canvas.className = 'chroma-key-canvas';
+                canvas.width = 1920;
+                canvas.height = 1080;
+
+                const cs = window.getComputedStyle(video);
+                canvas.style.zIndex = cs.zIndex || '10';
+                canvas.style.display = video.style.display || cs.display || 'none';
+                canvas.style.opacity = video.style.opacity || cs.opacity || '1';
+
+                video.parentNode.insertBefore(canvas, video.nextSibling);
+                video.classList.add('chroma-key-hidden-video');
+
+                const ctx2d = canvas.getContext('2d', { alpha: true });
+                const entry = { video, canvas, ctx2d, dirty: true };
+
+                const syncVisibility = () => {
+                    const vDisplay = video.style.display;
+                    const vOpacity = video.style.opacity;
+                    canvas.style.display = vDisplay !== '' ? vDisplay : 'none';
+                    if (vOpacity !== '') canvas.style.opacity = vOpacity;
+                    entry.dirty = true;
+                    scheduleRender();
+                };
+
+                const obs = new MutationObserver(syncVisibility);
+                obs.observe(video, { attributes: true, attributeFilter: ['style'] });
+
+                ['loadeddata', 'seeked', 'play', 'playing', 'pause', 'ended'].forEach(evt => {
+                    video.addEventListener(evt, () => {
+                        entry.dirty = true;
+                        scheduleRender();
+                    });
+                });
+
+                return entry;
+            });
+
+            let rafId = null;
+            function scheduleRender() {
+                if (rafId !== null) return;
+                rafId = requestAnimationFrame(renderFrame);
+            }
+
+            function renderFrame() {
+                rafId = null;
+                let keepRunning = false;
+
+                for (const entry of entries) {
+                    const { video, canvas, ctx2d } = entry;
+                    const scene = video.closest('.projector-scene');
+                    const sceneActive = !scene || scene.classList.contains('active');
+                    const isVisible = sceneActive && canvas.style.display !== 'none' && canvas.style.opacity !== '0';
+                    if (!isVisible) continue;
+
+                    const isPlaying = !video.paused && !video.ended;
+                    if (isPlaying) keepRunning = true;
+                    if (!isPlaying && !entry.dirty) continue;
+                    if (video.readyState < 2) {
+                        keepRunning = true;
+                        continue;
+                    }
+
+                    const vw = video.videoWidth || 1920;
+                    const vh = video.videoHeight || 1080;
+                    if (glCanvas.width !== vw || glCanvas.height !== vh) {
+                        glCanvas.width = vw;
+                        glCanvas.height = vh;
+                    }
+                    if (canvas.width !== vw || canvas.height !== vh) {
+                        canvas.width = vw;
+                        canvas.height = vh;
+                    }
+
+                    gl.viewport(0, 0, vw, vh);
+                    gl.clearColor(0, 0, 0, 0);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    gl.bindTexture(gl.TEXTURE_2D, tex);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+                    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+                    ctx2d.clearRect(0, 0, vw, vh);
+                    ctx2d.drawImage(glCanvas, 0, 0, vw, vh);
+                    entry.dirty = false;
+                }
+
+                if (keepRunning) {
+                    scheduleRender();
+                }
+            }
+
+            // Re-render when scenes switch
+            const stageWrapper = document.getElementById('stage-wrapper');
+            if (stageWrapper) {
+                const sceneObs = new MutationObserver(() => {
+                    entries.forEach(e => { e.dirty = true; });
+                    scheduleRender();
+                });
+                sceneObs.observe(stageWrapper, { subtree: true, attributes: true, attributeFilter: ['class'] });
+            }
+
+            scheduleRender();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            initChromaKeyOverlayVideos();
             renderContestantsUI();
             applyVolumeAll();
             hydrateInitialProjectorState();

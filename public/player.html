@@ -629,7 +629,7 @@
                 <div class="section-label">Khởi Động</div>
                 <div class="scene-title">VÒNG THI KHỞI ĐỘNG</div>
 
-                <div class="score-box-s1">
+                <div class="score-box-s1" id="s1_score_box">
                     <span class="score-label-s1">Số câu đúng:</span>
                     <span class="score-value-s1" id="s1_correct_count">0/0</span>
                 </div>
@@ -637,6 +637,7 @@
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
                     <span class="timer-value" id="s1_timer">60</span>
+                    <span id="s1_5s_alert" style="display: none; background: #dc2626; color: #ffffff; font-size: 0.95rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(220,38,38,0.35);">CÒN 5S TRẢ LỜI!</span>
                 </div>
 
                 <div class="player-score-header">
@@ -665,9 +666,6 @@
                         <button class="btn-bell" id="s1_btn_bell" onclick="ringBell('KD')">
                             GIÀNH QUYỀN TRẢ LỜI
                         </button>
-                        <div class="bell-feedback" id="s1_bell_feedback">
-                             ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!
-                        </div>
                     </div>
                 </div>
             </div>
@@ -756,24 +754,22 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; width: 55%; max-width: 600px; margin-top: 4px;">
-                        <button class="btn-bell" id="s3_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="ringBell('VUOT_SONG')">TRẢ LỜI ĐÁP ÁN VÒNG THI</button>
+                        <button class="btn-bell" id="s3_btn_bell" style="width: 100%; padding: 10px 14px; font-size: 1.1rem; min-height: 48px; border-radius: 8px;" onclick="ringBell('VUOT_SONG')">TRẢ LỜI ĐÁP ÁN CHƯỚNG NGẠI VẬT</button>
                     </div>
-                    <div class="bell-feedback" id="s3_bell_feedback" style="display: none; margin-top: 6px;">
-                        ĐÃ BẤM CHUÔNG TRẢ LỜI ĐÁP ÁN VÒNG THI!
-                    </div>
+                    <div class="bell-feedback" id="s3_bell_feedback" style="display: none; margin-top: 6px;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- SCENE 4: VINH QUANG -->
+        <!-- SCENE 4: VỀ ĐÍCH -->
         <div class="scene-container" id="scene-4">
             <div class="scene-header">
-                <div class="section-label">Vinh Quang</div>
-                <div class="scene-title">VÒNG THI VINH QUANG</div>
+                <div class="section-label">Về Đích</div>
+                <div class="scene-title">VÒNG THI VỀ ĐÍCH</div>
 
                 <div class="timer-box">
                     <span class="clock-icon">⏰</span>
-                    <span class="timer-value" id="s4_timer">25</span>
+                    <span class="timer-value" id="s4_timer">20</span>
                 </div>
 
                 <div class="player-score-header">
@@ -787,19 +783,14 @@
 
             <div class="scene-main">
                 <div class="question-area">
-                    <div class="row-label" id="s4_row_label">Câu hỏi Vinh Quang</div>
+                    <div class="row-label" id="s4_row_label">Câu hỏi Về Đích</div>
                     <div class="black-box" id="s4_q_text" style="height: 240px;"></div>
                 </div>
 
-                <div class="answer-area">
-                    <div class="input-group">
-                        <input type="text" id="s4_ans_input" class="answer-input" placeholder="Đang khóa (Chỉ mở khi bấm 25s)..." disabled readonly autocomplete="off" oninput="onPlayerAnswerTyping('VQ')">
-                    </div>
-
-                    <div class="status-group">
-                        <div class="status-label"> </div>
-                        <div class="status-bar" id="s4_status_bar">---</div>
-                    </div>
+                <div class="action-area" id="s4_action_area" style="display: flex; margin-top: 10px; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                    <button class="btn-bell" id="s4_btn_bell" onclick="ringBell('VQ')" disabled style="opacity: 0.4; cursor: not-allowed;">
+                        BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI
+                    </button>
                 </div>
             </div>
         </div>
@@ -921,7 +912,7 @@
                 }
             } else {
                 if (btn) {
-                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN VÒNG THI';
+                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN CHƯỚNG NGẠI VẬT';
                     if (!btn.classList.contains('pressed')) {
                         btn.disabled = false;
                         btn.style.opacity = '1';
@@ -996,13 +987,13 @@
             localStorage.setItem('ddvq_room_code', currentRoomCode);
 
             // Setup enter key listener on input fields
-            ['s2_ans_input', 's3_ans_input', 's4_ans_input', 's5_ans_input'].forEach(id => {
+            ['s2_ans_input', 's3_ans_input', 's5_ans_input'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            const roundKey = id.startsWith('s2') ? 'RA_KHOI' : (id.startsWith('s3') ? 'VUOT_SONG' : (id.startsWith('s4') ? 'VINH_QUANG' : 'CHP'));
+                            const roundKey = id.startsWith('s2') ? 'RA_KHOI' : (id.startsWith('s3') ? 'VUOT_SONG' : 'CHP');
                             submitPlayerAnswer(roundKey);
                         }
                     });
@@ -1096,7 +1087,6 @@
             if (prevScene === 4 && sceneNum !== 4) {
                 isVQ25sActive = false;
                 lastVQTimerStartTime = 0;
-                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
             }
             for (let i = 1; i <= 5; i++) {
                 const sc = document.getElementById(`scene-${i}`);
@@ -1107,7 +1097,6 @@
             }
             if (sceneNum === 4 && (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0)) {
                 isVQ25sActive = false;
-                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
             }
             if (sceneNum === 3) {
                 applyVSPlayerLockUI();
@@ -1116,19 +1105,47 @@
 
         let isBellLocked = true;
         let s1FastestBuzzedId = 0;
+        let s1BellUnlockedAt = 0;
+        let s4MainContestant = 0;
+        let s4FastestBuzzedId = 0;
+        let isS4BellOpen = false;
+        let s4BellUnlockedAt = 0;
 
         function applyS1Turn5ModeUI() {
             const actionArea = document.getElementById('s1_action_area');
             const randomWrap = document.getElementById('s1_random_btn_wrap');
             const qTextBox = document.getElementById('s1_q_text');
+            const scoreBox = document.getElementById('s1_score_box') || document.querySelector('.score-box-s1');
             if (currentXuatPhatTurnIndex === 5) {
+                if (scoreBox) scoreBox.style.display = 'none';
                 if (randomWrap) randomWrap.style.display = 'none';
                 if (actionArea) actionArea.style.display = 'flex';
                 if (qTextBox) qTextBox.style.height = '40vh';
             } else {
+                if (scoreBox) scoreBox.style.display = 'flex';
                 if (randomWrap) randomWrap.style.display = 'none';
                 if (actionArea) actionArea.style.display = 'none';
                 if (qTextBox) qTextBox.style.height = '60vh';
+            }
+        }
+
+        function setS1BellWaitingLock(lockText) {
+            s1FastestBuzzedId = 0;
+            isBellLocked = true;
+            const btn = document.getElementById('s1_btn_bell');
+            if (btn) {
+                btn.classList.remove('pressed', 'active');
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+                btn.innerText = lockText || 'CHỜ MỞ CHUÔNG...';
+            }
+        }
+
+        function setS15sAlertVisible(visible) {
+            const alertEl = document.getElementById('s1_5s_alert');
+            if (alertEl) {
+                alertEl.style.display = visible ? 'inline-flex' : 'none';
             }
         }
 
@@ -1143,17 +1160,55 @@
                 btn.style.opacity = '0.4';
                 btn.style.cursor = 'not-allowed';
             }
-            const feedback = document.getElementById('s1_bell_feedback');
-            if (feedback) {
-                const who = whoName || (id ? `Thí sinh ${id}` : 'Thí sinh khác');
-                if (id === parseInt(currentContestantId, 10)) {
-                    feedback.innerText = '✅ BẠN ĐÃ BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI!';
-                    feedback.style.color = '#15803d';
-                } else {
-                    feedback.innerText = `🔒 ${who.toUpperCase()} ĐÃ BẤM CHUÔNG! CHUÔNG ĐÃ BỊ KHÓA`;
-                    feedback.style.color = '#b91c1c';
+        }
+
+        function updateS4BellLockState(winnerName) {
+            const btn = document.getElementById('s4_btn_bell');
+            const myId = parseInt(currentContestantId, 10);
+            const isMain = (s4MainContestant >= 1 && myId === s4MainContestant);
+
+            if (s4FastestBuzzedId >= 1 && s4FastestBuzzedId <= 4) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.4';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI';
                 }
-                feedback.style.display = 'flex';
+                return;
+            }
+
+            if (isMain) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.35';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'ĐANG LÀ LƯỢT THI CHÍNH CỦA BẠN';
+                }
+                return;
+            }
+
+            if (isS4BellOpen) {
+                isBellLocked = false;
+                if (btn) {
+                    btn.classList.remove('pressed', 'active');
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.innerText = 'BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI';
+                }
+            } else {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.remove('pressed', 'active');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.4';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI';
+                }
             }
         }
 
@@ -1171,6 +1226,8 @@
             const msgRoundUpper = (data.round || '').toString().toUpperCase();
             const isR1BellMsg = (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') &&
                 (msgRoundUpper === 'KD' || msgRoundUpper === 'XUAT_PHAT' || msgRoundUpper === 'KHOI_DONG' || msgRoundUpper === 'XP');
+            const isR4BellMsg = (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') &&
+                (msgRoundUpper === 'VQ' || msgRoundUpper === 'VINH_QUANG' || msgRoundUpper === 'VE_DICH' || (!msgRoundUpper && activeSceneNum === 4));
 
             if (data.type === 'LOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_FASTEST_HL' || isR1BellMsg) {
                 const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.contestantId || data.winnerId || 0, 10);
@@ -1184,19 +1241,32 @@
                     isBellLocked = true;
                 }
             }
+            if (data.type === 'VINH_QUANG_LOCK_BELLS' || data.type === 'VINH_QUANG_SHOW_FASTEST_HL' || isR4BellMsg) {
+                const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.winnerId || data.contestantId || 0, 10);
+                if (isR4BellMsg && s4FastestBuzzedId !== 0 && buzzedId !== s4FastestBuzzedId) {
+                    return;
+                }
+                if (isR4BellMsg && s4MainContestant >= 1 && buzzedId === s4MainContestant) {
+                    return;
+                }
+                isS4BellOpen = false;
+                if (buzzedId >= 1 && buzzedId <= 4) {
+                    s4FastestBuzzedId = buzzedId;
+                }
+                updateS4BellLockState(data.contestantName);
+            }
             if (
                 data.type === 'UNLOCK_BELLS' ||
-                data.type === 'XUAT_PHAT_SHOW_QUESTION' ||
-                data.type === 'XUAT_PHAT_HIEN_CAU_HOI' ||
                 data.type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' ||
-                data.type === 'XUAT_PHAT_NEXT_QUESTION' ||
-                data.type === 'XUAT_PHAT_START_TIMER' ||
-                data.type === 'XUAT_PHAT_SELECT_CHUNG' ||
-                data.type === 'XUAT_PHAT_RESET'
+                data.type === 'XUAT_PHAT_RESET' ||
+                ((data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION') && data.unlockBells === true)
             ) {
-                s1FastestBuzzedId = 0;
-                isBellLocked = false;
-                resetBellState(1);
+                if (!data.round || data.round === 'KD' || data.round === 'XUAT_PHAT' || data.round === 'XP' || parseInt(data.turnIndex, 10) === 5 || data.type.startsWith('XUAT_PHAT_')) {
+                    s1FastestBuzzedId = 0;
+                    isBellLocked = false;
+                    s1BellUnlockedAt = (data.type === 'XUAT_PHAT_RESET') ? 0 : Date.now();
+                    resetBellState(1);
+                }
             }
 
             // Contestants info & scores
@@ -1222,15 +1292,16 @@
                 applyS1Turn5ModeUI();
                 updateS1RandomDeButtonUI();
                 if (currentXuatPhatTurnIndex === 5) {
-                    if (data.xpBuzzerLocked) {
-                        if (data.xpBuzzerWinner) {
-                            lockS1BellWithWinner(data.xpBuzzerWinner, null);
-                        } else {
-                            isBellLocked = true;
-                        }
+                    if (data.xpBuzzerWinner) {
+                        s1BellUnlockedAt = 0;
+                        lockS1BellWithWinner(data.xpBuzzerWinner, null);
+                    } else if (data.xpBuzzerLocked || !data.xpBuzzerOpen) {
+                        s1BellUnlockedAt = 0;
+                        setS1BellWaitingLock('CHỜ MỞ CHUÔNG...');
                     } else if (data.xpBuzzerOpen) {
                         s1FastestBuzzedId = 0;
                         isBellLocked = false;
+                        if (!s1BellUnlockedAt) s1BellUnlockedAt = Date.now();
                         resetBellState(1);
                     }
                 }
@@ -1277,6 +1348,16 @@
                 }
             }
 
+            // Restore Round 4 main contestant & steal buzzer state on state snapshot
+            if (data.vqMainContestant !== undefined) {
+                s4MainContestant = parseInt(data.vqMainContestant, 10) || 0;
+            }
+            if (data.vqBuzzerLocked !== undefined || data.vqBuzzerOpen !== undefined || data.vqBuzzerWinner !== undefined) {
+                s4FastestBuzzedId = parseInt(data.vqBuzzerWinner, 10) || 0;
+                isS4BellOpen = !!data.vqBuzzerOpen && !data.vqBuzzerLocked && s4FastestBuzzedId === 0;
+                updateS4BellLockState();
+            }
+
             if (data.type === 'START_ROUND_CLEAN') {
                 const rName = (data.round || data.activeRound || '').toString().toUpperCase();
                 const rIdx = parseInt(data.roundIndex || data.sceneNum || 0, 10);
@@ -1292,9 +1373,12 @@
                 if (rName === 'VINH_QUANG' || rName === 'VE_DICH' || rName === 'VQ' || rIdx === 4) {
                     isVQ25sActive = false;
                     lastVQTimerStartTime = 0;
+                    s4MainContestant = 0;
+                    s4FastestBuzzedId = 0;
+                    isS4BellOpen = false;
                     clearPlayerSceneUI(4);
-                    updateTimerDisplay(4, 25);
-                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    updateTimerDisplay(4, 20);
+                    updateS4BellLockState();
                 }
             }
 
@@ -1337,12 +1421,11 @@
                     }
                 } else if (activeSceneNum === 4) {
                     isVQ25sActive = false;
-                    stopSceneTimer(4, 25);
-                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    stopSceneTimer(4, 20);
                 }
             }
 
-            // Round 1: Xuất phát (Khởi Động)
+            // Round 1: Khởi Động
             if (data.type && (data.type.startsWith('XUAT_PHAT_') || data.type.startsWith('KHOI_DONG_') || data.type.startsWith('KD_'))) {
                 switchScene(1);
                 const s1Box = document.getElementById('s1_q_text') || document.getElementById('s1_question_text');
@@ -1357,7 +1440,7 @@
                         localStorage.setItem('ddvq_xp_question_text', data.questionText);
                     } catch(e) {}
                 } else if (isResetOrFinish) {
-                    const txt = (data.type === 'XUAT_PHAT_FINISH') ? 'Đã hoàn thành lượt thi Xuất Phát' : 'Đang chờ bắt đầu lượt thi Xuất Phát...';
+                    const txt = (data.type === 'XUAT_PHAT_FINISH') ? 'Đã hoàn thành lượt thi Khởi Động' : 'Đang chờ bắt đầu lượt thi Khởi Động...';
                     if (s1Box) s1Box.innerText = txt;
                     window.s1IsQuestionActive = false;
                     try {
@@ -1365,7 +1448,7 @@
                         localStorage.removeItem('ddvq_xp_question_text');
                     } catch(e) {}
                 } else if (data.xpQuestionShown === false) {
-                    if (s1Box) s1Box.innerText = 'Đang chờ bắt đầu lượt thi Xuất Phát...';
+                    if (s1Box) s1Box.innerText = 'Đang chờ bắt đầu lượt thi Khởi Động...';
                     window.s1IsQuestionActive = false;
                     try {
                         localStorage.setItem('ddvq_xp_question_shown', 'false');
@@ -1396,7 +1479,9 @@
                 }
 
                 if (data.duration && (data.type === 'XUAT_PHAT_START_TIMER' || data.type === 'XUAT_PHAT_BAT_DAU_CAU_HOI')) {
-                    startSceneTimer(1, data.duration);
+                    const durNum = Number(data.duration) || 5;
+                    setS15sAlertVisible(durNum === 5);
+                    startSceneTimer(1, durNum, data.startTime);
                 }
 
                 if (data.type === 'XUAT_PHAT_SELECT_CHUNG') {
@@ -1434,27 +1519,36 @@
 
                 if (data.type === 'XUAT_PHAT_RESET' || data.type === 'XUAT_PHAT_FINISH') {
                     s1FastestBuzzedId = 0;
+                    setS15sAlertVisible(false);
                     clearPlayerSceneUI(1);
+                } else if (data.type === 'XUAT_PHAT_SELECT_CHUNG') {
+                    setS15sAlertVisible(false);
+                    stopSceneTimer(1, 5);
+                } else if (data.type === 'XUAT_PHAT_SELECT_CONTESTANT') {
+                    setS15sAlertVisible(false);
+                    stopSceneTimer(1, 60);
+                } else if (data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION' || data.type === 'XUAT_PHAT_RIGHT' || data.type === 'XUAT_PHAT_WRONG') {
+                    setS15sAlertVisible(false);
+                    if (currentXuatPhatTurnIndex === 5 && (data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION')) {
+                        stopSceneTimer(1, 5);
+                    }
                 }
 
                 if (
-                    data.type === 'XUAT_PHAT_SELECT_CHUNG' ||
                     data.type === 'XUAT_PHAT_SELECT_CONTESTANT' ||
-                    data.type === 'XUAT_PHAT_HIEN_CAU_HOI' ||
-                    data.type === 'XUAT_PHAT_NEXT_QUESTION' ||
                     data.type === 'XUAT_PHAT_RESET' ||
-                    data.type === 'XUAT_PHAT_START_TIMER'
+                    ((data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION') && (currentXuatPhatTurnIndex !== 5 || data.unlockBells === true))
                 ) {
                     s1FastestBuzzedId = 0;
+                    s1BellUnlockedAt = (data.unlockBells === true && currentXuatPhatTurnIndex === 5) ? Date.now() : 0;
                     resetBellState(1);
-                } else if (data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI') {
-                    s1FastestBuzzedId = 0;
-                    isBellLocked = true;
-                    const btn = document.getElementById('s1_btn_bell');
-                    if (btn) {
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                    }
+                } else if (
+                    data.type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI' ||
+                    data.type === 'XUAT_PHAT_SELECT_CHUNG' ||
+                    ((data.type === 'XUAT_PHAT_HIEN_CAU_HOI' || data.type === 'XUAT_PHAT_NEXT_QUESTION') && currentXuatPhatTurnIndex === 5 && data.unlockBells !== true)
+                ) {
+                    s1BellUnlockedAt = 0;
+                    setS1BellWaitingLock('CHỜ MỞ CHUÔNG...');
                 }
             }
 
@@ -1584,10 +1678,15 @@
                 }
             }
 
-            // Round 4: Vinh quang (Về đích)
+            // Round 4: Về Đích
             if (data.type && (data.type.startsWith('VINH_QUANG_') || data.type.startsWith('VE_DICH_'))) {
                 switchScene(4);
-                const isVQReset = (data.type === 'VINH_QUANG_RESET' || data.type === 'VE_DICH_RESET' || data.type === 'VINH_QUANG_INTRO');
+                const mcIncoming = parseInt(data.mainContestant || data.vqMainContestant || (data.type === 'VINH_QUANG_SELECT_PLAYER' ? data.contestantIndex : 0), 10) || 0;
+                if (mcIncoming >= 1 && mcIncoming <= 4) {
+                    s4MainContestant = mcIncoming;
+                }
+                const isVQReset = (data.type === 'VINH_QUANG_RESET' || data.type === 'VE_DICH_RESET' || data.type === 'VINH_QUANG_INTRO' || data.type === 'VINH_QUANG_FINISH');
+                const isVQ5sSteal = (data.type === 'VINH_QUANG_START_TIMER_5S' || data.type === 'VINH_QUANG_UNLOCK_BELLS');
                 const isVQ25sTimer = (
                     data.type === 'VINH_QUANG_25S' ||
                     data.type === 'VE_DICH_25S' ||
@@ -1602,6 +1701,7 @@
                 const isVQLockEvent = (
                     data.type === 'VINH_QUANG_SELECT_PACK' ||
                     data.type === 'VINH_QUANG_SHOW_PACKS' ||
+                    data.type === 'VINH_QUANG_CHOOSE_PACK' ||
                     data.type === 'VINH_QUANG_SHOW_PACK_SELECTION' ||
                     data.type === 'VINH_QUANG_HIDE_PACK' ||
                     data.type === 'VINH_QUANG_FLY_OUT' ||
@@ -1619,9 +1719,12 @@
                 if (isVQReset) {
                     isVQ25sActive = false;
                     lastVQTimerStartTime = 0;
+                    s4MainContestant = 0;
+                    s4FastestBuzzedId = 0;
+                    isS4BellOpen = false;
                     clearPlayerSceneUI(4);
-                    updateTimerDisplay(4, 25);
-                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                    updateTimerDisplay(4, 20);
+                    updateS4BellLockState();
                 } else {
                     const s4Box = document.getElementById('s4_q_text');
                     const isVQShown = (data.vqQuestionShown === true) || isVQShowQ || isVQ25sTimer || isVQOtherTimer;
@@ -1639,7 +1742,19 @@
 
                     if (data.questionIndex !== undefined) {
                         const rLabel = document.getElementById('s4_row_label');
-                        if (rLabel) rLabel.innerText = `Câu hỏi Vinh quang số ${data.questionIndex}`;
+                        if (rLabel) rLabel.innerText = `Câu hỏi Về Đích số ${data.questionIndex}`;
+                    }
+
+                    if (isVQ5sSteal) {
+                        s4FastestBuzzedId = 0;
+                        isS4BellOpen = true;
+                        s4BellUnlockedAt = Date.now();
+                        updateS4BellLockState();
+                    } else if (isVQShowQ || isVQLockEvent || data.type === 'VINH_QUANG_SELECT_PLAYER') {
+                        s4FastestBuzzedId = 0;
+                        isS4BellOpen = false;
+                        s4BellUnlockedAt = 0;
+                        updateS4BellLockState();
                     }
 
                     if (isVQ25sTimer) {
@@ -1649,17 +1764,9 @@
                         if (!isDuplicateStart) {
                             lastVQTimerStartTime = st;
                             isVQ25sActive = true;
-                            const s4Inp = document.getElementById('s4_ans_input');
-                            if (s4Inp) s4Inp.value = '';
-                            const s4Stat = document.getElementById('s4_status_bar');
-                            if (s4Stat) {
-                                s4Stat.innerText = '---';
-                                s4Stat.classList.remove('submitted');
-                            }
                             startSceneTimer(4, dur, st, false);
                         }
                     } else if (isVQOtherTimer) {
-                        // Non-25s timers (e.g. 20s thinking timer or 5s steal buzzer): count down visually ONLY, keep input locked
                         isVQ25sActive = false;
                         lastVQTimerStartTime = 0;
                         const dur = data.type === 'VINH_QUANG_START_TIMER_5S' ? 5 : (Number(data.duration) || 20);
@@ -1668,23 +1775,13 @@
                     } else if (isVQShowQ) {
                         isVQ25sActive = false;
                         lastVQTimerStartTime = 0;
-                        stopSceneTimer(4, 25);
-                        const s4Inp = document.getElementById('s4_ans_input');
-                        if (s4Inp) s4Inp.value = '';
-                        const s4Stat = document.getElementById('s4_status_bar');
-                        if (s4Stat) {
-                            s4Stat.innerText = '---';
-                            s4Stat.classList.remove('submitted');
-                        }
-                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                        stopSceneTimer(4, Number(data.pack) === 30 ? 20 : 15);
                     } else if (isVQLockEvent) {
                         isVQ25sActive = false;
                         lastVQTimerStartTime = 0;
                         stopSceneTimer(4);
-                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
                     } else if (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0) {
                         isVQ25sActive = false;
-                        setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
                     }
                 }
             }
@@ -1788,8 +1885,10 @@
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
-                if (sceneNum === 3) {
-                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN VÒNG THI';
+                if (sceneNum === 1) {
+                    btn.innerText = 'GIÀNH QUYỀN TRẢ LỜI';
+                } else if (sceneNum === 3) {
+                    btn.innerText = 'TRẢ LỜI ĐÁP ÁN CHƯỚNG NGẠI VẬT';
                 }
             }
             const feedback = document.getElementById(feedbackId);
@@ -1808,7 +1907,6 @@
             let inputId = '';
             if (sceneNum === 2) inputId = 's2_ans_input';
             else if (sceneNum === 3) inputId = 's3_ans_input';
-            else if (sceneNum === 4) inputId = 's4_ans_input';
             else if (sceneNum === 5) inputId = 's5_ans_input';
 
             if (inputId) {
@@ -1842,13 +1940,18 @@
             sceneTimerStartTime = 0;
             sceneTimerDuration = 0;
             currentTimerVal = 0;
+            if (sceneNum === 1) {
+                setS15sAlertVisible(false);
+            }
             if (sceneNum === 4) {
                 isVQ25sActive = false;
             }
             if (resetDisplayVal !== undefined) {
                 updateTimerDisplay(sceneNum, resetDisplayVal);
             }
-            setInputState(sceneNum, false, sceneNum === 4 ? 'Đang khóa (Chỉ mở khi bấm 25s)...' : '');
+            if (sceneNum !== 4) {
+                setInputState(sceneNum, false, '');
+            }
         }
 
         function startSceneTimer(sceneNum, duration, customStartTime, lockOnly = false) {
@@ -1864,21 +1967,20 @@
                 timerInterval = null;
                 sceneTimerStartTime = 0;
                 sceneTimerDuration = 0;
+                if (sceneNum === 1) setS15sAlertVisible(false);
                 if (sceneNum === 4) isVQ25sActive = false;
-                setInputState(sceneNum, false, sceneNum === 4 ? 'Đang khóa (Chỉ mở khi bấm 25s)...' : 'Hết thời gian trả lời...');
+                else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
                 return;
             }
 
-            if (sceneNum === 4 && (lockOnly || !isVQ25sActive)) {
-                isVQ25sActive = false;
-                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+            if (sceneNum === 4) {
+                if (lockOnly || !isVQ25sActive) isVQ25sActive = false;
             } else if (sceneNum === 3 && isCurrentPlayerVSLocked()) {
                 setInputState(3, false, 'Bạn đã bị loại khỏi phần thi');
             } else {
                 let defaultPlaceholder = 'Nhập câu trả lời...';
                 if (sceneNum === 2) defaultPlaceholder = 'Nhập câu trả lời';
                 if (sceneNum === 3) defaultPlaceholder = 'Nhập câu trả lời';
-                if (sceneNum === 4) defaultPlaceholder = 'Nhập câu trả lời';
                 setInputState(sceneNum, true, defaultPlaceholder);
             }
 
@@ -1892,8 +1994,9 @@
                     sceneTimerStartTime = 0;
                     sceneTimerDuration = 0;
                     currentTimerVal = 0;
+                    if (sceneNum === 1) setS15sAlertVisible(false);
                     if (sceneNum === 4) isVQ25sActive = false;
-                    setInputState(sceneNum, false, sceneNum === 4 ? 'Hết thời gian 25s (Đã khóa)...' : 'Hết thời gian trả lời...');
+                    else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
                 }
             }, 100);
         }
@@ -1944,12 +2047,7 @@
                 const qBox = document.getElementById('s4_q_text');
                 if (qBox) qBox.innerText = '';
                 const rLabel = document.getElementById('s4_row_label');
-                if (rLabel) rLabel.innerText = '';
-                const inp = document.getElementById('s4_ans_input');
-                if (inp) inp.value = '';
-                const stat = document.getElementById('s4_status_bar');
-                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
-                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
+                if (rLabel) rLabel.innerText = 'Câu hỏi Về Đích';
             } else if (sceneNum === 5) {
                 const qBox = document.getElementById('s5_q_text');
                 if (qBox) qBox.innerText = '';
@@ -1974,14 +2072,7 @@
         // Typing & Submitting Player Answers
         function onPlayerAnswerTyping(roundKey) {
             const rUpper = (roundKey || '').toString().toUpperCase();
-            if (rUpper === 'VQ' || rUpper === 'VINH_QUANG' || rUpper === 'VE_DICH') {
-                const inp = document.getElementById('s4_ans_input');
-                if (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0) {
-                    isVQ25sActive = false;
-                    setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
-                    if (inp) inp.value = '';
-                }
-            } else if (rUpper === 'VCNV' || rUpper === 'CNV' || rUpper === 'VUOT_SONG' || rUpper === 'VS') {
+            if (rUpper === 'VCNV' || rUpper === 'CNV' || rUpper === 'VUOT_SONG' || rUpper === 'VS') {
                 if (isCurrentPlayerVSLocked()) {
                     applyVSPlayerLockUI();
                 }
@@ -2008,10 +2099,7 @@
                 normalizedRound = 'VS';
                 maxDuration = 15;
             } else if (rUpper === 'VINH_QUANG' || rUpper === 'VQ' || rUpper === 'VE_DICH' || (!roundKey && activeSceneNum === 4)) {
-                inputId = 's4_ans_input';
-                statusId = 's4_status_bar';
-                normalizedRound = 'VQ';
-                maxDuration = 25;
+                return;
             } else if (rUpper === 'CHP' || (!roundKey && activeSceneNum === 5)) {
                 inputId = 's5_ans_input';
                 statusId = 's5_status_bar';
@@ -2026,11 +2114,6 @@
 
             const inputEl = document.getElementById(inputId);
             if (!inputEl || inputEl.disabled) return;
-            if (normalizedRound === 'VQ' && (!isVQ25sActive || !timerInterval || sceneTimerStartTime <= 0 || currentTimerVal <= 0)) {
-                isVQ25sActive = false;
-                setInputState(4, false, 'Đang khóa (Chỉ mở khi bấm 25s)...');
-                return;
-            }
             const rawAnswer = inputEl.value;
             const answerText = rawAnswer.trim() === '' ? ' ' : rawAnswer;
 
@@ -2048,8 +2131,9 @@
 
             const statusEl = statusId ? document.getElementById(statusId) : null;
             if (statusEl) {
+                const displayTime = Number(calculatedTime || 0).toFixed(2);
                 statusEl.style.whiteSpace = 'nowrap';
-                statusEl.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;">${escapePlayerHtml(answerText)}</span><span style="flex-shrink:0;margin-left:10px;background:rgba(0,0,0,0.22);padding:2px 8px;border-radius:4px;font-size:1.05rem;">Thời gian: ${calculatedTime}s</span>`;
+                statusEl.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;">${escapePlayerHtml(answerText)}</span><span style="flex-shrink:0;white-space:pre;"> (${displayTime})</span>`;
                 statusEl.classList.add('submitted');
             }
 
@@ -2095,7 +2179,7 @@
             }
         }
 
-        // Ring Bell function for Xuất Phát, Vượt Sóng, Vinh Quang & Câu Hỏi Phụ
+        // Ring Bell function for Khởi Động, Vượt Chướng Ngại Vật, Về Đích & Câu Hỏi Phụ
         function ringBell(roundKey) {
             const rkUpper = (roundKey || '').toString().toUpperCase();
             if ((rkUpper === 'VCNV' || rkUpper === 'CNV' || rkUpper === 'VS' || rkUpper === 'VUOT_SONG') && isCurrentPlayerVSLocked()) {
@@ -2105,29 +2189,33 @@
             if ((rkUpper === 'KD' || rkUpper === 'XP') && (currentXuatPhatTurnIndex !== 5 || s1FastestBuzzedId !== 0)) {
                 return;
             }
+            if (rkUpper === 'VQ' || rkUpper === 'VINH_QUANG' || rkUpper === 'VE_DICH') {
+                if (!isS4BellOpen || s4FastestBuzzedId !== 0 || (s4MainContestant >= 1 && parseInt(currentContestantId, 10) === s4MainContestant)) {
+                    return;
+                }
+                isS4BellOpen = false;
+                s4FastestBuzzedId = parseInt(currentContestantId, 10) || 1;
+            }
             if (isBellLocked) return;
             isBellLocked = true;
             let btnId = '';
             let feedbackId = '';
             if (roundKey === 'KD' || roundKey === 'XP') {
                 btnId = 's1_btn_bell';
-                feedbackId = 's1_bell_feedback';
             } else if (roundKey === 'RA_KHOI' || roundKey === 'RK' || roundKey === 'TANG_TOC') {
                 btnId = 's2_btn_bell';
                 feedbackId = 's2_bell_feedback';
             } else if (roundKey === 'VCNV' || roundKey === 'CNV' || roundKey === 'VS' || roundKey === 'VUOT_SONG') {
                 btnId = 's3_btn_bell';
-                feedbackId = 's3_bell_feedback';
             } else if (roundKey === 'VQ') {
                 btnId = 's4_btn_bell';
-                feedbackId = 's4_bell_feedback';
             } else {
                 btnId = 's5_btn_bell';
                 feedbackId = 's5_bell_feedback';
             }
 
             const btn = document.getElementById(btnId);
-            const feedback = document.getElementById(feedbackId);
+            const feedback = feedbackId ? document.getElementById(feedbackId) : null;
 
             if (btn) {
                 btn.classList.add('pressed');
@@ -2135,21 +2223,26 @@
                 btn.style.opacity = '0.4';
             }
             if (feedback) {
-                if (roundKey === 'KD' || roundKey === 'XP') {
-                    feedback.innerText = '🔔 ĐÃ BẤM CHUÔNG — ĐANG XÁC NHẬN...';
-                    feedback.style.color = '#15803d';
-                }
                 feedback.style.display = 'flex';
             }
 
+            const isR1Bell = (rkUpper === 'KD' || rkUpper === 'XP');
             const isR3Bell = (rkUpper === 'VCNV' || rkUpper === 'CNV' || rkUpper === 'VS' || rkUpper === 'VUOT_SONG');
+            const isR4Bell = (rkUpper === 'VQ' || rkUpper === 'VINH_QUANG' || rkUpper === 'VE_DICH');
             let elapsedStr = "00.00";
+            let bellTimeSec = undefined;
             if (isR3Bell) {
                 let s3StartTime = parseInt(localStorage.getItem('s3_round_start_time')) || 0;
                 if (s3StartTime > 0) {
                     let elapsed = (Date.now() - s3StartTime) / 1000;
                     elapsedStr = elapsed < 10 ? '0' + elapsed.toFixed(2) : elapsed.toFixed(2);
                 }
+            } else if (isR1Bell && s1BellUnlockedAt > 0) {
+                bellTimeSec = Math.max(0, (Date.now() - s1BellUnlockedAt) / 1000).toFixed(2);
+                elapsedStr = bellTimeSec;
+            } else if (isR4Bell && s4BellUnlockedAt > 0) {
+                bellTimeSec = Math.max(0, (Date.now() - s4BellUnlockedAt) / 1000).toFixed(2);
+                elapsedStr = bellTimeSec;
             }
 
             const payload = {
@@ -2157,8 +2250,9 @@
                 contestantId: currentContestantId,
                 contestantName: contestantName,
                 round: roundKey,
-                turnIndex: (roundKey === 'KD' || roundKey === 'XP') ? currentXuatPhatTurnIndex : undefined,
+                turnIndex: isR1Bell ? currentXuatPhatTurnIndex : undefined,
                 time: elapsedStr,
+                bellTime: bellTimeSec,
                 roomCode: currentRoomCode,
                 timestamp: Date.now()
             };
@@ -2290,16 +2384,19 @@
         }
 
         window.addEventListener('keydown', function(e) {
-            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+            const isSpace = (e.code === 'Space' || e.key === ' ' || e.keyCode === 32);
+            const isEnter = (e.code === 'Enter' || e.code === 'NumpadEnter' || e.key === 'Enter' || e.keyCode === 13);
+            if (isSpace || isEnter) {
                 const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
                 if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
                     return;
                 }
                 if (activeSceneNum === 1) {
-                    e.preventDefault();
                     if (currentXuatPhatTurnIndex === 5) {
+                        e.preventDefault();
                         ringBell('KD');
-                    } else {
+                    } else if (isSpace) {
+                        e.preventDefault();
                         triggerRandomDeFromPlayer();
                     }
                 }

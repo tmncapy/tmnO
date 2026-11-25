@@ -122,6 +122,14 @@ let serverState = {
   xpBuzzerOpen: false,
   xpBuzzerLocked: true,
   xpBuzzerWinner: 0,
+  xpBellUnlockedAt: 0,
+  xpBuzzerWinnerTime: '',
+  vqMainContestant: 0,
+  vqBuzzerOpen: false,
+  vqBuzzerLocked: true,
+  vqBuzzerWinner: 0,
+  vqBellUnlockedAt: 0,
+  vqBuzzerWinnerTime: '',
   s1HasSelectedDeForTurn: { 1: false, 2: false, 3: false, 4: false },
   s1ChosenDeMap: { 1: null, 2: null, 3: null, 4: null },
   contestants: [
@@ -376,7 +384,9 @@ function handleIncomingAction(action, senderWs = null) {
     const tsIdx = parseInt(action.contestantId, 10) || action.contestantId;
     const rUpper = (action.round || '').toString().toUpperCase();
     const isR1Bell = (rUpper === 'KD' || rUpper === 'XUAT_PHAT' || rUpper === 'KHOI_DONG' || rUpper === 'XP' || (!rUpper && serverState.activeRound === 'XUAT_PHAT'));
+    const isR4Bell = (rUpper === 'VQ' || rUpper === 'VINH_QUANG' || rUpper === 'VE_DICH' || (!rUpper && serverState.activeRound === 'VINH_QUANG'));
 
+    let resolvedBellTime = action.time || '00.00';
     if (isR1Bell) {
       if (serverState.currentXuatPhatTurn !== 5 || serverState.xpBuzzerLocked || !serverState.xpBuzzerOpen) {
         return; // Ignore late or out-of-turn buzzes so only the single fastest contestant wins
@@ -384,15 +394,53 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.xpBuzzerLocked = true;
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerWinner = parseInt(tsIdx, 10) || 0;
+      const rawBell = (action.bellTime !== undefined && action.bellTime !== null && String(action.bellTime).trim() !== '')
+        ? action.bellTime
+        : (action.time && action.time !== '00.00' ? action.time : '');
+      const parsedBell = rawBell !== '' ? parseFloat(String(rawBell).replace(/s|giây/gi, '').trim()) : NaN;
+      resolvedBellTime = (!isNaN(parsedBell) && parsedBell >= 0)
+        ? parsedBell.toFixed(2)
+        : (serverState.xpBellUnlockedAt > 0 ? Math.max(0, (now - serverState.xpBellUnlockedAt) / 1000).toFixed(2) : '0.00');
+      serverState.xpBuzzerWinnerTime = resolvedBellTime;
+      serverState.xpBellUnlockedAt = 0;
       action.winnerId = serverState.xpBuzzerWinner;
       action.turnIndex = 5;
+      action.bellTime = resolvedBellTime;
+      action.time = resolvedBellTime;
+    } else if (isR4Bell) {
+      const bellNum = parseInt(tsIdx, 10) || 0;
+      if (
+        serverState.vqBuzzerLocked ||
+        !serverState.vqBuzzerOpen ||
+        bellNum < 1 ||
+        bellNum > 4 ||
+        (serverState.vqMainContestant >= 1 && bellNum === serverState.vqMainContestant)
+      ) {
+        return; // Ignore main contestant or late/out-of-turn buzzes in Round 4
+      }
+      serverState.vqBuzzerLocked = true;
+      serverState.vqBuzzerOpen = false;
+      serverState.vqBuzzerWinner = bellNum;
+      const rawBell = (action.bellTime !== undefined && action.bellTime !== null && String(action.bellTime).trim() !== '')
+        ? action.bellTime
+        : (action.time && action.time !== '00.00' ? action.time : '');
+      const parsedBell = rawBell !== '' ? parseFloat(String(rawBell).replace(/s|giây/gi, '').trim()) : NaN;
+      resolvedBellTime = (!isNaN(parsedBell) && parsedBell >= 0)
+        ? parsedBell.toFixed(2)
+        : (serverState.vqBellUnlockedAt > 0 ? Math.max(0, (now - serverState.vqBellUnlockedAt) / 1000).toFixed(2) : '0.00');
+      serverState.vqBuzzerWinnerTime = resolvedBellTime;
+      serverState.vqBellUnlockedAt = 0;
+      action.winnerId = bellNum;
+      action.round = 'VQ';
+      action.bellTime = resolvedBellTime;
+      action.time = resolvedBellTime;
     }
 
     const rKey = action.round ? `ts${tsIdx}_${action.round}` : `ts${tsIdx}`;
     serverState.playerAnswers[`ts${tsIdx}`] = {
       contestantId: tsIdx,
       answer: action.answer || '',
-      time: action.time || '00.00',
+      time: resolvedBellTime || '00.00',
       round: action.round || 'VS',
       isVongThi: true,
       timestamp: now
@@ -455,6 +503,10 @@ function handleIncomingAction(action, senderWs = null) {
     serverState.xpBuzzerOpen = false;
     serverState.xpBuzzerLocked = true;
     serverState.xpBuzzerWinner = 0;
+    serverState.vqMainContestant = 0;
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
     serverState.buzzerState = { buzzerUnlocked: false, buzzerWinner: null };
   }
 
@@ -510,18 +562,24 @@ function handleIncomingAction(action, senderWs = null) {
     serverState.xpBuzzerOpen = false;
     serverState.xpBuzzerLocked = true;
     serverState.xpBuzzerWinner = 0;
+    serverState.xpBellUnlockedAt = 0;
+    serverState.xpBuzzerWinnerTime = '';
   } else if (type === 'XUAT_PHAT_SELECT_CHUNG') {
     serverState.currentXuatPhatTurn = 5;
     serverState.xpBuzzerOpen = false;
     serverState.xpBuzzerLocked = true;
     serverState.xpBuzzerWinner = 0;
+    serverState.xpBellUnlockedAt = 0;
+    serverState.xpBuzzerWinnerTime = '';
   } else if (type === 'XUAT_PHAT_SHOW_FASTEST_HL' || type === 'LOCK_BELLS') {
     if (serverState.currentXuatPhatTurn === 5 || parseInt(action.turnIndex, 10) === 5) {
       serverState.currentXuatPhatTurn = 5;
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerLocked = true;
+      serverState.xpBellUnlockedAt = 0;
       const w = parseInt(action.contestantIndex || action.whoBuzzed || action.contestantId || action.winnerId, 10);
       if (w >= 1 && w <= 4) serverState.xpBuzzerWinner = w;
+      if (action.bellTime) serverState.xpBuzzerWinnerTime = String(action.bellTime);
     }
   } else if (type === 'UNLOCK_BELLS') {
     if (serverState.currentXuatPhatTurn === 5 || parseInt(action.turnIndex, 10) === 5) {
@@ -529,23 +587,31 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.xpBuzzerOpen = true;
       serverState.xpBuzzerLocked = false;
       serverState.xpBuzzerWinner = 0;
+      serverState.xpBellUnlockedAt = now;
+      serverState.xpBuzzerWinnerTime = '';
     }
   }
 
-  if (type === 'XUAT_PHAT_START_TIMER' || type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' || type === 'XUAT_PHAT_HIEN_CAU_HOI' || type === 'XUAT_PHAT_NEXT_QUESTION') {
+  if (type === 'XUAT_PHAT_BAT_DAU_CAU_HOI' || type === 'XUAT_PHAT_HIEN_CAU_HOI' || type === 'XUAT_PHAT_NEXT_QUESTION') {
     serverState.xpQuestionShown = true;
     if (action.turnIndex !== undefined) {
       serverState.currentXuatPhatTurn = parseInt(action.turnIndex, 10) || serverState.currentXuatPhatTurn;
     }
     if (serverState.currentXuatPhatTurn === 5) {
-      serverState.xpBuzzerOpen = true;
-      serverState.xpBuzzerLocked = false;
+      const shouldUnlock = action.unlockBells !== false;
+      serverState.xpBuzzerOpen = shouldUnlock;
+      serverState.xpBuzzerLocked = !shouldUnlock;
       serverState.xpBuzzerWinner = 0;
+      serverState.xpBellUnlockedAt = shouldUnlock ? now : 0;
+      serverState.xpBuzzerWinnerTime = '';
     }
+  } else if (type === 'XUAT_PHAT_START_TIMER') {
+    serverState.xpQuestionShown = true;
   } else if (type === 'XUAT_PHAT_RIGHT' || type === 'XUAT_PHAT_WRONG') {
     if (serverState.currentXuatPhatTurn === 5) {
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerLocked = true;
+      serverState.xpBellUnlockedAt = 0;
     }
   } else if (
     type === 'XUAT_PHAT_RESET' ||
@@ -568,11 +634,15 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerLocked = true;
       serverState.xpBuzzerWinner = 0;
+      serverState.xpBellUnlockedAt = 0;
+      serverState.xpBuzzerWinnerTime = '';
     } else if (type === 'XUAT_PHAT_RESET' || type === 'XUAT_PHAT_FINISH' || type === 'START_ROUND_CLEAN') {
       serverState.currentXuatPhatTurn = 0;
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerLocked = true;
       serverState.xpBuzzerWinner = 0;
+      serverState.xpBellUnlockedAt = 0;
+      serverState.xpBuzzerWinnerTime = '';
     }
   }
 
@@ -592,9 +662,30 @@ function handleIncomingAction(action, senderWs = null) {
   }
 
   // 3. Vinh Quang: Only visible when VINH_QUANG_SHOW_QUESTION is explicitly called
-  if (type === 'VINH_QUANG_SHOW_QUESTION') {
+  if (type === 'VINH_QUANG_SELECT_PLAYER') {
+    const mc = parseInt(action.mainContestant || action.contestantIndex, 10) || 0;
+    if (mc >= 1 && mc <= 4) serverState.vqMainContestant = mc;
+    serverState.activeRound = 'VINH_QUANG';
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
+  } else if (type === 'VINH_QUANG_CHOOSE_PACK') {
+    const mc = parseInt(action.mainContestant || action.contestantIndex, 10) || 0;
+    if (mc >= 1 && mc <= 4) serverState.vqMainContestant = mc;
+    serverState.vqQuestionShown = false;
+    serverState.currentTimer = null;
+    serverState.activeRound = 'VINH_QUANG';
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
+  } else if (type === 'VINH_QUANG_SHOW_QUESTION') {
     serverState.vqQuestionShown = true;
     serverState.activeRound = 'VINH_QUANG';
+    const mc = parseInt(action.mainContestant || action.contestantIndex, 10) || 0;
+    if (mc >= 1 && mc <= 4) serverState.vqMainContestant = mc;
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
     if (action.questionText) {
       serverState.currentQuestion = {
         questionText: action.questionText,
@@ -605,6 +696,28 @@ function handleIncomingAction(action, senderWs = null) {
         round: 'VINH_QUANG'
       };
     }
+  } else if (type === 'VINH_QUANG_START_TIMER_5S' || type === 'VINH_QUANG_UNLOCK_BELLS') {
+    const mc = parseInt(action.mainContestant || action.contestantIndex, 10) || 0;
+    if (mc >= 1 && mc <= 4) serverState.vqMainContestant = mc;
+    serverState.activeRound = 'VINH_QUANG';
+    serverState.vqBuzzerOpen = true;
+    serverState.vqBuzzerLocked = false;
+    serverState.vqBuzzerWinner = 0;
+    serverState.vqBellUnlockedAt = now;
+    serverState.vqBuzzerWinnerTime = '';
+  } else if (type === 'VINH_QUANG_SHOW_FASTEST_HL' || type === 'VINH_QUANG_LOCK_BELLS') {
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBellUnlockedAt = 0;
+    const w = parseInt(action.contestantIndex || action.whoBuzzed || action.contestantId || action.winnerId, 10);
+    if (w >= 1 && w <= 4) serverState.vqBuzzerWinner = w;
+    if (action.bellTime) serverState.vqBuzzerWinnerTime = String(action.bellTime);
+  } else if (type === 'VINH_QUANG_RIGHT' || type === 'VINH_QUANG_WRONG') {
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
+    serverState.vqBellUnlockedAt = 0;
+    serverState.vqBuzzerWinnerTime = '';
   } else if (
     type === 'VINH_QUANG_HIDE_PACK' ||
     type === 'VINH_QUANG_HIDE_QUESTION' ||
@@ -612,6 +725,9 @@ function handleIncomingAction(action, senderWs = null) {
   ) {
     serverState.vqQuestionShown = false;
     serverState.currentTimer = null;
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
   } else if (
     type === 'VINH_QUANG_SELECT_PACK' ||
     type === 'VINH_QUANG_SHOW_PACKS'
@@ -619,8 +735,12 @@ function handleIncomingAction(action, senderWs = null) {
     serverState.vqQuestionShown = false;
     serverState.currentTimer = null;
     serverState.activeRound = 'VINH_QUANG';
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
   } else if (
     type === 'VINH_QUANG_RESET' ||
+    type === 'VINH_QUANG_FINISH' ||
     type === 'VINH_QUANG_INTRO' ||
     type === 'VINH_QUANG_PHAN_THI' ||
     type === 'SWITCH_VIEW' ||
@@ -630,8 +750,14 @@ function handleIncomingAction(action, senderWs = null) {
   ) {
     serverState.vqQuestionShown = false;
     serverState.currentTimer = null;
+    serverState.vqBuzzerOpen = false;
+    serverState.vqBuzzerLocked = true;
+    serverState.vqBuzzerWinner = 0;
     if (action.round) serverState.activeRound = action.round;
-    if (type === 'RESET_ALL_DATA' || type === 'VINH_QUANG_RESET') {
+    if (type === 'RESET_ALL_DATA' || type === 'VINH_QUANG_RESET' || type === 'VINH_QUANG_FINISH' || type === 'VINH_QUANG_INTRO' || type === 'START_ROUND_CLEAN') {
+      serverState.vqMainContestant = 0;
+    }
+    if (type === 'RESET_ALL_DATA' || type === 'VINH_QUANG_RESET' || type === 'VINH_QUANG_FINISH') {
       serverState.currentQuestion = null;
     }
   }
@@ -744,6 +870,10 @@ function handleIncomingAction(action, senderWs = null) {
       xpBuzzerOpen: !!serverState.xpBuzzerOpen,
       xpBuzzerLocked: !!serverState.xpBuzzerLocked,
       xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
+      vqMainContestant: serverState.vqMainContestant || 0,
+      vqBuzzerOpen: !!serverState.vqBuzzerOpen,
+      vqBuzzerLocked: !!serverState.vqBuzzerLocked,
+      vqBuzzerWinner: serverState.vqBuzzerWinner || 0,
       vsQuestionShown: !!serverState.vsQuestionShown,
       vqQuestionShown: !!serverState.vqQuestionShown,
       vuotSong: serverState.vuotSong,

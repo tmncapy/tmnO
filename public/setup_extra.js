@@ -1292,11 +1292,17 @@ window.toggleVQStar = function(idx) {
             showToast(`Đã hủy Ngôi sao hy vọng của Thí sinh ${idx}`);
         }
     }
-    sendToProjector('VINH_QUANG_STAR_OF_HOPE', { 
-        contestantIndex: idx, 
-        active: isActive, 
-        hasStar: anyStarActive 
-    });
+    const starPayload = {
+        type: 'VINH_QUANG_STAR_OF_HOPE',
+        contestantIndex: idx,
+        active: isActive,
+        hasStar: anyStarActive,
+        timestamp: Date.now()
+    };
+    sendToProjector('VINH_QUANG_STAR_OF_HOPE', starPayload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(starPayload);
+    }
 }
 
 window.vqCorrectAnswer = function(idx) {

@@ -648,6 +648,15 @@ function confirmRKScoreModal() {
 
     const hasCorrect = checkedSet.size > 0;
     const results = [];
+    const wrongRows = [];
+    const wrongIds = [];
+
+    rkScoreModalItems.forEach((item, pos) => {
+        if (!checkedSet.has(item.idx)) {
+            wrongRows.push(pos + 1);
+            wrongIds.push(item.idx);
+        }
+    });
 
     if (hasCorrect) {
         const pointsByIdx = computeRKPointsByIdx(rkScoreModalItems, checkedSet);
@@ -669,6 +678,8 @@ function confirmRKScoreModal() {
         questionIndex: currentRKQuestion,
         hasCorrect,
         correctIds: Array.from(checkedSet),
+        wrongIds,
+        wrongRows,
         contestants: (typeof gameData !== 'undefined' && gameData.contestants) ? gameData.contestants : [],
         timestamp: Date.now()
     };

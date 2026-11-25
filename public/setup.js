@@ -1280,6 +1280,7 @@ function updateContestantName(i, val) {
     });
 
     if (typeof updateTab1Preview === 'function') updateTab1Preview();
+    if (typeof syncVQTurnDropdownNames === 'function') syncVQTurnDropdownNames();
 
     // Debounce disk save and network broadcast to prevent lag while typing
     if (updateContestantNameTimeout) clearTimeout(updateContestantNameTimeout);
@@ -1442,6 +1443,10 @@ function handleIncomingPlayerAnswer(data) {
         } else if (round === 'VS' || round === 'VUOT_SONG' || round === 'VCNV' || round === 'CNV' || window.currentActiveRound === 'VUOT_SONG') {
             if (typeof markVSContestantSubmitted === 'function') {
                 markVSContestantSubmitted(tsIdx, data.time || null);
+            }
+        } else if (round === 'VQ' || round === 'VINH_QUANG' || round === 'VE_DICH' || window.currentActiveRound === 'VINH_QUANG') {
+            if (typeof handleVinhQuangBuzzFromPlayer === 'function') {
+                handleVinhQuangBuzzFromPlayer(tsIdx, data);
             }
         }
         return;

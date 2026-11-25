@@ -5,9 +5,106 @@ let xuatPhatTimerInterval = null;
 let xuatPhatTimeLeft = 60;
 let isXuatPhatStarted = false;
 let xpBuzzerWinner = 0;
+let xpBuzzerWinnerTime = '';
 let xpBuzzerOpen = false;
+let xpUnlockDelayTimer = null;
+let xpUnlockCountdownInterval = null;
+let xpUnlockElapsedInterval = null;
+let xpBellUnlockTime = 0;
+
+function setXPBellDelayStatus(text, color) {
+    const el = document.getElementById('xp_bell_delay_status');
+    if (el) {
+        el.innerText = text || '';
+        el.style.color = color || '#fde047';
+    }
+}
+
+function getXPBellDelaySeconds(qText) {
+    const cleanLen = (qText || '').toString().trim().length;
+    if (cleanLen <= 55) return 2;
+    if (cleanLen <= 105) return 3;
+    if (cleanLen <= 155) return 4;
+    return 5;
+}
+
+function clearXPBellUnlockDelay() {
+    if (xpUnlockDelayTimer) {
+        clearTimeout(xpUnlockDelayTimer);
+        xpUnlockDelayTimer = null;
+    }
+    if (xpUnlockCountdownInterval) {
+        clearInterval(xpUnlockCountdownInterval);
+        xpUnlockCountdownInterval = null;
+    }
+    if (xpUnlockElapsedInterval) {
+        clearInterval(xpUnlockElapsedInterval);
+        xpUnlockElapsedInterval = null;
+    }
+    xpBellUnlockTime = 0;
+    setXPBellDelayStatus('');
+}
+
+function scheduleXPTurn5BellUnlock(qText) {
+    clearXPBellUnlockDelay();
+    const delaySec = getXPBellDelaySeconds(qText);
+    const unlockAt = Date.now() + delaySec * 1000;
+    xpBuzzerOpen = false;
+    xpBuzzerWinner = 0;
+    clearXPBuzzerUI();
+    setXPBellDelayStatus(`🔒 Mở chuông: ${delaySec}s`, '#fde047');
+
+    xpUnlockCountdownInterval = setInterval(() => {
+        if (currentXuatPhatTurn !== 5 || !isXuatPhatStarted || xpBuzzerWinner !== 0) {
+            clearXPBellUnlockDelay();
+            return;
+        }
+        const rem = Math.max(1, Math.ceil((unlockAt - Date.now()) / 1000));
+        setXPBellDelayStatus(`🔒 Mở chuông: ${rem}s`, '#fde047');
+    }, 250);
+
+    xpUnlockDelayTimer = setTimeout(() => {
+        if (xpUnlockCountdownInterval) {
+            clearInterval(xpUnlockCountdownInterval);
+            xpUnlockCountdownInterval = null;
+        }
+        xpUnlockDelayTimer = null;
+        if (currentXuatPhatTurn !== 5 || !isXuatPhatStarted || xpBuzzerWinner !== 0) {
+            return;
+        }
+        xpBuzzerOpen = true;
+        xpBellUnlockTime = Date.now();
+        setXPBellDelayStatus('🔔 Mở chuông: 0.00s', '#bbf7d0');
+        xpUnlockElapsedInterval = setInterval(() => {
+            if (currentXuatPhatTurn !== 5 || !xpBuzzerOpen || xpBuzzerWinner !== 0) {
+                if (xpUnlockElapsedInterval) {
+                    clearInterval(xpUnlockElapsedInterval);
+                    xpUnlockElapsedInterval = null;
+                }
+                return;
+            }
+            const elapsed = Math.max(0, (Date.now() - xpBellUnlockTime) / 1000);
+            setXPBellDelayStatus(`🔔 Mở chuông: ${elapsed.toFixed(2)}s`, '#bbf7d0');
+        }, 100);
+        const unlockPayload = {
+            type: 'UNLOCK_BELLS',
+            round: 'KD',
+            turnIndex: 5,
+            bellUnlockAt: xpBellUnlockTime,
+            timestamp: xpBellUnlockTime
+        };
+        sendToProjector('UNLOCK_BELLS', unlockPayload);
+        if (typeof sendSupabaseAction === 'function') {
+            sendSupabaseAction(unlockPayload);
+        }
+        showToast('🔔 Chuông đã mở — Thí sinh có thể bấm chuông!');
+    }, delaySec * 1000);
+
+    return { delaySec, unlockAt };
+}
 
 function clearXPBuzzerUI() {
+    xpBuzzerWinnerTime = '';
     for (let i = 1; i <= 4; i++) {
         const bar = document.getElementById(`ts${i}_xp_buzz_bar`);
         if (bar) {
@@ -16,22 +113,35 @@ function clearXPBuzzerUI() {
             bar.style.color = '#64748b';
             bar.style.borderColor = '#cbd5e1';
         }
+        const extraEl = document.getElementById(`ts${i}_extra`);
+        if (extraEl) {
+            extraEl.value = '';
+        }
     }
 }
 
-function setXPBuzzerWinnerUI(tsIdx) {
+function setXPBuzzerWinnerUI(tsIdx, bellTimeStr) {
     clearXPBuzzerUI();
     if (!tsIdx || tsIdx < 1 || tsIdx > 4) return;
+    const cleanSec = bellTimeStr ? String(bellTimeStr).replace(/s|giây/gi, '').trim() : '';
+    xpBuzzerWinnerTime = cleanSec;
     const bar = document.getElementById(`ts${tsIdx}_xp_buzz_bar`);
     if (bar) {
-        bar.textContent = '🔔 BẤM CHUÔNG NHANH NHẤT';
+        bar.textContent = cleanSec ? `🔔 BẤM CHUÔNG NHANH NHẤT — ${cleanSec}s` : '🔔 BẤM CHUÔNG NHANH NHẤT';
         bar.style.background = '#fef08a';
         bar.style.color = '#b91c1c';
         bar.style.borderColor = '#eab308';
     }
+    const extraEl = document.getElementById(`ts${tsIdx}_extra`);
+    if (extraEl) {
+        extraEl.value = cleanSec ? `${cleanSec}s` : '';
+    }
 }
 
 function changeXuatPhatDe(val) {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     currentXuatPhatDe = parseInt(val) || 1;
     currentXuatPhatQIndex = 0;
     isXuatPhatStarted = false;
@@ -63,10 +173,14 @@ function changeXuatPhatDe(val) {
 }
 
 function selectLuotThi(turnIndex) {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     currentXuatPhatTurn = Math.min(5, Math.max(1, parseInt(turnIndex, 10) || 1));
     if (currentXuatPhatTurn >= 1 && currentXuatPhatTurn <= 5) {
         currentXuatPhatDe = currentXuatPhatTurn;
     }
+    xuatPhatTimeLeft = (currentXuatPhatTurn === 5) ? 5 : 60;
     currentXuatPhatQIndex = 0;
     isXuatPhatStarted = false;
     xpBuzzerWinner = 0;
@@ -181,7 +295,8 @@ function updateTab1Preview() {
         if (xpBuzzerWinner >= 1 && xpBuzzerWinner <= 4) {
             const wName = gameData.contestants[xpBuzzerWinner - 1]?.name || `Thí sinh ${xpBuzzerWinner}`;
             const wScore = gameData.contestants[xpBuzzerWinner - 1]?.score || 0;
-            if (titleEl) titleEl.innerText = `LƯỢT THI 5 (THI CHUNG) — 🔔 TS${xpBuzzerWinner}: ${wName.toUpperCase()}`;
+            const timeSuffix = xpBuzzerWinnerTime ? ` (${xpBuzzerWinnerTime}s)` : '';
+            if (titleEl) titleEl.innerText = `LƯỢT THI 5 (THI CHUNG) — 🔔 TS${xpBuzzerWinner}: ${wName.toUpperCase()}${timeSuffix}`;
             if (scoreEl) scoreEl.innerText = wScore;
         } else {
             if (titleEl) titleEl.innerText = `LƯỢT THI 5: LƯỢT THI CHUNG (BẤM CHUÔNG)`;
@@ -246,6 +361,9 @@ function onClickHienGraphicChonDe() {
 }
 
 function onClickHienGraphicCauHoi() {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
     currentXuatPhatQIndex = 0;
@@ -282,12 +400,16 @@ function onClickHienGraphicCauHoi() {
 }
 
 function onClickHienCauHoi() {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
     currentXuatPhatQIndex = 0;
     isXuatPhatStarted = true;
     xpBuzzerWinner = 0;
-    xpBuzzerOpen = (turnIdx === 5);
+    xpBuzzerOpen = false;
+    if (turnIdx === 5) xuatPhatTimeLeft = 5;
     clearXPBuzzerUI();
     updateTab1Preview();
 
@@ -308,6 +430,11 @@ function onClickHienCauHoi() {
     if (qTextEl) qTextEl.innerText = `Câu 1: ${qText}`;
     if (aTextEl) aTextEl.innerText = `Đáp án: ${ansText || '...'}`;
 
+    let delayInfo = null;
+    if (turnIdx === 5) {
+        delayInfo = scheduleXPTurn5BellUnlock(qText);
+    }
+
     const payload = {
         type: 'XUAT_PHAT_HIEN_CAU_HOI',
         turnIndex: turnIdx,
@@ -322,7 +449,9 @@ function onClickHienCauHoi() {
         score: score,
         contestants: gameData.contestants,
         xpQuestionShown: true,
-        unlockBells: turnIdx === 5,
+        unlockBells: false,
+        bellDelaySeconds: delayInfo ? delayInfo.delaySec : 0,
+        bellUnlockAt: delayInfo ? delayInfo.unlockAt : 0,
         gameData: gameData,
         timestamp: Date.now()
     };
@@ -330,12 +459,11 @@ function onClickHienCauHoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
-    if (turnIdx === 5) {
-        const unlockPayload = { type: 'UNLOCK_BELLS', round: 'KD', turnIndex: 5, timestamp: Date.now() };
-        sendToProjector('UNLOCK_BELLS', unlockPayload);
-        if (typeof sendSupabaseAction === 'function') sendSupabaseAction(unlockPayload);
+    if (turnIdx === 5 && delayInfo) {
+        showToast(`Đã hiện Câu 1 — Mở chuông sau ${delayInfo.delaySec}s`);
+    } else {
+        showToast('Đã hiện Câu 1 và phát nhạc suy nghĩ');
     }
-    showToast('Đã hiện Câu 1 và phát nhạc suy nghĩ');
 }
 
 function handleXuatPhatBuzzFromPlayer(tsIdx, data) {
@@ -345,12 +473,27 @@ function handleXuatPhatBuzzFromPlayer(tsIdx, data) {
     if (data && data.winnerId && parseInt(data.winnerId, 10) !== id) return;
     if (!xpBuzzerOpen || xpBuzzerWinner !== 0) return;
 
+    const unlockAtSnapshot = xpBellUnlockTime;
+    let bellSecondsStr = '';
+    if (unlockAtSnapshot > 0) {
+        bellSecondsStr = Math.max(0, (Date.now() - unlockAtSnapshot) / 1000).toFixed(2);
+    } else if (data && (data.bellTime !== undefined || (data.time && data.time !== '00.00'))) {
+        const rawBell = (data.bellTime !== undefined && data.bellTime !== null && String(data.bellTime).trim() !== '') ? data.bellTime : data.time;
+        const parsed = parseFloat(String(rawBell).replace(/s|giây/gi, '').trim());
+        if (!isNaN(parsed) && parsed >= 0) {
+            bellSecondsStr = parsed.toFixed(2);
+        }
+    }
+
+    clearXPBellUnlockDelay();
     xpBuzzerWinner = id;
     xpBuzzerOpen = false;
-    setXPBuzzerWinnerUI(id);
+    setXPBuzzerWinnerUI(id, bellSecondsStr);
     updateTab1Preview();
 
     const name = gameData.contestants[id - 1]?.name || `Thí sinh ${id}`;
+    const timeBadge = bellSecondsStr ? ` (${bellSecondsStr}s)` : '';
+    setXPBellDelayStatus(`🔔 TS${id} bấm chuông${timeBadge}`, '#fde047');
     const lockPayload = {
         type: 'XUAT_PHAT_SHOW_FASTEST_HL',
         turnIndex: 5,
@@ -358,6 +501,7 @@ function handleXuatPhatBuzzFromPlayer(tsIdx, data) {
         contestantIndex: id,
         whoBuzzed: id,
         contestantName: name,
+        bellTime: bellSecondsStr,
         questionIndex: currentXuatPhatQIndex + 1,
         timestamp: Date.now()
     };
@@ -365,13 +509,62 @@ function handleXuatPhatBuzzFromPlayer(tsIdx, data) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(lockPayload);
     }
-    showToast(`🔔 ${name} đã bấm chuông nhanh nhất!`);
+    showToast(`🔔 ${name} đã bấm chuông nhanh nhất${timeBadge}!`);
+}
+
+function onClickTinhThoiGianXP() {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    const durationSec = 5;
+    const startTime = Date.now();
+    xuatPhatTimeLeft = durationSec;
+
+    const timerEl = document.getElementById('preview_timer');
+    const statusEl = document.getElementById('preview_status_text');
+    if (timerEl) timerEl.innerText = String(durationSec);
+    if (statusEl) statusEl.innerText = String(durationSec);
+
+    const payload = {
+        type: 'XUAT_PHAT_START_TIMER',
+        turnIndex: currentXuatPhatTurn || 0,
+        deIndex: currentXuatPhatDe || 1,
+        questionIndex: currentXuatPhatQIndex + 1,
+        duration: durationSec,
+        is5s: true,
+        startTime: startTime,
+        xpQuestionShown: isXuatPhatStarted,
+        contestants: gameData.contestants,
+        timestamp: startTime
+    };
+    sendToProjector('XUAT_PHAT_START_TIMER', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+
+    xuatPhatTimerInterval = setInterval(() => {
+        const rem = Math.max(0, Math.ceil((startTime + durationSec * 1000 - Date.now()) / 1000));
+        xuatPhatTimeLeft = rem;
+        const tEl = document.getElementById('preview_timer');
+        const sEl = document.getElementById('preview_status_text');
+        if (tEl) tEl.innerText = String(rem);
+        if (sEl) sEl.innerText = String(rem);
+        if (rem <= 0) {
+            clearInterval(xuatPhatTimerInterval);
+            xuatPhatTimerInterval = null;
+            showToast('⏰ Hết 5s trả lời!');
+        }
+    }, 200);
+
+    showToast('⏱️ Bắt đầu tính thời gian 5s trả lời');
 }
 
 window.clearXPBuzzerUI = clearXPBuzzerUI;
+window.clearXPBellUnlockDelay = clearXPBellUnlockDelay;
+window.getXPBellDelaySeconds = getXPBellDelaySeconds;
 window.handleXuatPhatBuzzFromPlayer = handleXuatPhatBuzzFromPlayer;
 window.onClickHienGraphicCauHoi = onClickHienGraphicCauHoi;
 window.onClickHienCauHoi = onClickHienCauHoi;
+window.onClickTinhThoiGianXP = onClickTinhThoiGianXP;
 
 function onClickRandomDe() {
     if (!currentXuatPhatTurn || currentXuatPhatTurn <= 0) {
@@ -443,6 +636,9 @@ function onClickDung() {
         showToast('⚠️ Vui lòng chọn Lượt thi của Thí sinh trước!');
         return;
     }
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     let targetTs = currentXuatPhatTurn;
     if (currentXuatPhatTurn === 5) {
         if (!xpBuzzerWinner || xpBuzzerWinner < 1 || xpBuzzerWinner > 4) {
@@ -489,6 +685,9 @@ function onClickSai() {
         showToast('⚠️ Vui lòng chọn Lượt thi của Thí sinh trước!');
         return;
     }
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     const questions = gameData.xuatPhat[currentXuatPhatDe] || [];
     const currentQ = questions[currentXuatPhatQIndex] || { q: '', a: '' };
     let targetTs = currentXuatPhatTurn;
@@ -539,13 +738,17 @@ function onClickSai() {
 }
 
 function onClickChuyenCau() {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
     const totalQuestions = getXuatPhatTotalQuestions(deIdx);
     if (currentXuatPhatQIndex < totalQuestions - 1) {
         currentXuatPhatQIndex++;
         xpBuzzerWinner = 0;
-        xpBuzzerOpen = (turnIdx === 5);
+        xpBuzzerOpen = false;
+        if (turnIdx === 5) xuatPhatTimeLeft = 5;
         clearXPBuzzerUI();
         updateTab1Preview();
         const questions = (typeof gameData !== 'undefined' && gameData?.xuatPhat?.[deIdx]) ? gameData.xuatPhat[deIdx] : [];
@@ -567,6 +770,11 @@ function onClickChuyenCau() {
         if (qTextEl) qTextEl.innerText = `Câu ${qNumNum}: ${qText}`;
         if (aTextEl) aTextEl.innerText = `Đáp án: ${ansText || '...'}`;
 
+        let delayInfo = null;
+        if (turnIdx === 5) {
+            delayInfo = scheduleXPTurn5BellUnlock(qText);
+        }
+
         const payload = {
             type: 'XUAT_PHAT_NEXT_QUESTION',
             turnIndex: turnIdx,
@@ -580,19 +788,20 @@ function onClickChuyenCau() {
             score,
             contestants: gameData.contestants,
             xpQuestionShown: true,
-            unlockBells: turnIdx === 5,
+            unlockBells: false,
+            bellDelaySeconds: delayInfo ? delayInfo.delaySec : 0,
+            bellUnlockAt: delayInfo ? delayInfo.unlockAt : 0,
             timestamp: Date.now()
         };
         sendToProjector('XUAT_PHAT_NEXT_QUESTION', payload);
         if (typeof sendSupabaseAction === 'function') {
             sendSupabaseAction(payload);
         }
-        if (turnIdx === 5) {
-            const unlockPayload = { type: 'UNLOCK_BELLS', round: 'KD', turnIndex: 5, timestamp: Date.now() };
-            sendToProjector('UNLOCK_BELLS', unlockPayload);
-            if (typeof sendSupabaseAction === 'function') sendSupabaseAction(unlockPayload);
+        if (turnIdx === 5 && delayInfo) {
+            showToast(`Đã chuyển sang Câu ${qNumNum}/${totalQuestions} — Mở chuông sau ${delayInfo.delaySec}s`);
+        } else {
+            showToast(`Đã chuyển sang Câu ${qNumNum}/${totalQuestions}`);
         }
-        showToast(`Đã chuyển sang Câu ${qNumNum}/${totalQuestions}`);
     } else {
         showToast(`Đã hết ${totalQuestions} câu hỏi của lượt thi này`);
     }
@@ -617,6 +826,8 @@ function resetS1ContestantDe(tsIdx) {
 
 function onClickDatLaiVongThi() {
     clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     xuatPhatTimeLeft = 60;
     currentXuatPhatQIndex = 0;
     currentXuatPhatTurn = 0;
@@ -659,6 +870,9 @@ function onClickDungNhac() {
 }
 
 function onClickHoanThanh() {
+    clearInterval(xuatPhatTimerInterval);
+    xuatPhatTimerInterval = null;
+    clearXPBellUnlockDelay();
     isXuatPhatStarted = false;
     xpBuzzerWinner = 0;
     xpBuzzerOpen = false;
@@ -677,7 +891,6 @@ function onClickHoanThanh() {
     if (statusEl) statusEl.innerText = "0";
     const timerEl = document.getElementById('preview_timer');
     if (timerEl) timerEl.innerText = "0";
-    clearInterval(xuatPhatTimerInterval);
     showToast('Đã hoàn thành lượt thi - Đã ẩn màn hình Projector');
 }
 
