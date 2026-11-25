@@ -680,15 +680,15 @@
             <div class="q-row">
                 <span>Câu 1</span>
                 <div>
-                    <input type="text" id="rk_q_1" placeholder="Nội dung câu hỏi đoạn băng 1" onchange="saveAllData()">
+                    <input type="text" id="rk_q_1" placeholder="Nội dung câu hỏi tăng tốc 1" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_1', 'video/*,audio/*')" title="Tải lên video siêu tốc (hỗ trợ file dung lượng lớn)">⚡ Tải Video</button>
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_1')" title="Xem thử Video Câu 1">👁️ Xem</button>
-                        <input type="text" id="rk_m_1" value="./cau1.mp4" placeholder="Kéo thả hoặc nhập URL video đoạn băng 1" onchange="saveAllData()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_1');" style="flex: 1;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_1', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 1">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_1')" title="Xem thử Media Câu 1">👁️ Xem</button>
+                        <input type="text" id="rk_m_1" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 1" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_1');" style="flex: 1;">
                     </div>
                 </div>
                 <div>
-                    <input type="text" id="rk_a_1" placeholder="Đáp án câu 1" onchange="saveAllData()">
+                    <input type="text" id="rk_a_1" placeholder="Đáp án câu 1" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_1', 'image/*')">Chọn ảnh đáp án</button>
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_1')" title="Xem ảnh đáp án">👁️</button>
@@ -700,15 +700,15 @@
             <div class="q-row">
                 <span>Câu 2</span>
                 <div>
-                    <input type="text" id="rk_q_2" placeholder="Nội dung câu hỏi đoạn băng 2" onchange="saveAllData()">
+                    <input type="text" id="rk_q_2" placeholder="Nội dung câu hỏi tăng tốc 2" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_2', 'video/*,audio/*')" title="Tải lên video siêu tốc (hỗ trợ file dung lượng lớn)">⚡ Tải Video</button>
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_2')" title="Xem thử Video Câu 2">👁️ Xem</button>
-                        <input type="text" id="rk_m_2" value="./cau2.mp4" placeholder="Kéo thả hoặc nhập URL video đoạn băng 2" onchange="saveAllData()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_2');" style="flex: 1;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_2', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 2">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_2')" title="Xem thử Media Câu 2">👁️ Xem</button>
+                        <input type="text" id="rk_m_2" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 2" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_2');" style="flex: 1;">
                     </div>
                 </div>
                 <div>
-                    <input type="text" id="rk_a_2" placeholder="Đáp án câu 2" onchange="saveAllData()">
+                    <input type="text" id="rk_a_2" placeholder="Đáp án câu 2" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_2', 'image/*')">Chọn ảnh đáp án</button>
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_2')" title="Xem ảnh đáp án">👁️</button>
@@ -720,15 +720,15 @@
             <div class="q-row">
                 <span>Câu 3</span>
                 <div>
-                    <input type="text" id="rk_q_3" placeholder="Nội dung câu hỏi đoạn băng 3" onchange="saveAllData()">
+                    <input type="text" id="rk_q_3" placeholder="Nội dung câu hỏi tăng tốc 3" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_3', 'video/*,audio/*')" title="Tải lên video siêu tốc (hỗ trợ file dung lượng lớn)">⚡ Tải Video</button>
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_3')" title="Xem thử Video Câu 3">👁️ Xem</button>
-                        <input type="text" id="rk_m_3" value="./cau3.mp4" placeholder="Kéo thả hoặc nhập URL video đoạn băng 3" onchange="saveAllData()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_3');" style="flex: 1;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_3', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 3">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_3')" title="Xem thử Media Câu 3">👁️ Xem</button>
+                        <input type="text" id="rk_m_3" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 3" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_3');" style="flex: 1;">
                     </div>
                 </div>
                 <div>
-                    <input type="text" id="rk_a_3" placeholder="Đáp án câu 3" onchange="saveAllData()">
+                    <input type="text" id="rk_a_3" placeholder="Đáp án câu 3" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_3', 'image/*')">Chọn ảnh đáp án</button>
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_3')" title="Xem ảnh đáp án">👁️</button>
@@ -740,15 +740,15 @@
             <div class="q-row">
                 <span>Câu 4</span>
                 <div>
-                    <input type="text" id="rk_q_4" placeholder="Nội dung câu hỏi đoạn băng 4" onchange="saveAllData()">
+                    <input type="text" id="rk_q_4" placeholder="Nội dung câu hỏi tăng tốc 4" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_4', 'video/*,audio/*')" title="Tải lên video siêu tốc (hỗ trợ file dung lượng lớn)">⚡ Tải Video</button>
-                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_4')" title="Xem thử Video Câu 4">👁️ Xem</button>
-                        <input type="text" id="rk_m_4" value="./cau4.mp4" placeholder="Kéo thả hoặc nhập URL video đoạn băng 4" onchange="saveAllData()" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_4');" style="flex: 1;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_4', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 4">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_4')" title="Xem thử Media Câu 4">👁️ Xem</button>
+                        <input type="text" id="rk_m_4" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 4" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_4');" style="flex: 1;">
                     </div>
                 </div>
                 <div>
-                    <input type="text" id="rk_a_4" placeholder="Đáp án câu 4" onchange="saveAllData()">
+                    <input type="text" id="rk_a_4" placeholder="Đáp án câu 4" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
                     <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_4', 'image/*')">Chọn ảnh đáp án</button>
                         <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_4')" title="Xem ảnh đáp án">👁️</button>
@@ -1241,29 +1241,20 @@
 
                 <!-- ACTION BUTTONS ROW 1 -->
                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    <button class="ctrl-btn-action" onclick="onClickVSFlipRow()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Chọn ô chữ
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSOpenRowAnswer()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                    <button class="ctrl-btn-action" onclick="onClickVSOpenRowAnswer()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Mở đáp án hàng ngang đang chọn trên nền h2.png & phát 2_RightRow.mp3">
                         Mở đáp án HN
                     </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSOpenKeywordLetters()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
-                        Mở ô chữ đáp án
+                    <button class="ctrl-btn-action" onclick="onClickVSCloseRowAnswer()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Đóng đáp án hàng ngang đang chọn (đổi từ h2.png sang h3.png & phát 2_WrongRow.mp3)">
+                        Đóng đáp án hàng ngang
                     </button>
                     <button class="ctrl-btn-action" onclick="onClickVSShowQuestion()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
                         Hiện câu hỏi
                     </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSShowAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
+                    <button id="btn_vs_show_answers" class="ctrl-btn-action" onclick="onClickVSShowAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Bấm lần 1: chuyển Projector sang scene đáp án trống & đếm ngược 3s thành chữ Hiện; bấm Hiện: phát 2_answer_4P.mp4 + 2_ShowAnswer.mp3 và hiện tên & đáp án sau 1,75s">
                         Hiện ĐA thí sinh
                     </button>
                     <button class="ctrl-btn-action" onclick="onClickVSOpenAllAnswers()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;">
                         Mở đáp án Vòng thi
-                    </button>
-                    <button class="ctrl-btn-action" onclick="onClickVSScoreKeyword()" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Chấm điểm Đáp án vòng thi theo thời điểm: 50 - 40 - 30 - 20 - 10">
-                        Chấm ĐA vòng thi
-                    </button>
-                    <button class="ctrl-btn-action" onclick="adjustScoreAll(10)" style="flex: 1; white-space: nowrap; padding: 0 8px; font-size: 12px;" title="Cộng 10 điểm cho cả 4 thí sinh cùng lúc">
-                        Cộng 10đ cả 4 TS
                     </button>
                 </div>
 
@@ -1284,7 +1275,7 @@
                     <button class="ctrl-btn-bottom" onclick="sendToProjector('STOP_SOUND'); showToast('Đã dừng nhạc')">
                         Dừng nhạc
                     </button>
-                    <button class="ctrl-btn-bottom" onclick="resetVSContestantBell('ALL')" title="Reset nút chuông cho tất cả thí sinh">
+                    <button class="ctrl-btn-bottom" onclick="resetVSContestantBell('ALL')" title="Ẩn graphic chuông trên màn hình chiếu & đặt lại chuông cho tất cả thí sinh">
                         Reset chuông
                     </button>
                     <button class="ctrl-btn-bottom" id="btn_vs_unlock_all" onclick="unlockAllVSContestants()" title="Mở lại máy cho tất cả thí sinh khi phần thi kết thúc">
@@ -1503,7 +1494,7 @@
                     </div>
 
                     <div style="width: 140px; background: #5b9bd5; border-radius: 4px; padding: 10px; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                        <div id="rk_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">30</div>
+                        <div id="rk_preview_status" style="font-size: 40px; font-weight: bold; color: #ffeb3b; line-height: 1;">20</div>
                     </div>
                 </div>
 
@@ -1521,11 +1512,11 @@
                 <!-- ROW 2 CONTROLS: ACTION BUTTONS ROW -->
                 <div style="display: flex; gap: 6px; justify-content: space-between;">
                     <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(2); onClickRKTangToc()">Tăng tốc</button>
-                    <button class="ctrl-btn-bottom" onclick="onClickBatDauDoanBang()">Đoạn băng</button>
-                    <button class="ctrl-btn-bottom" onclick="onClickRKTinhThoiGian()">30s</button>
-                    <button class="ctrl-btn-bottom" onclick="onClickRKDapAnTS()">Đáp án TS</button>
-                    <button class="ctrl-btn-bottom" onclick="onClickRKAutoScore()" title="Chấm điểm 40-30-20-10">Chấm điểm</button>
-                    <button class="ctrl-btn-bottom" onclick="onClickDiemTS()">Điểm TS</button>
+                    <button class="ctrl-btn-bottom" onclick="onClickRKShowQuestion()" title="Chạy graphic show câu hỏi và hiển thị nội dung câu hỏi">Show câu hỏi</button>
+                    <button id="btn_rk_timer" class="ctrl-btn-bottom" onclick="onClickRKTinhThoiGian()" title="Bắt đầu tính thời gian">20s</button>
+                    <button id="btn_rk_dap_an_ts" class="ctrl-btn-bottom" onclick="onClickRKDapAnTS()" title="Bấm lần 1: chuyển Projector sang scene đáp án trống & đếm ngược 3s thành chữ Hiện; bấm Hiện: phát 3_answer_4P.mp4 + 3_Answer.mp3 và hiện tên, đáp án, thời gian sắp xếp nhanh đến chậm sau 1,5s">Đáp án TS</button>
+                    <button class="ctrl-btn-bottom" onclick="onClickRKAutoScore()" title="Mở bảng 4 tickbox chấm điểm 40-30-20-10">Chấm điểm</button>
+                    <button id="btn_rk_diem_ts" class="ctrl-btn-bottom" onclick="onClickDiemTS()" title="Mở 4 tickbox chấm đáp án thí sinh theo thời gian trả lời">Điểm thí sinh</button>
                     <button class="ctrl-btn-bottom" onclick="onClickRKDatLai()">Đặt lại</button>
                     <button class="ctrl-btn-bottom btn-tong-ket" onclick="onClickTongKet()">Tổng kết</button>
                 </div>
@@ -2110,15 +2101,46 @@
         </div>
     </div>
 
+    <!-- ROUND 3 (TĂNG TỐC) SCORE GRADING MODAL -->
+    <div id="rk_score_modal" onclick="if (event.target === this) closeRKScoreModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.72); z-index: 99998; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+        <div style="background: #ffffff; width: 94%; max-width: 650px; padding: 20px 22px; border-radius: 10px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32); display: flex; flex-direction: column; gap: 12px; border: 1px solid #cbd5e1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px;">
+                <h3 id="rk_score_modal_title" style="margin: 0; color: #1e3a8a; font-size: 16px; font-weight: 800;">CHẤM ĐIỂM THÍ SINH — TĂNG TỐC</h3>
+                <button type="button" onclick="closeRKScoreModal()" style="background: none; border: none; font-size: 13px; font-weight: bold; cursor: pointer; color: #64748b; padding: 2px 6px;">Đóng</button>
+            </div>
+
+            <div id="rk_score_correct_ans" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: #1e3a8a;">
+                Đáp án đúng: ...
+            </div>
+
+            <div style="font-size: 12px; color: #475569; line-height: 1.45;">
+                Tick chọn các thí sinh trả lời đúng. Hệ thống so sánh thời gian trả lời để cộng <b>+40, +30, +20, +10</b> điểm (cùng thời gian nhận cùng mức điểm).
+            </div>
+
+            <div id="rk_score_rows" style="display: flex; flex-direction: column; gap: 8px;"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1.5px solid #e2e8f0; padding-top: 12px; margin-top: 2px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn" onclick="setAllRKScoreCheckboxes(true)" style="font-size: 12px; padding: 6px 10px;">Chọn tất cả</button>
+                    <button type="button" class="btn" onclick="setAllRKScoreCheckboxes(false)" style="font-size: 12px; padding: 6px 10px;">Bỏ chọn</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn" onclick="closeRKScoreModal()" style="padding: 7px 14px; font-weight: 700;">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmRKScoreModal()" style="padding: 7px 18px; font-weight: 800; background: #16a34a; border-color: #15803d;">Xác nhận cộng điểm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124g"></script>
-    <script src="setup.js?v=20261124g"></script>
-    <script src="setup_extra.js?v=20261124g"></script>
-    <script src="controllerR1.js?v=20261124g"></script>
-    <script src="controllerR2.js?v=20261124g"></script>
-    <script src="controllerR3.js?v=20261124g"></script>
-    <script src="controllerR4.js?v=20261124g"></script>
-    <script src="controllerRExtra.js?v=20261124g"></script>
+    <script src="supabase-sync.js?v=20261124m"></script>
+    <script src="setup.js?v=20261124m"></script>
+    <script src="setup_extra.js?v=20261124m"></script>
+    <script src="controllerR1.js?v=20261124m"></script>
+    <script src="controllerR2.js?v=20261124m"></script>
+    <script src="controllerR3.js?v=20261124m"></script>
+    <script src="controllerR4.js?v=20261124m"></script>
+    <script src="controllerRExtra.js?v=20261124m"></script>
 </body>
 </html>

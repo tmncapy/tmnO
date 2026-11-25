@@ -1482,7 +1482,7 @@
                         startSceneTimer(2, 30);
                     }
                 }
-                if (data.type === 'RA_KHOI_SHOW_QUESTION' || data.type === 'TANG_TOC_SHOW_QUESTION' || data.type === 'RA_KHOI_RESET') {
+                if (data.type === 'RA_KHOI_SELECT_QUESTION' || data.type === 'RA_KHOI_SHOW_QUESTION' || data.type === 'TANG_TOC_SHOW_QUESTION' || data.type === 'RA_KHOI_RESET') {
                     const s2Inp = document.getElementById('s2_ans_input');
                     if (s2Inp) s2Inp.value = '';
                     setInputState(2, false, '');

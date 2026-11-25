@@ -4,6 +4,8 @@ let vsTimerInterval = null;
 let vsTimeLeft = 15;
 let vsRevealedKeyIndices = [];
 window.vsOpenedPieces = window.vsOpenedPieces || { 1: false, 2: false, 3: false, 4: false, 5: false };
+let vsAnswerStep = 'idle'; // 'idle' | 'counting' | 'ready'
+let vsAnswerCountdownInterval = null;
 
 function removeVietnameseTones(str) {
     if (!str) return '';
@@ -28,6 +30,7 @@ function removeVietnameseTones(str) {
 }
 
 function selectVSRow(row) {
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     currentVSRow = row;
     const buttons = document.querySelectorAll('#tab2-content .vs-row-btn');
     buttons.forEach((btn, idx) => {
@@ -90,6 +93,7 @@ function selectVSRow(row) {
 }
 
 function onClickVSShowRows() {
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
         gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "" };
     }
@@ -102,6 +106,21 @@ function onClickVSShowRows() {
             if (!aVal.trim() && qVal.trim()) aVal = qVal;
             gameData.vuotSong[`h${i}`] = { q: qVal, a: aVal };
         }
+    }
+    const qcEl = document.getElementById('vs_q_center');
+    const acEl = document.getElementById('vs_a_center');
+    if (qcEl || acEl) {
+        gameData.vuotSong.center = {
+            q: qcEl ? qcEl.value : (gameData.vuotSong.center?.q || ''),
+            a: acEl ? acEl.value : (gameData.vuotSong.center?.a || '')
+        };
+    }
+    const kwEl = document.getElementById('vs_keyword');
+    if (kwEl) {
+        gameData.vuotSong.keyword = kwEl.value;
+    }
+    if (!gameData.vuotSong.keyword && gameData.vuotSong.center?.a) {
+        gameData.vuotSong.keyword = gameData.vuotSong.center.a;
     }
     const hintEl = document.getElementById('vs_hint_image');
     if (hintEl) {
@@ -192,15 +211,54 @@ function onClickVSOpenRowAnswer() {
         showToast('Chưa chọn hàng ngang nào!');
         return;
     }
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
+
     let a = "";
     if (currentVSRow === 'center') {
-        a = document.getElementById('vs_a_center')?.value || "";
+        a = document.getElementById('vs_a_center')?.value || gameData.vuotSong?.center?.a || "";
     } else {
-        a = document.getElementById(`vs_a_${currentVSRow}`)?.value || "";
+        a = document.getElementById(`vs_a_${currentVSRow}`)?.value || gameData.vuotSong?.[`h${currentVSRow}`]?.a || "";
     }
-    sendToProjector('VUOT_SONG_OPEN_ROW_ANSWER', { row: currentVSRow, answer: a, noSound: true });
-    showToast(`Đã mở đáp án hàng ngang ${currentVSRow} (không phát nhạc)`);
+
+    const payload = {
+        type: 'VUOT_SONG_OPEN_ROW_ANSWER',
+        row: currentVSRow,
+        answer: a,
+        vuotSong: gameData.vuotSong,
+        round: 'VUOT_SONG',
+        activeRound: 'VUOT_SONG',
+        timestamp: Date.now()
+    };
+    sendToProjector('VUOT_SONG_OPEN_ROW_ANSWER', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+    showToast(`Đã mở đáp án hàng ngang ${currentVSRow}`);
 }
+window.onClickVSOpenRowAnswer = onClickVSOpenRowAnswer;
+
+function onClickVSCloseRowAnswer() {
+    if (!currentVSRow) {
+        showToast('Chưa chọn hàng ngang nào!');
+        return;
+    }
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
+
+    const payload = {
+        type: 'VUOT_SONG_CLOSE_ROW_ANSWER',
+        row: currentVSRow,
+        vuotSong: gameData.vuotSong,
+        round: 'VUOT_SONG',
+        activeRound: 'VUOT_SONG',
+        timestamp: Date.now()
+    };
+    sendToProjector('VUOT_SONG_CLOSE_ROW_ANSWER', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+    showToast(`Đã đóng đáp án hàng ngang ${currentVSRow}`);
+}
+window.onClickVSCloseRowAnswer = onClickVSCloseRowAnswer;
 
 function onClickVSOpenKeywordLetters() {
     const kw = (gameData.vuotSong?.keyword || gameData.vuotSong?.center?.a || document.getElementById('vs_keyword')?.value || '').trim();
@@ -335,6 +393,7 @@ function onClickVSStartTimer() {
 }
 
 function onClickVSReturnToGrid() {
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     window.vsQuestionIsShown = false;
     clearInterval(vsTimerInterval);
     const timerEl = document.getElementById('vs_preview_timer');
@@ -361,7 +420,24 @@ function onClickVSReturnToGrid() {
     showToast('Đã quay lại giao diện hàng ngang (giữ nguyên trạng thái chọn & đáp án)');
 }
 
-function onClickVSShowAnswers() {
+function resetVSShowAnswersButton() {
+    if (vsAnswerCountdownInterval) {
+        clearInterval(vsAnswerCountdownInterval);
+        vsAnswerCountdownInterval = null;
+    }
+    vsAnswerStep = 'idle';
+    const btn = document.getElementById('btn_vs_show_answers');
+    if (btn) {
+        btn.innerText = 'Hiện ĐA thí sinh';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+        btn.disabled = false;
+    }
+}
+window.resetVSShowAnswersButton = resetVSShowAnswersButton;
+
+function collectVSContestantAnswersPayload() {
     const contestants = [];
     for (let i = 1; i <= 4; i++) {
         const extraInput = document.getElementById(`ts${i}_extra_vs`);
@@ -390,7 +466,7 @@ function onClickVSShowAnswers() {
             timeVal = '00.00';
         }
 
-        const rawBase = gameData.contestants?.[i-1]?.name || document.getElementById(`ts${i}_name_vs`)?.value || `Thí sinh ${i}`;
+        const rawBase = gameData.contestants?.[i - 1]?.name || document.getElementById(`ts${i}_name_vs`)?.value || `Thí sinh ${i}`;
         const baseName = rawBase.replace(/\s*\(\d+\)/g, '').replace(/\s*\([\d\.]+(?:s|giây|S)?\)/gi, '').trim();
 
         contestants.push({
@@ -399,8 +475,81 @@ function onClickVSShowAnswers() {
             time: timeVal
         });
     }
-    sendToProjector('VUOT_SONG_SHOW_CONTESTANT_ANSWERS', { contestants: contestants });
-    showToast('Hiển thị đáp án thí sinh Vượt Chướng Ngại Vật trên Projector');
+    return contestants;
+}
+
+function onClickVSShowAnswers() {
+    const btn = document.getElementById('btn_vs_show_answers');
+
+    if (vsAnswerStep === 'counting') {
+        return;
+    }
+
+    if (vsAnswerStep === 'idle') {
+        if (vsAnswerCountdownInterval) {
+            clearInterval(vsAnswerCountdownInterval);
+            vsAnswerCountdownInterval = null;
+        }
+        vsAnswerStep = 'counting';
+
+        // Switch projector immediately to empty/blank Answer scene
+        const preparePayload = {
+            type: 'VUOT_SONG_PREPARE_ANSWERS',
+            round: 'VUOT_SONG',
+            activeRound: 'VUOT_SONG',
+            contestants: gameData.contestants,
+            timestamp: Date.now()
+        };
+        sendToProjector('VUOT_SONG_PREPARE_ANSWERS', preparePayload);
+        if (typeof sendSupabaseAction === 'function') {
+            sendSupabaseAction(preparePayload);
+        }
+
+        let secLeft = 3;
+        if (btn) {
+            btn.innerText = `${secLeft}s`;
+            btn.style.background = '#f59e0b';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#d97706';
+        }
+
+        vsAnswerCountdownInterval = setInterval(() => {
+            secLeft--;
+            if (secLeft > 0) {
+                if (btn) btn.innerText = `${secLeft}s`;
+            } else {
+                clearInterval(vsAnswerCountdownInterval);
+                vsAnswerCountdownInterval = null;
+                vsAnswerStep = 'ready';
+                if (btn) {
+                    btn.innerText = 'Hiện';
+                    btn.style.background = '#059669';
+                    btn.style.color = '#ffffff';
+                    btn.style.borderColor = '#047857';
+                }
+            }
+        }, 1000);
+
+        showToast('Đang chuyển sang màn hình đáp án trống (3s)...');
+        return;
+    }
+
+    if (vsAnswerStep === 'ready') {
+        resetVSShowAnswersButton();
+        const contestants = collectVSContestantAnswersPayload();
+        const showPayload = {
+            type: 'VUOT_SONG_SHOW_CONTESTANT_ANSWERS',
+            round: 'VUOT_SONG',
+            activeRound: 'VUOT_SONG',
+            contestants: contestants,
+            timestamp: Date.now()
+        };
+        sendToProjector('VUOT_SONG_SHOW_CONTESTANT_ANSWERS', showPayload);
+        if (typeof sendSupabaseAction === 'function') {
+            sendSupabaseAction(showPayload);
+        }
+        showToast('Đang phát graphic & đáp án thí sinh Vượt Chướng Ngại Vật');
+    }
 }
 
 function updateVSBuzzerLabels() {
@@ -485,10 +634,20 @@ function markVSContestantSubmitted(tsIdx, timeStr) {
 
     updateVSBuzzerLabels();
 
-    // Trigger full-screen orange flash on corresponding scoreboard (10 flashes)
+    const rawBase = (typeof gameData !== 'undefined' && gameData.contestants?.[idx - 1]?.name) || `Thí sinh ${idx}`;
+    const cleanName = rawBase
+        .replace(/\s*🔔.*$/gi, '')
+        .replace(/\s*\(Thứ \d+.*?\)/gi, '')
+        .replace(/\s*\([\d\.]+(?:s|giây|S)?\)/gi, '')
+        .replace(/\s*\(\d+\)/g, '')
+        .trim() || `Thí sinh ${idx}`;
+
+    // Trigger full-screen orange flash on corresponding scoreboard & Projector buzzer ribbon
     const flashPayload = {
         type: 'S3_FLASH_SCOREBOARD',
         contestantId: idx,
+        contestantName: cleanName,
+        time: cleanTime,
         round: 'VUOT_SONG',
         timestamp: Date.now()
     };
@@ -583,6 +742,7 @@ function resetVSContestantBell(tsIdx) {
 }
 
 function onClickVSDatLai() {
+    if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     resetVSContestantBell('ALL');
     window.vsRoundStartTime = Date.now();
     try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}

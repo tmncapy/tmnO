@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="designer-runtime.js?v=20261124g"></script>
+    <script src="designer-runtime.js?v=20261124k"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124g"></script>
+    <script src="supabase-sync.js?v=20261124k"></script>
     <style>
         @font-face {
             font-family: 'UTM Avo';
@@ -269,7 +269,32 @@
             width: 62.8128px;
             height: 62.8128px;
             display: block;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .vs-row-cell-img {
+            width: 100%;
+            height: 100%;
+            display: block;
             object-fit: contain;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .vs-row-cell-letter {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+            color: #00143d;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.55);
             transition: none;
             pointer-events: none;
         }
@@ -285,6 +310,38 @@
             display: none;
             transition: none;
             pointer-events: none;
+        }
+
+        /* CNV Count Textbox measured in PPT (1" = 144px): Height 0.44" x Width 4.5", X 7.1" x Y 0.92" */
+        #vs_cnv_count_box {
+            position: absolute;
+            left: 1022.4px;
+            top: 132.48px;
+            width: 648px;
+            height: 63.36px;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            transition: none;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #vs_cnv_count_text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: 0.2px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
         }
 
         /* Question Textbox measured in PPT (1" = 144px): Height 2.43" x Width 5.97", X 1.13" x Y 4.49" */
@@ -316,6 +373,307 @@
             word-break: break-word;
             overflow: hidden;
         }
+
+        /* Round 2 Answer Scene (#view-file-2-answers): Exact PPT 16:9 (1" = 144px, Appear - no fade) */
+        #view-file-2-answers {
+            background: #13ff08;
+        }
+
+        #vs_answer_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 10;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #vs_answer_text_layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 20;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Common size measured in PPT: Height 0.8088" (116.4672px) x Width 3.7531" (540.4464px) */
+        .vs-ans-box {
+            position: absolute;
+            width: 540.4464px;
+            height: 116.4672px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 26px;
+            transition: none;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .vs-ans-box-text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.65);
+        }
+
+        #vs_ans_p1 { left: 419.5584px; top: 264.1824px; }
+        #vs_ans_a1 { left: 960.0048px; top: 264.1824px; }
+        #vs_ans_p2 { left: 419.5584px; top: 406.3968px; }
+        #vs_ans_a2 { left: 960.0048px; top: 406.3968px; }
+        #vs_ans_p3 { left: 419.5584px; top: 557.1360px; }
+        #vs_ans_a3 { left: 960.0048px; top: 557.1360px; }
+        #vs_ans_p4 { left: 419.5584px; top: 699.3504px; }
+        #vs_ans_a4 { left: 960.0048px; top: 699.3504px; }
+
+        /* Round 2 Buzzer Signal (shown on both #view-file-2 and #view-file-2-answers) */
+        /* Size measured in PPT (1" = 144px): Height 0.3" (43.2px) x Width 1.45" (208.8px) */
+        .vs-buzzer-layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 60;
+            pointer-events: none;
+            transition: none;
+        }
+
+        .vs-buzzer-slot {
+            position: absolute;
+            top: 943.2px;
+            width: 208.8px;
+            height: 43.2px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: none;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Rank 1 (fastest): 5.73 x 6.55 | Rank 2: 4.18 x 6.55 | Rank 3: 2.64 x 6.55 | Rank 4: 1.09 x 6.55 */
+        .vs-buzzer-slot.vs-buzzer-rank-1 { left: 825.12px; }
+        .vs-buzzer-slot.vs-buzzer-rank-2 { left: 601.92px; }
+        .vs-buzzer-slot.vs-buzzer-rank-3 { left: 380.16px; }
+        .vs-buzzer-slot.vs-buzzer-rank-4 { left: 156.96px; }
+
+        .vs-buzzer-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+            z-index: 1;
+            transition: none;
+            pointer-events: none;
+        }
+
+        .vs-buzzer-name {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 0 28px 0 18px;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Round 3: Tăng Tốc (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, 1pt = 2px) */
+        #view-file-3 {
+            background: #13ff08;
+        }
+
+        #r3_showques_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 10;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r3_timer_video_20,
+        #r3_timer_video_30 {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 15;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Question Textbox measured in PPT: Height 1.19" (171.36px) x Width 8.18" (1177.92px), X 1.67" (240.48px) x Y 0.65" (93.6px), 14pt (28px) */
+        #r3_question_box {
+            position: absolute;
+            left: 240.48px;
+            top: 93.6px;
+            width: 1177.92px;
+            height: 171.36px;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 28px;
+            overflow: hidden;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r3_question_text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            word-break: break-word;
+            overflow: hidden;
+        }
+
+        /* Media Box measured in PPT: Height 4.62" (665.28px) x Width 7.01" (1009.44px), X 2.26" (325.44px) x Y 2.04" (293.76px) */
+        #r3_media_box {
+            position: absolute;
+            left: 325.44px;
+            top: 293.76px;
+            width: 1009.44px;
+            height: 665.28px;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r3_media_img,
+        #r3_media_video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Round 3 Answer Scene (#view-file-3-answers): Exact PPT 16:9 (1" = 144px, Appear - no fade) */
+        #view-file-3-answers {
+            background: #13ff08;
+        }
+
+        #r3_answer_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 10;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r3_answer_text_layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 20;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Common Height: 0.8088" (116.4672px) */
+        .r3-ans-box {
+            position: absolute;
+            height: 116.4672px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: none;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Name Width: 3.0407" (437.8608px) at X 2.9281" (421.6464px) */
+        .r3-ans-name-box {
+            left: 421.6464px;
+            width: 437.8608px;
+            padding: 0 24px;
+        }
+
+        /* Answer Width: 2.8125" (405px) at X 5.9688" (859.5072px) */
+        .r3-ans-answer-box {
+            left: 859.5072px;
+            width: 405px;
+            padding: 0 22px;
+        }
+
+        /* Time Width: 1.6240" (233.856px) at X 8.7813" (1264.5072px) */
+        .r3-ans-time-box {
+            left: 1264.5072px;
+            width: 233.856px;
+            padding: 0 18px;
+        }
+
+        .r3-ans-box-text {
+            width: auto;
+            display: inline-block;
+            flex: 0 0 auto;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+            transform-origin: center center;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.65);
+        }
+
+        /* Row Y positions measured in PPT: 1.8346", 2.8222", 3.8690", 4.8566" */
+        #r3_ans_p1, #r3_ans_a1, #r3_ans_t1 { top: 264.1824px; }
+        #r3_ans_p2, #r3_ans_a2, #r3_ans_t2 { top: 406.3968px; }
+        #r3_ans_p3, #r3_ans_a3, #r3_ans_t3 { top: 557.1360px; }
+        #r3_ans_p4, #r3_ans_a4, #r3_ans_t4 { top: 699.3504px; }
 
         /* Intro Media Overlay */
         #intro_video_overlay {
@@ -464,8 +822,74 @@
             <img id="vs_piece_5" class="vs-piece-img" src="/Media/Manh5.png" alt="Mảnh ghép 5 (Trung tâm)">
             <div id="vs_rows_container"></div>
             <img id="vs_count_img" src="/Media/2.count.png" alt="Số hàng ngang">
+            <div id="vs_cnv_count_box">
+                <span id="vs_cnv_count_text"></span>
+            </div>
             <div id="vs_question_box">
                 <div id="vs_question_text"></div>
+            </div>
+            <div id="vs_buzzers_grid" class="vs-buzzer-layer">
+                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
+            </div>
+        </div>
+
+        <!-- Round 2: Đáp Án Thí Sinh (Vượt Chướng Ngại Vật) -->
+        <div id="view-file-2-answers" class="projector-scene">
+            <video id="vs_answer_video" src="/Media/2_answer_4P.mp4" muted playsinline preload="auto"></video>
+            <div id="vs_answer_text_layer">
+                <div id="vs_ans_p1" class="vs-ans-box"><span id="vs_ans_p1_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_a1" class="vs-ans-box"><span id="vs_ans_a1_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_p2" class="vs-ans-box"><span id="vs_ans_p2_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_a2" class="vs-ans-box"><span id="vs_ans_a2_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_p3" class="vs-ans-box"><span id="vs_ans_p3_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_a3" class="vs-ans-box"><span id="vs_ans_a3_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_p4" class="vs-ans-box"><span id="vs_ans_p4_text" class="vs-ans-box-text"></span></div>
+                <div id="vs_ans_a4" class="vs-ans-box"><span id="vs_ans_a4_text" class="vs-ans-box-text"></span></div>
+            </div>
+            <div id="vs_buzzers_answers" class="vs-buzzer-layer">
+                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
+            </div>
+        </div>
+
+        <!-- Round 3: Tăng Tốc -->
+        <div id="view-file-3" class="projector-scene">
+            <video id="r3_showques_video" src="/Media/3_showques.mp4" muted playsinline preload="auto"></video>
+            <video id="r3_timer_video_20" src="/Media/3_20s.mp4" muted playsinline preload="auto"></video>
+            <video id="r3_timer_video_30" src="/Media/3_30s.mp4" muted playsinline preload="auto"></video>
+            <div id="r3_question_box">
+                <div id="r3_question_text"></div>
+            </div>
+            <div id="r3_media_box">
+                <img id="r3_media_img" alt="Media Câu hỏi Tăng tốc">
+                <video id="r3_media_video" muted playsinline preload="auto"></video>
+            </div>
+        </div>
+
+        <!-- Round 3: Đáp Án Thí Sinh (Tăng Tốc - A, B, C, D nhanh đến chậm) -->
+        <div id="view-file-3-answers" class="projector-scene">
+            <video id="r3_answer_video" src="/Media/3_answer_4P.mp4" muted playsinline preload="auto"></video>
+            <div id="r3_answer_text_layer">
+                <div id="r3_ans_p1" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p1_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_a1" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a1_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_t1" class="r3-ans-box r3-ans-time-box"><span id="r3_ans_t1_text" class="r3-ans-box-text"></span></div>
+
+                <div id="r3_ans_p2" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p2_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_a2" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a2_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_t2" class="r3-ans-box r3-ans-time-box"><span id="r3_ans_t2_text" class="r3-ans-box-text"></span></div>
+
+                <div id="r3_ans_p3" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p3_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_a3" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a3_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_t3" class="r3-ans-box r3-ans-time-box"><span id="r3_ans_t3_text" class="r3-ans-box-text"></span></div>
+
+                <div id="r3_ans_p4" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p4_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_a4" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a4_text" class="r3-ans-box-text"></span></div>
+                <div id="r3_ans_t4" class="r3-ans-box r3-ans-time-box"><span id="r3_ans_t4_text" class="r3-ans-box-text"></span></div>
             </div>
         </div>
 
@@ -546,15 +970,28 @@
             r2RowChose: '/SFX/2_RowChose.mp3',
             r2RowQues: '/SFX/2_RowQues.mp3',
             r2OnTime: '/SFX/2_OnTime.mp3',
-            r2ShowPiece: '/SFX/2_ShowPiece.mp3'
+            r2ShowPiece: '/SFX/2_ShowPiece.mp3',
+            r2ShowAnswer: '/SFX/2_ShowAnswer.mp3',
+            r2RightRow: '/SFX/2_RightRow.mp3',
+            r2WrongRow: '/SFX/2_WrongRow.mp3',
+            r2Activate: '/SFX/2_Activate.mp3',
+            r3StartRound: '/SFX/3_StartRound.mp3',
+            r3Show: '/SFX/3_Show.mp3',
+            r3Time20: '/SFX/3_20.mp3',
+            r3Time30: '/SFX/3_30.mp3',
+            r3Answer: '/SFX/3_Answer.mp3',
+            r3Right: '/SFX/3_Right.mp3',
+            r3Wrong: '/SFX/3_Wrong.mp3'
         };
 
         // Preload Round 2 cell & puzzle piece images for instant swap (Appear, no flicker)
         [
             '/Media/2.bg.png',
             '/Media/2.count.png',
+            '/Media/2.buzzer.png',
             '/Media/h1.png',
             '/Media/h2.png',
+            '/Media/h3.png',
             '/Media/Manh1.png',
             '/Media/Manh2.png',
             '/Media/Manh3.png',
@@ -608,6 +1045,11 @@
             });
             const introVid = document.getElementById('intro_video_player');
             if (introVid) introVid.volume = vol;
+            const r3MediaVid = document.getElementById('r3_media_video');
+            if (r3MediaVid) {
+                r3MediaVid.muted = true;
+                r3MediaVid.volume = 0;
+            }
         }
 
         function stopAudioItem(audio) {
@@ -659,6 +1101,22 @@
             stopAudioItem(sfxBank.r2RowQues);
             stopAudioItem(sfxBank.r2OnTime);
             stopAudioItem(sfxBank.r2ShowPiece);
+            stopAudioItem(sfxBank.r2ShowAnswer);
+            stopAudioItem(sfxBank.r2RightRow);
+            stopAudioItem(sfxBank.r2WrongRow);
+            stopAudioItem(sfxBank.r2Activate);
+        }
+
+        function stopAllRound3Audio(keepStartRound = false) {
+            if (!keepStartRound) {
+                stopAudioItem(sfxBank.r3StartRound);
+            }
+            stopAudioItem(sfxBank.r3Show);
+            stopAudioItem(sfxBank.r3Time20);
+            stopAudioItem(sfxBank.r3Time30);
+            stopAudioItem(sfxBank.r3Answer);
+            stopAudioItem(sfxBank.r3Right);
+            stopAudioItem(sfxBank.r3Wrong);
         }
 
         function stopAllRound1Audio() {
@@ -693,12 +1151,52 @@
         let r2VuotSongData = null;
         let isRound2RowsShown = false;
         let r2SelectedRow = null;
+        let r2RowStates = { 1: 'default', 2: 'default', 3: 'default', 4: 'default' }; // 'default' | 'right' | 'wrong'
+        let r2RowCustomAnswers = {};
         let r2OpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
+        let r2Buzzers = []; // Array of { id, name } ordered fastest -> slowest (max 4)
+
+        function formatRound2CnvCountText(vsData) {
+            const src = vsData || r2VuotSongData || {};
+            const rawKw = (src.keyword || (src.center && src.center.a) || '').toString().trim();
+            const compact = rawKw.replace(/\s+/g, '');
+            if (!compact) return '';
+
+            const charCount = Array.from(compact).length;
+            const onlyLetters = /^[\p{L}]+$/u.test(compact);
+            const onlyDigits = /^[0-9]+$/.test(compact);
+
+            let unit = 'KÝ TỰ';
+            if (onlyLetters) {
+                unit = 'CHỮ CÁI';
+            } else if (onlyDigits) {
+                unit = 'CHỮ SỐ';
+            }
+
+            return `CHƯỚNG NGẠI VẬT CÓ ${charCount} ${unit}`;
+        }
+
+        function updateRound2CnvCountBox() {
+            const box = document.getElementById('vs_cnv_count_box');
+            const textEl = document.getElementById('vs_cnv_count_text');
+            if (!box || !textEl) return;
+
+            const label = formatRound2CnvCountText(r2VuotSongData);
+            if (isRound2RowsShown && label) {
+                textEl.textContent = label;
+                textEl.style.fontSize = '32px';
+                box.style.display = 'flex';
+            } else {
+                box.style.display = 'none';
+                textEl.textContent = '';
+            }
+        }
 
         function syncRound2Data(vsData) {
             if (!vsData || typeof vsData !== 'object' || Array.isArray(vsData)) return;
             r2VuotSongData = vsData;
             updateRound2HintImage();
+            updateRound2CnvCountBox();
         }
 
         function updateRound2HintImage() {
@@ -725,7 +1223,20 @@
             }
         }
 
+        function getRound2RowAnswerChars(rowNum, vsData) {
+            const src = vsData || r2VuotSongData || {};
+            const rawAns = (
+                r2RowCustomAnswers[rowNum] !== undefined
+                    ? r2RowCustomAnswers[rowNum]
+                    : (src[`h${rowNum}`]?.a || '')
+            ).toString().replace(/\s+/g, '').toLocaleUpperCase('vi-VN');
+            return Array.from(rawAns).slice(0, 10);
+        }
+
         function getRound2CellSrc(rowNum) {
+            const state = r2RowStates[rowNum] || 'default';
+            if (state === 'wrong') return '/Media/h3.png';
+            if (state === 'right') return '/Media/h2.png';
             return r2SelectedRow === rowNum ? '/Media/h2.png' : '/Media/h1.png';
         }
 
@@ -737,11 +1248,29 @@
                 renderRound2Rows(r2VuotSongData);
                 return;
             }
-            cells.forEach(img => {
-                const rowNum = parseInt(img.dataset.row, 10);
+            const rowCharsCache = {};
+            cells.forEach(cellEl => {
+                const rowNum = parseInt(cellEl.dataset.row, 10);
+                const charIdx = parseInt(cellEl.dataset.charIndex, 10);
+                const state = r2RowStates[rowNum] || 'default';
                 const targetSrc = getRound2CellSrc(rowNum);
-                if (img.getAttribute('src') !== targetSrc) {
+                const img = cellEl.querySelector('.vs-row-cell-img');
+                const letterEl = cellEl.querySelector('.vs-row-cell-letter');
+                if (img && img.getAttribute('src') !== targetSrc) {
                     img.setAttribute('src', targetSrc);
+                }
+                if (letterEl) {
+                    if (state === 'right') {
+                        if (!rowCharsCache[rowNum]) {
+                            rowCharsCache[rowNum] = getRound2RowAnswerChars(rowNum, r2VuotSongData);
+                        }
+                        const ch = rowCharsCache[rowNum][charIdx] || '';
+                        letterEl.textContent = ch;
+                        letterEl.style.display = ch ? 'flex' : 'none';
+                    } else {
+                        letterEl.textContent = '';
+                        letterEl.style.display = 'none';
+                    }
                 }
             });
         }
@@ -751,32 +1280,50 @@
             if (!container) return;
             const src = vsData || r2VuotSongData || {};
 
-            const rowCounts = [];
+            const rowCharsList = [];
             let hasAnyAnswer = false;
             for (let r = 1; r <= 4; r++) {
-                const rawAns = (src[`h${r}`]?.a || '').toString().replace(/\s+/g, '');
-                const len = Math.min(rawAns.length, 10);
-                if (len > 0) hasAnyAnswer = true;
-                rowCounts.push(len);
+                const chars = getRound2RowAnswerChars(r, src);
+                if (chars.length > 0) hasAnyAnswer = true;
+                rowCharsList.push(chars);
             }
 
             const frag = document.createDocumentFragment();
             for (let rowIdx = 0; rowIdx < 4; rowIdx++) {
                 const rowNum = rowIdx + 1;
-                const count = hasAnyAnswer ? rowCounts[rowIdx] : 10;
+                const rowChars = rowCharsList[rowIdx];
+                const count = hasAnyAnswer ? rowChars.length : 10;
                 if (count <= 0) continue;
                 const startCol = 10 - count;
                 const topPx = R2_ROW_Y_IN[rowIdx] * PPT_PPI;
                 const cellSrc = getRound2CellSrc(rowNum);
+                const isRowRight = (r2RowStates[rowNum] === 'right');
+
                 for (let colIdx = startCol; colIdx < 10; colIdx++) {
+                    const charIdx = colIdx - startCol;
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = 'vs-row-cell';
+                    cellDiv.dataset.row = String(rowNum);
+                    cellDiv.dataset.charIndex = String(charIdx);
+                    cellDiv.style.left = `${(R2_COL_X_IN[colIdx] * PPT_PPI).toFixed(4)}px`;
+                    cellDiv.style.top = `${topPx.toFixed(4)}px`;
+
                     const img = document.createElement('img');
-                    img.className = 'vs-row-cell';
-                    img.dataset.row = String(rowNum);
+                    img.className = 'vs-row-cell-img';
                     img.src = cellSrc;
                     img.alt = `Ô ${rowIdx * 10 + colIdx + 1}`;
-                    img.style.left = `${(R2_COL_X_IN[colIdx] * PPT_PPI).toFixed(4)}px`;
-                    img.style.top = `${topPx.toFixed(4)}px`;
-                    frag.appendChild(img);
+                    cellDiv.appendChild(img);
+
+                    const letterEl = document.createElement('span');
+                    letterEl.className = 'vs-row-cell-letter';
+                    const ch = isRowRight ? (rowChars[charIdx] || '') : '';
+                    if (ch) {
+                        letterEl.textContent = ch;
+                        letterEl.style.display = 'flex';
+                    }
+                    cellDiv.appendChild(letterEl);
+
+                    frag.appendChild(cellDiv);
                 }
             }
             container.innerHTML = '';
@@ -850,6 +1397,7 @@
             if (countImg) countImg.style.display = 'block';
             updateRound2HintImage();
             updateRound2PiecesVisibility();
+            updateRound2CnvCountBox();
         }
 
         function handleRound2OpenPiece(data) {
@@ -956,14 +1504,275 @@
             playSfx('r2OnTime', { loop: false });
         }
 
+        let vsAnswerRevealTimer = null;
+        const vsAnswerVideo = document.getElementById('vs_answer_video');
+        if (vsAnswerVideo) {
+            vsAnswerVideo.addEventListener('ended', () => {
+                try {
+                    vsAnswerVideo.pause();
+                } catch (e) {}
+            });
+        }
+
+        function clearRound2AnswerTimer() {
+            if (vsAnswerRevealTimer) {
+                clearTimeout(vsAnswerRevealTimer);
+                vsAnswerRevealTimer = null;
+            }
+        }
+
+        function hideRound2AnswerSceneContent() {
+            clearRound2AnswerTimer();
+            const textLayer = document.getElementById('vs_answer_text_layer');
+            if (textLayer) textLayer.style.display = 'none';
+            for (let i = 1; i <= 4; i++) {
+                const pEl = document.getElementById(`vs_ans_p${i}_text`);
+                const aEl = document.getElementById(`vs_ans_a${i}_text`);
+                if (pEl) pEl.textContent = '';
+                if (aEl) aEl.textContent = '';
+            }
+            if (vsAnswerVideo) {
+                vsAnswerVideo.style.display = 'none';
+                try {
+                    vsAnswerVideo.pause();
+                    vsAnswerVideo.currentTime = 0;
+                } catch (e) {}
+            }
+        }
+
+        function fitRound2AnswerText(el, text) {
+            if (!el) return;
+            const clean = (text || '').toString().replace(/[\r\n\t]+/g, ' ').trim();
+            el.textContent = clean;
+            const len = clean.length;
+            if (len > 42) {
+                el.style.fontSize = '19px';
+            } else if (len > 28) {
+                el.style.fontSize = '22px';
+            } else if (len > 18) {
+                el.style.fontSize = '26px';
+            } else {
+                el.style.fontSize = '30px';
+            }
+        }
+
+        function handleRound2PrepareAnswers(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data && data.contestants) syncContestantsData(data.contestants);
+
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopRound2TimerVideo();
+            hideRound2AnswerSceneContent();
+            switchProjectorScene('2-answers');
+        }
+
+        function handleRound2ShowAnswers(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopRound2TimerVideo();
+            hideRound2AnswerSceneContent();
+            switchProjectorScene('2-answers');
+
+            const list = Array.isArray(data && data.contestants) ? data.contestants : [];
+            for (let i = 1; i <= 4; i++) {
+                const ts = list[i - 1] || {};
+                const fallbackName = (r1Contestants[i - 1] && r1Contestants[i - 1].name) || `Thí sinh ${i}`;
+                const pName = (ts.name && String(ts.name).trim()) ? String(ts.name).trim() : fallbackName;
+                const ansText = (ts.answer !== undefined && ts.answer !== null) ? String(ts.answer).trim() : '';
+
+                fitRound2AnswerText(document.getElementById(`vs_ans_p${i}_text`), pName);
+                fitRound2AnswerText(document.getElementById(`vs_ans_a${i}_text`), ansText);
+            }
+
+            if (vsAnswerVideo) {
+                vsAnswerVideo.style.display = 'block';
+                try {
+                    vsAnswerVideo.currentTime = 0;
+                    const vp = vsAnswerVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+
+            playSfx('r2ShowAnswer', { loop: false });
+
+            vsAnswerRevealTimer = setTimeout(() => {
+                vsAnswerRevealTimer = null;
+                const textLayer = document.getElementById('vs_answer_text_layer');
+                if (textLayer) {
+                    textLayer.style.display = 'block';
+                }
+            }, 1750);
+        }
+
+        function handleRound2OpenRowAnswer(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+
+            const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
+            if (incomingVS) syncRound2Data(incomingVS);
+
+            hideRound2AnswerSceneContent();
+            switchProjectorScene(2);
+            stopAllRound1Audio();
+            stopRound2TimerVideo();
+            hideRound2QuestionBox();
+
+            const rowNum = parseInt(data && data.row, 10);
+            if (rowNum >= 1 && rowNum <= 4) {
+                r2RowStates[rowNum] = 'right';
+                if (data && data.answer !== undefined && String(data.answer).trim() !== '') {
+                    r2RowCustomAnswers[rowNum] = String(data.answer).trim();
+                }
+            }
+
+            if (!isRound2RowsShown) {
+                showRound2Rows(data);
+            } else {
+                renderRound2Rows(r2VuotSongData);
+            }
+
+            if (rowNum >= 1 && rowNum <= 4 && !(data && data.noSound)) {
+                stopAudioItem(sfxBank.r2RowShow);
+                stopAudioItem(sfxBank.r2RowChose);
+                stopAudioItem(sfxBank.r2RowQues);
+                stopAudioItem(sfxBank.r2OnTime);
+                stopAudioItem(sfxBank.r2ShowAnswer);
+                stopAudioItem(sfxBank.r2WrongRow);
+                playSfx('r2RightRow', { loop: false });
+            }
+        }
+
+        function handleRound2CloseRowAnswer(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+
+            const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
+            if (incomingVS) syncRound2Data(incomingVS);
+
+            hideRound2AnswerSceneContent();
+            switchProjectorScene(2);
+            stopAllRound1Audio();
+            stopRound2TimerVideo();
+            hideRound2QuestionBox();
+
+            const rowNum = parseInt(data && data.row, 10);
+            if (rowNum >= 1 && rowNum <= 4) {
+                r2RowStates[rowNum] = 'wrong';
+                if (r2SelectedRow === rowNum) r2SelectedRow = null;
+            }
+
+            if (!isRound2RowsShown) {
+                showRound2Rows(data);
+            } else {
+                updateRound2RowGraphics();
+            }
+
+            if (rowNum >= 1 && rowNum <= 4) {
+                stopAudioItem(sfxBank.r2RowShow);
+                stopAudioItem(sfxBank.r2RowChose);
+                stopAudioItem(sfxBank.r2RowQues);
+                stopAudioItem(sfxBank.r2OnTime);
+                stopAudioItem(sfxBank.r2ShowAnswer);
+                stopAudioItem(sfxBank.r2RightRow);
+                playSfx('r2WrongRow', { loop: false });
+            }
+        }
+
+        function cleanRound2BuzzerName(rawName, contestantId) {
+            const fallback = (r1Contestants[contestantId - 1] && r1Contestants[contestantId - 1].name) || `Thí sinh ${contestantId}`;
+            const base = (rawName && String(rawName).trim()) ? String(rawName).trim() : fallback;
+            const cleaned = base
+                .replace(/\s*🔔.*$/gi, '')
+                .replace(/\s*\(Thứ \d+.*?\)/gi, '')
+                .replace(/\s*\([\d\.]+(?:s|giây|S)?\)/gi, '')
+                .replace(/\s*\(\d+\)/g, '')
+                .trim();
+            return cleaned || fallback;
+        }
+
+        function renderRound2Buzzers() {
+            const layerIds = ['vs_buzzers_grid', 'vs_buzzers_answers'];
+            layerIds.forEach(layerId => {
+                const layer = document.getElementById(layerId);
+                if (!layer) return;
+                const slots = layer.querySelectorAll('.vs-buzzer-slot');
+                slots.forEach((slot, idx) => {
+                    const entry = r2Buzzers[idx];
+                    const nameEl = slot.querySelector('.vs-buzzer-name');
+                    if (entry) {
+                        const displayName = cleanRound2BuzzerName(entry.name, entry.id);
+                        if (nameEl) {
+                            nameEl.textContent = displayName;
+                            const len = displayName.length;
+                            if (len > 20) nameEl.style.fontSize = '13px';
+                            else if (len > 15) nameEl.style.fontSize = '15px';
+                            else if (len > 11) nameEl.style.fontSize = '17px';
+                            else nameEl.style.fontSize = '19px';
+                        }
+                        slot.style.display = 'flex';
+                    } else {
+                        if (nameEl) nameEl.textContent = '';
+                        slot.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function handleRound2BuzzerPress(contestantId, contestantName) {
+            const id = parseInt(contestantId, 10);
+            if (isNaN(id) || id < 1 || id > 4) return;
+
+            const existing = r2Buzzers.find(b => b.id === id);
+            if (existing) {
+                if (contestantName && String(contestantName).trim()) {
+                    existing.name = cleanRound2BuzzerName(contestantName, id);
+                    renderRound2Buzzers();
+                }
+                return;
+            }
+
+            const cleanName = cleanRound2BuzzerName(contestantName, id);
+            if (r2Buzzers.length < 4) {
+                r2Buzzers.push({ id, name: cleanName });
+            }
+            renderRound2Buzzers();
+            playSfx('r2Activate', { loop: false });
+        }
+
+        function handleRound2ResetBells(contestantId) {
+            if (!contestantId || contestantId === 'ALL') {
+                r2Buzzers = [];
+                stopAudioItem(sfxBank.r2Activate);
+            } else {
+                const id = parseInt(contestantId, 10);
+                r2Buzzers = r2Buzzers.filter(b => b.id !== id);
+            }
+            renderRound2Buzzers();
+        }
+
         function hideAllRound2Graphics() {
             isRound2RowsShown = false;
             r2SelectedRow = null;
+            r2RowStates = { 1: 'default', 2: 'default', 3: 'default', 4: 'default' };
+            r2RowCustomAnswers = {};
             r2OpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
+            r2Buzzers = [];
+            renderRound2Buzzers();
             stopRound2TimerVideo();
             hideRound2QuestionBox();
+            hideRound2AnswerSceneContent();
             updateRound2HintImage();
             updateRound2PiecesVisibility();
+            updateRound2CnvCountBox();
             const bgImg = document.getElementById('vs_bg_img');
             const rowsEl = document.getElementById('vs_rows_container');
             const countImg = document.getElementById('vs_count_img');
@@ -973,6 +1782,447 @@
                 rowsEl.innerHTML = '';
             }
             if (countImg) countImg.style.display = 'none';
+        }
+
+        // Round 3 (Tăng Tốc) State & Handlers
+        let r3ImageRevealTimer = null;
+        let r3TextRevealTimer = null;
+        let r3AnswerRevealTimer = null;
+        let r3LastStartRoundAt = 0;
+        let r3CurrentQuestion = {
+            index: 1,
+            text: '',
+            mediaUrl: '',
+            mediaType: 'none',
+            duration: 20
+        };
+
+        const r3AnswerVideo = document.getElementById('r3_answer_video');
+        if (r3AnswerVideo) {
+            r3AnswerVideo.addEventListener('ended', () => {
+                try { r3AnswerVideo.pause(); } catch (e) {}
+            });
+        }
+
+        const r3ShowQuesVidEl = document.getElementById('r3_showques_video');
+        if (r3ShowQuesVidEl) {
+            r3ShowQuesVidEl.addEventListener('ended', () => {
+                try { r3ShowQuesVidEl.pause(); } catch (e) {}
+            });
+        }
+
+        ['r3_timer_video_20', 'r3_timer_video_30'].forEach(id => {
+            const vid = document.getElementById(id);
+            if (vid) {
+                vid.addEventListener('ended', () => {
+                    try { vid.pause(); } catch (e) {}
+                });
+            }
+        });
+
+        const r3MediaImgEl = document.getElementById('r3_media_img');
+        if (r3MediaImgEl) {
+            r3MediaImgEl.addEventListener('error', () => {
+                r3MediaImgEl.style.display = 'none';
+            });
+        }
+
+        const r3MediaVidEl = document.getElementById('r3_media_video');
+        if (r3MediaVidEl) {
+            r3MediaVidEl.addEventListener('ended', () => {
+                try { r3MediaVidEl.pause(); } catch (e) {}
+            });
+            r3MediaVidEl.addEventListener('error', () => {
+                r3MediaVidEl.style.display = 'none';
+            });
+        }
+
+        function detectRound3MediaType(url, explicitType = '') {
+            if (explicitType === 'image' || explicitType === 'video') return explicitType;
+            const clean = (url || '').toString().trim();
+            if (!clean) return 'none';
+            if (clean.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i.test(clean)) {
+                return 'image';
+            }
+            if (clean.startsWith('data:video/') || /\.(mp4|webm|mov|m4v|avi|mkv|ogv)(\?|#|$)/i.test(clean)) {
+                return 'video';
+            }
+            return 'video';
+        }
+
+        function normalizeRound3MediaUrl(url) {
+            const clean = (url || '').toString().trim();
+            if (!clean) return '';
+            if (clean.startsWith('./')) return '/' + clean.slice(2);
+            if (/^uploads\//i.test(clean)) return '/' + clean;
+            return clean;
+        }
+
+        function clearRound3Timers() {
+            if (r3ImageRevealTimer) {
+                clearTimeout(r3ImageRevealTimer);
+                r3ImageRevealTimer = null;
+            }
+            if (r3TextRevealTimer) {
+                clearTimeout(r3TextRevealTimer);
+                r3TextRevealTimer = null;
+            }
+        }
+
+        function stopRound3TimerVideos() {
+            ['r3_timer_video_20', 'r3_timer_video_30'].forEach(id => {
+                const vid = document.getElementById(id);
+                if (!vid) return;
+                vid.style.display = 'none';
+                try {
+                    vid.pause();
+                    vid.currentTime = 0;
+                } catch (e) {}
+            });
+        }
+
+        function hideRound3AnswerSceneContent() {
+            if (r3AnswerRevealTimer) {
+                clearTimeout(r3AnswerRevealTimer);
+                r3AnswerRevealTimer = null;
+            }
+            if (r3AnswerVideo) {
+                r3AnswerVideo.style.display = 'none';
+                try {
+                    r3AnswerVideo.pause();
+                    r3AnswerVideo.currentTime = 0;
+                } catch (e) {}
+            }
+            const textLayer = document.getElementById('r3_answer_text_layer');
+            if (textLayer) textLayer.style.display = 'none';
+            for (let i = 1; i <= 4; i++) {
+                const pEl = document.getElementById(`r3_ans_p${i}_text`);
+                const aEl = document.getElementById(`r3_ans_a${i}_text`);
+                const tEl = document.getElementById(`r3_ans_t${i}_text`);
+                if (pEl) pEl.textContent = '';
+                if (aEl) aEl.textContent = '';
+                if (tEl) tEl.textContent = '';
+            }
+        }
+
+        function hideAllRound3Graphics() {
+            clearRound3Timers();
+            stopRound3TimerVideos();
+            hideRound3AnswerSceneContent();
+
+            const showVid = document.getElementById('r3_showques_video');
+            if (showVid) {
+                showVid.style.display = 'none';
+                try {
+                    showVid.pause();
+                    showVid.currentTime = 0;
+                } catch (e) {}
+            }
+
+            const qBox = document.getElementById('r3_question_box');
+            const qText = document.getElementById('r3_question_text');
+            if (qBox) qBox.style.display = 'none';
+            if (qText) qText.textContent = '';
+
+            const mediaBox = document.getElementById('r3_media_box');
+            const mediaImg = document.getElementById('r3_media_img');
+            const mediaVid = document.getElementById('r3_media_video');
+            if (mediaBox) mediaBox.style.display = 'none';
+            if (mediaImg) {
+                mediaImg.style.display = 'none';
+                mediaImg.removeAttribute('src');
+            }
+            if (mediaVid) {
+                mediaVid.style.display = 'none';
+                try {
+                    mediaVid.pause();
+                    mediaVid.currentTime = 0;
+                    mediaVid.removeAttribute('src');
+                } catch (e) {}
+            }
+        }
+
+        function syncRound3QuestionMeta(data) {
+            const qIdx = Math.max(1, Math.min(4, parseInt(data?.questionIndex, 10) || r3CurrentQuestion.index || 1));
+            const rawText = (data?.questionText !== undefined ? data.questionText : r3CurrentQuestion.text) || '';
+            const rawMediaUrl = data?.mediaUrl !== undefined ? data.mediaUrl : r3CurrentQuestion.mediaUrl;
+            const mediaUrl = normalizeRound3MediaUrl(rawMediaUrl);
+            const mediaType = mediaUrl ? detectRound3MediaType(mediaUrl, data?.mediaType) : 'none';
+            const duration = (qIdx === 1 || qIdx === 2) ? 20 : 30;
+            r3CurrentQuestion = {
+                index: qIdx,
+                text: rawText.toString().trim(),
+                mediaUrl,
+                mediaType,
+                duration
+            };
+        }
+
+        function showRound3MediaImage(mediaUrl) {
+            const mediaBox = document.getElementById('r3_media_box');
+            const mediaImg = document.getElementById('r3_media_img');
+            const mediaVid = document.getElementById('r3_media_video');
+            if (!mediaBox || !mediaImg || !mediaUrl) return;
+            if (mediaVid) {
+                mediaVid.style.display = 'none';
+                try { mediaVid.pause(); } catch (e) {}
+            }
+            if (mediaImg.getAttribute('src') !== mediaUrl) {
+                mediaImg.setAttribute('src', mediaUrl);
+            }
+            mediaImg.style.display = 'block';
+            mediaBox.style.display = 'flex';
+        }
+
+        function showRound3QuestionText(text) {
+            const qBox = document.getElementById('r3_question_box');
+            const qTextEl = document.getElementById('r3_question_text');
+            if (!qBox || !qTextEl) return;
+            qTextEl.textContent = (text || '').toString().trim();
+            qBox.style.display = 'flex';
+        }
+
+        function handleRound3SelectQuestion(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            switchProjectorScene(3);
+            hideAllRound3Graphics();
+            stopAllRound3Audio(true);
+            syncRound3QuestionMeta(data);
+        }
+
+        function handleRound3ShowQuestion(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            switchProjectorScene(3);
+            hideAllRound3Graphics();
+            stopAllRound3Audio(false);
+            syncRound3QuestionMeta(data);
+
+            const showVid = document.getElementById('r3_showques_video');
+            if (showVid) {
+                showVid.style.display = 'block';
+                try {
+                    showVid.currentTime = 0;
+                    const p = showVid.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                } catch (e) {}
+            }
+
+            playSfx('r3Show', { loop: false });
+
+            // Preload question media while keeping media box hidden initially
+            const { mediaUrl, mediaType, text } = r3CurrentQuestion;
+            if (mediaUrl && mediaType === 'image') {
+                const mediaImg = document.getElementById('r3_media_img');
+                if (mediaImg) mediaImg.setAttribute('src', mediaUrl);
+                r3ImageRevealTimer = setTimeout(() => {
+                    r3ImageRevealTimer = null;
+                    showRound3MediaImage(mediaUrl);
+                }, 1000);
+            } else if (mediaUrl && mediaType === 'video') {
+                const mediaVid = document.getElementById('r3_media_video');
+                if (mediaVid) {
+                    mediaVid.setAttribute('src', mediaUrl);
+                    try { mediaVid.load(); } catch (e) {}
+                }
+            }
+
+            // Reveal question text 1.5s after clicking Show câu hỏi
+            r3TextRevealTimer = setTimeout(() => {
+                r3TextRevealTimer = null;
+                showRound3QuestionText(text);
+            }, 1500);
+        }
+
+        function handleRound3StartTimer(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            switchProjectorScene(3);
+            clearRound3Timers();
+            syncRound3QuestionMeta(data);
+
+            stopAudioItem(sfxBank.r3Show);
+            stopAudioItem(sfxBank.r3Time20);
+            stopAudioItem(sfxBank.r3Time30);
+            stopRound3TimerVideos();
+
+            const qIdx = r3CurrentQuestion.index;
+            const is20s = (qIdx === 1 || qIdx === 2);
+            const timerVid = document.getElementById(is20s ? 'r3_timer_video_20' : 'r3_timer_video_30');
+            if (timerVid) {
+                timerVid.style.display = 'block';
+                try {
+                    timerVid.currentTime = 0;
+                    const p = timerVid.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                } catch (e) {}
+            }
+
+            playSfx(is20s ? 'r3Time20' : 'r3Time30', { loop: false });
+
+            // Ensure question text is shown
+            showRound3QuestionText(r3CurrentQuestion.text);
+
+            // Handle media on timer start
+            const { mediaUrl, mediaType } = r3CurrentQuestion;
+            if (mediaUrl && mediaType === 'image') {
+                showRound3MediaImage(mediaUrl);
+            } else if (mediaUrl && mediaType === 'video') {
+                const mediaBox = document.getElementById('r3_media_box');
+                const mediaImg = document.getElementById('r3_media_img');
+                const mediaVid = document.getElementById('r3_media_video');
+                if (mediaImg) mediaImg.style.display = 'none';
+                if (mediaBox && mediaVid) {
+                    if (mediaVid.getAttribute('src') !== mediaUrl) {
+                        mediaVid.setAttribute('src', mediaUrl);
+                    }
+                    mediaVid.muted = true;
+                    mediaVid.volume = 0;
+                    mediaVid.style.display = 'block';
+                    mediaBox.style.display = 'flex';
+                    try {
+                        mediaVid.currentTime = 0;
+                        const vp = mediaVid.play();
+                        if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                    } catch (e) {}
+                }
+            }
+        }
+
+        function applyRound3AnswerWarp(el) {
+            if (!el) return;
+            const box = el.parentElement;
+            if (!box) return;
+            el.style.fontSize = '48px';
+            el.style.transform = 'none';
+            const cs = window.getComputedStyle(box);
+            const padLeft = parseFloat(cs.paddingLeft) || 0;
+            const padRight = parseFloat(cs.paddingRight) || 0;
+            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight);
+            const boxRectWidth = box.getBoundingClientRect().width;
+            const stageScale = (box.offsetWidth > 0 && boxRectWidth > 0)
+                ? (boxRectWidth / box.offsetWidth)
+                : 1;
+            const rectWidth = el.getBoundingClientRect().width;
+            const textWidth = (rectWidth > 0 && stageScale > 0)
+                ? (rectWidth / stageScale)
+                : (el.scrollWidth || el.offsetWidth || 0);
+            if (textWidth > maxWidth && textWidth > 0) {
+                const ratio = maxWidth / textWidth;
+                el.style.transform = `scaleX(${ratio})`;
+            } else {
+                el.style.transform = 'none';
+            }
+        }
+
+        function sortRound3ContestantsForDisplay(list) {
+            const items = [];
+            for (let i = 0; i < 4; i++) {
+                const ts = (Array.isArray(list) && list[i]) ? list[i] : {};
+                const fallbackName = (r1Contestants[i] && r1Contestants[i].name) || `Thí sinh ${i + 1}`;
+                const pName = (ts.name && String(ts.name).trim())
+                    ? String(ts.name).replace(/\s*\(\d+\)/g, '').replace(/\s*\([\d\.]+(?:s|giây|S)?\)/gi, '').trim()
+                    : fallbackName;
+                const rawAns = ts.answer !== undefined && ts.answer !== null
+                    ? ts.answer
+                    : (ts.rk_answer !== undefined && ts.rk_answer !== null ? ts.rk_answer : '');
+                const ansText = String(rawAns).trim();
+
+                let rawTime = ts.time !== undefined && ts.time !== null
+                    ? ts.time
+                    : (ts.rk_time !== undefined && ts.rk_time !== null ? ts.rk_time : '');
+                rawTime = String(rawTime).replace(/s|giây/gi, '').trim();
+                const num = parseFloat(rawTime);
+                const hasValidTime = !isNaN(num) && num > 0;
+                const formattedTime = !isNaN(num)
+                    ? (num < 10 ? '0' + num.toFixed(2) : num.toFixed(2))
+                    : '00.00';
+
+                items.push({
+                    name: pName,
+                    answer: ansText,
+                    time: formattedTime,
+                    _sortTime: hasValidTime ? num : (ansText ? (999000 + i) : (999999 + i))
+                });
+            }
+            items.sort((a, b) => a._sortTime - b._sortTime);
+            return items;
+        }
+
+        function handleRound3PrepareAnswers(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+            if (data && data.contestants) syncContestantsData(data.contestants);
+
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopAllRound3Audio();
+            hideAllRound3Graphics();
+            switchProjectorScene('3-answers');
+        }
+
+        function handleRound3ShowAnswers(data) {
+            handleIntroStop();
+            const summaryEl = document.getElementById('summary_overlay');
+            if (summaryEl) summaryEl.style.display = 'none';
+
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopAllRound3Audio();
+            hideAllRound3Graphics();
+            switchProjectorScene('3-answers');
+
+            const sorted = sortRound3ContestantsForDisplay(data && data.contestants);
+            for (let i = 1; i <= 4; i++) {
+                const entry = sorted[i - 1] || { name: `Thí sinh ${i}`, answer: '', time: '00.00' };
+                const nameEl = document.getElementById(`r3_ans_p${i}_text`);
+                if (nameEl) {
+                    nameEl.textContent = (entry.name || '').toString().trim();
+                    nameEl.style.fontSize = '48px';
+                    nameEl.style.transform = 'none';
+                }
+                const ansEl = document.getElementById(`r3_ans_a${i}_text`);
+                if (ansEl) {
+                    ansEl.textContent = (entry.answer || '').toString().trim();
+                    ansEl.style.fontSize = '48px';
+                    ansEl.style.transform = 'none';
+                }
+                const timeEl = document.getElementById(`r3_ans_t${i}_text`);
+                if (timeEl) {
+                    timeEl.textContent = (entry.time || '').toString().trim();
+                    timeEl.style.fontSize = '48px';
+                    timeEl.style.transform = 'none';
+                }
+            }
+
+            if (r3AnswerVideo) {
+                r3AnswerVideo.style.display = 'block';
+                try {
+                    r3AnswerVideo.currentTime = 0;
+                    const vp = r3AnswerVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+
+            playSfx('r3Answer', { loop: false });
+
+            r3AnswerRevealTimer = setTimeout(() => {
+                r3AnswerRevealTimer = null;
+                const textLayer = document.getElementById('r3_answer_text_layer');
+                if (textLayer) {
+                    textLayer.style.display = 'block';
+                    for (let i = 1; i <= 4; i++) {
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_p${i}_text`));
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_a${i}_text`));
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_t${i}_text`));
+                    }
+                }
+            }, 1500);
         }
 
         // Round 1 State
@@ -1023,6 +2273,12 @@
                 }
             }
             renderContestantsUI();
+            if (r2Buzzers.length > 0) {
+                r2Buzzers.forEach(b => {
+                    b.name = cleanRound2BuzzerName(null, b.id);
+                });
+                renderRound2Buzzers();
+            }
         }
 
         function renderContestantsUI() {
@@ -1358,9 +2614,24 @@
                         xpBuzzerOpen = false;
                         hideAllRound1Graphics();
                         hideAllRound2Graphics();
+                        hideAllRound3Graphics();
                         stopAllRound1Audio();
                         stopAllRound2Audio();
+                        stopAllRound3Audio();
                         playSfx('startRound', { loop: false });
+                    } else if (data.roundIndex === 2 || data.round === 'RA_KHOI' || data.activeRound === 'RA_KHOI') {
+                        switchProjectorScene(3);
+                        activeTurnIndex = 0;
+                        xpFastestWinner = 0;
+                        xpBuzzerOpen = false;
+                        hideAllRound1Graphics();
+                        hideAllRound2Graphics();
+                        hideAllRound3Graphics();
+                        stopAllRound1Audio();
+                        stopAllRound2Audio();
+                        stopAllRound3Audio();
+                        r3LastStartRoundAt = Date.now();
+                        playSfx('r3StartRound', { loop: false });
                     } else if (data.roundIndex === 3 || data.round === 'VUOT_SONG' || data.activeRound === 'VUOT_SONG') {
                         switchProjectorScene(2);
                         activeTurnIndex = 0;
@@ -1368,9 +2639,78 @@
                         xpBuzzerOpen = false;
                         hideAllRound1Graphics();
                         hideAllRound2Graphics();
+                        hideAllRound3Graphics();
                         stopAllRound1Audio();
                         stopAllRound2Audio();
+                        stopAllRound3Audio();
                         playSfx('r2StartRound', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'RA_KHOI_INTRO': {
+                    handleIntroStop();
+                    const summaryEl = document.getElementById('summary_overlay');
+                    if (summaryEl) summaryEl.style.display = 'none';
+                    switchProjectorScene(3);
+                    hideAllRound1Graphics();
+                    hideAllRound2Graphics();
+                    hideAllRound3Graphics();
+                    stopAllRound1Audio();
+                    stopAllRound2Audio();
+                    if (Date.now() - r3LastStartRoundAt > 800) {
+                        stopAllRound3Audio();
+                        r3LastStartRoundAt = Date.now();
+                        playSfx('r3StartRound', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'RA_KHOI_SELECT_QUESTION': {
+                    handleRound3SelectQuestion(data);
+                    break;
+                }
+
+                case 'RA_KHOI_SHOW_QUESTION':
+                case 'RA_KHOI_PLAY_CLIP': {
+                    handleRound3ShowQuestion(data);
+                    break;
+                }
+
+                case 'RA_KHOI_START_TIMER': {
+                    handleRound3StartTimer(data);
+                    break;
+                }
+
+                case 'RA_KHOI_PREPARE_ANSWERS': {
+                    handleRound3PrepareAnswers(data);
+                    break;
+                }
+
+                case 'RA_KHOI_SHOW_CONTESTANT_ANSWERS': {
+                    handleRound3ShowAnswers(data);
+                    break;
+                }
+
+                case 'RA_KHOI_GRADE_RESULT': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    stopAudioItem(sfxBank.r3Right);
+                    stopAudioItem(sfxBank.r3Wrong);
+                    if (data.hasCorrect) {
+                        playSfx('r3Right', { loop: false });
+                    } else {
+                        playSfx('r3Wrong', { loop: false });
+                    }
+                    break;
+                }
+
+                case 'RA_KHOI_RESET': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    switchProjectorScene(3);
+                    hideAllRound3Graphics();
+                    stopAllRound3Audio(!!data.keepRoundStartSound);
+                    if (data.questionIndex !== undefined) {
+                        syncRound3QuestionMeta(data);
                     }
                     break;
                 }
@@ -1380,9 +2720,11 @@
                     const summaryEl = document.getElementById('summary_overlay');
                     if (summaryEl) summaryEl.style.display = 'none';
                     if (data.contestants) syncContestantsData(data.contestants);
+                    hideRound2AnswerSceneContent();
                     switchProjectorScene(2);
                     stopAllRound1Audio();
                     stopAudioItem(sfxBank.r2StartRound);
+                    stopAudioItem(sfxBank.r2ShowAnswer);
                     showRound2Rows(data);
                     playSfx('r2RowShow', { loop: false });
                     break;
@@ -1393,6 +2735,8 @@
                     if (incomingVS) syncRound2Data(incomingVS);
                     const rowNum = parseInt(data.row, 10);
                     r2SelectedRow = (rowNum >= 1 && rowNum <= 4) ? rowNum : null;
+                    hideRound2AnswerSceneContent();
+                    switchProjectorScene(2);
                     stopRound2TimerVideo();
                     hideRound2QuestionBox();
                     if (isRound2RowsShown) {
@@ -1400,30 +2744,79 @@
                     }
                     if (rowNum >= 1 && rowNum <= 4) {
                         stopAudioItem(sfxBank.r2RowShow);
+                        stopAudioItem(sfxBank.r2ShowAnswer);
                         playSfx('r2RowChose', { loop: false });
                     }
                     break;
                 }
 
                 case 'VUOT_SONG_SHOW_QUESTION': {
+                    hideRound2AnswerSceneContent();
+                    stopAudioItem(sfxBank.r2ShowAnswer);
                     handleRound2ShowQuestion(data);
                     break;
                 }
 
                 case 'VUOT_SONG_START_TIMER': {
+                    hideRound2AnswerSceneContent();
+                    stopAudioItem(sfxBank.r2ShowAnswer);
                     handleRound2StartTimer(data);
                     break;
                 }
 
+                case 'VUOT_SONG_PREPARE_ANSWERS': {
+                    handleRound2PrepareAnswers(data);
+                    break;
+                }
+
+                case 'VUOT_SONG_SHOW_CONTESTANT_ANSWERS': {
+                    handleRound2ShowAnswers(data);
+                    break;
+                }
+
                 case 'VUOT_SONG_RETURN_GRID': {
+                    hideRound2AnswerSceneContent();
+                    switchProjectorScene(2);
                     stopRound2TimerVideo();
                     hideRound2QuestionBox();
                     stopAudioItem(sfxBank.r2RowQues);
                     stopAudioItem(sfxBank.r2OnTime);
+                    stopAudioItem(sfxBank.r2ShowAnswer);
+                    if (!isRound2RowsShown) {
+                        showRound2Rows(data);
+                    }
+                    break;
+                }
+
+                case 'VUOT_SONG_OPEN_ROW_ANSWER': {
+                    handleRound2OpenRowAnswer(data);
+                    break;
+                }
+
+                case 'VUOT_SONG_CLOSE_ROW_ANSWER': {
+                    handleRound2CloseRowAnswer(data);
+                    break;
+                }
+
+                case 'VUOT_SONG_OPEN_ALL_ANSWERS': {
+                    const incomingVS = data.vuotSong || (data.gameData && data.gameData.vuotSong);
+                    if (incomingVS) syncRound2Data(incomingVS);
+                    hideRound2AnswerSceneContent();
+                    switchProjectorScene(2);
+                    for (let r = 1; r <= 4; r++) {
+                        r2RowStates[r] = 'right';
+                    }
+                    if (!isRound2RowsShown) {
+                        showRound2Rows(data);
+                    } else {
+                        renderRound2Rows(r2VuotSongData);
+                    }
                     break;
                 }
 
                 case 'VUOT_SONG_OPEN_PIECE': {
+                    hideRound2AnswerSceneContent();
+                    stopAudioItem(sfxBank.r2ShowAnswer);
                     handleRound2OpenPiece(data);
                     break;
                 }
@@ -1441,6 +2834,7 @@
                 case 'VUOT_SONG_RESET': {
                     if (data.contestants) syncContestantsData(data.contestants);
                     if (data.vuotSong) syncRound2Data(data.vuotSong);
+                    switchProjectorScene(2);
                     hideAllRound2Graphics();
                     if (!data.keepRoundStartSound) {
                         stopAllRound2Audio();
@@ -1520,9 +2914,46 @@
                 case 'PLAYER_RING_BELL':
                 case 'RING_BELL': {
                     const r = (data.round || '').toString().toUpperCase();
-                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && activeTurnIndex === 5)) {
+                    const isR2SceneActive =
+                        document.getElementById('view-file-2')?.classList.contains('active') ||
+                        document.getElementById('view-file-2-answers')?.classList.contains('active');
+                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && !isR2SceneActive && activeTurnIndex === 5)) {
                         const winner = data.winnerId || data.contestantId || data.contestantIndex;
                         handleXuatPhatFastestBuzz(winner, false);
+                    } else if (r === 'VS' || r === 'VUOT_SONG' || r === 'VCNV' || r === 'CNV' || (!r && isR2SceneActive)) {
+                        const buzzTs = data.contestantId || data.winnerId || data.contestantIndex;
+                        handleRound2BuzzerPress(buzzTs, data.contestantName);
+                    }
+                    break;
+                }
+
+                case 'S3_FLASH_SCOREBOARD':
+                case 'VUOT_SONG_BUZZER_UPDATE': {
+                    const buzzTs = data.contestantId || data.winnerId || data.contestantIndex;
+                    handleRound2BuzzerPress(buzzTs, data.contestantName);
+                    break;
+                }
+
+                case 'PLAYER_SUBMIT_ANSWER': {
+                    const r = (data.round || '').toString().toUpperCase();
+                    if ((r === 'VS' || r === 'VUOT_SONG' || r === 'VCNV' || r === 'CNV') && data.isVongThi === true) {
+                        const buzzTs = data.contestantId || data.winnerId || data.contestantIndex;
+                        handleRound2BuzzerPress(buzzTs, data.contestantName);
+                    }
+                    break;
+                }
+
+                case 'RESET_VS_BELL':
+                case 'VUOT_SONG_RESET_BELL':
+                case 'RESET_BELL_VCNV': {
+                    handleRound2ResetBells(data.contestantId || 'ALL');
+                    break;
+                }
+
+                case 'RESET_BELL': {
+                    const r = (data.round || '').toString().toUpperCase();
+                    if (!r || r === 'VS' || r === 'VUOT_SONG' || r === 'VCNV' || r === 'CNV') {
+                        handleRound2ResetBells(data.contestantId || 'ALL');
                     }
                     break;
                 }
@@ -1601,6 +3032,7 @@
                 case 'STOP_SOUND': {
                     stopAllRound1Audio();
                     stopAllRound2Audio();
+                    stopAllRound3Audio();
                     break;
                 }
 
@@ -1656,8 +3088,10 @@
                     switchProjectorScene(1);
                     hideAllRound1Graphics();
                     hideAllRound2Graphics();
+                    hideAllRound3Graphics();
                     stopAllRound1Audio();
                     stopAllRound2Audio();
+                    stopAllRound3Audio();
                     r1Contestants = [
                         { name: 'Thí sinh 1', score: 0 },
                         { name: 'Thí sinh 2', score: 0 },

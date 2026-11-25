@@ -2,10 +2,10 @@
 let gameData = {
     xuatPhat: {}, // Turn 1..8 -> [ { q: "", a: "" }, ... 10 items ]
     raKhoi: [
-        { q: "", a: "", m: "./cau1.mp4", am: "" },
-        { q: "", a: "", m: "./cau2.mp4", am: "", },
-        { q: "", a: "", m: "./cau3.mp4", am: "" },
-        { q: "", a: "", m: "./cau4.mp4", am: "" }
+        { q: "", a: "", m: "", am: "" },
+        { q: "", a: "", m: "", am: "" },
+        { q: "", a: "", m: "", am: "" },
+        { q: "", a: "", m: "", am: "" }
     ],
     vuotSong: {
         h1: { q: "", a: "" },
@@ -182,6 +182,7 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         window.vsRoundStartTime = Date.now();
         window.vsOpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
         if (typeof syncVSPieceButtonsUI === 'function') syncVSPieceButtonsUI();
+        if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
         try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
     } else if (roundIndex === 4) {
         roundName = 'VINH_QUANG';
@@ -241,7 +242,8 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         sendToProjector('XUAT_PHAT_RESET', { turnIndex: 0, round: 'XUAT_PHAT', activeRound: 'XUAT_PHAT', xpQuestionShown: false, vqQuestionShown: false, keepRoundStartSound: true });
     } else if (roundIndex === 2) {
         if (typeof setRKQuestionUI === 'function') setRKQuestionUI(1);
-        sendToProjector('RA_KHOI_RESET', { round: 'RA_KHOI', activeRound: 'RA_KHOI' });
+        if (typeof resetRKDapAnButton === 'function') resetRKDapAnButton();
+        sendToProjector('RA_KHOI_RESET', { round: 'RA_KHOI', activeRound: 'RA_KHOI', keepRoundStartSound: true });
     } else if (roundIndex === 3) {
         if (typeof updateVuotSongState === 'function') updateVuotSongState();
         sendToProjector('VUOT_SONG_RESET', { round: 'VUOT_SONG', activeRound: 'VUOT_SONG', vsQuestionShown: false, roundStartTime: window.vsRoundStartTime, vuotSong: gameData.vuotSong, keepRoundStartSound: true });
@@ -843,21 +845,24 @@ function parseCauHoiPhuSheet(rows) {
 function fillRaKhoiInputs() {
     if (!Array.isArray(gameData.raKhoi)) {
         gameData.raKhoi = [
-            { q: "", a: "", m: "./cau1.mp4" },
-            { q: "", a: "", m: "./cau2.mp4" },
-            { q: "", a: "", m: "./cau3.mp4" },
-            { q: "", a: "", m: "./cau4.mp4" }
+            { q: "", a: "", m: "" },
+            { q: "", a: "", m: "" },
+            { q: "", a: "", m: "" },
+            { q: "", a: "", m: "" }
         ];
     }
     for (let i = 1; i <= 4; i++) {
-        const item = gameData.raKhoi[i - 1] || { q: '', a: '', m: `./cau${i}.mp4` };
+        const item = gameData.raKhoi[i - 1] || { q: '', a: '', m: '' };
         const qEl = document.getElementById(`rk_q_${i}`);
         const aEl = document.getElementById(`rk_a_${i}`);
         const mEl = document.getElementById(`rk_m_${i}`);
         const amEl = document.getElementById(`rk_am_${i}`);
         if (qEl) qEl.value = item.q || '';
         if (aEl) aEl.value = item.a || '';
-        if (mEl) mEl.value = item.m || `./cau${i}.mp4`;
+        if (mEl) {
+            const cleanedM = (item.m || '').trim();
+            mEl.value = /^\.\/cau[1-4]\.mp4$/i.test(cleanedM) ? '' : cleanedM;
+        }
         if (amEl) amEl.value = item.am || '';
     }
 }
@@ -937,15 +942,15 @@ function saveAllData(notify = false) {
             const mEl = document.getElementById(`rk_m_${i}`);
             const amEl = document.getElementById(`rk_am_${i}`);
             if (qEl || aEl || mEl || amEl) {
-                const qVal = qEl?.value || '';
-                const aVal = aEl?.value || '';
-                const mVal = mEl?.value !== undefined ? mEl.value : '';
-                const amVal = amEl?.value || '';
+                const qVal = qEl ? qEl.value : (gameData.raKhoi[i - 1]?.q || '');
+                const aVal = aEl ? aEl.value : (gameData.raKhoi[i - 1]?.a || '');
+                const mVal = mEl ? mEl.value.trim() : (gameData.raKhoi[i - 1]?.m || '');
+                const amVal = amEl ? amEl.value : (gameData.raKhoi[i - 1]?.am || '');
                 gameData.raKhoi[i - 1] = {
-                    q: qVal || gameData.raKhoi[i - 1]?.q || '',
-                    a: aVal || gameData.raKhoi[i - 1]?.a || '',
-                    m: mVal || gameData.raKhoi[i - 1]?.m || `./cau${i}.mp4`,
-                    am: amVal || gameData.raKhoi[i - 1]?.am || ''
+                    q: qVal,
+                    a: aVal,
+                    m: mVal,
+                    am: amVal
                 };
             }
         }

@@ -957,15 +957,17 @@ async function uploadMediaOptimized(file, targetInputId) {
 
     // Instant local binding for 0ms lag
     const tempBlobUrl = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov|m4v|avi|mkv|ogv)$/i);
+    const isImage = file.type.startsWith('image/') || file.name.match(/\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i);
     const inputEl = document.getElementById(targetInputId);
     if (inputEl) {
+        inputEl.dataset.mediaType = isImage ? 'image' : (isVideo ? 'video' : '');
         inputEl.value = tempBlobUrl;
         inputEl.dispatchEvent(new Event('change'));
     }
     saveAllData();
 
     const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
-    const isVideo = file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov|m4v|avi|mkv)$/i);
 
     // Fast path for small files (< 3MB)
     if (file.size <= 3 * 1024 * 1024) {
@@ -1149,13 +1151,18 @@ function previewVideoModal(inputIdOrUrl) {
         document.body.appendChild(modal);
     }
 
+    const isImagePreview = /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i.test(url) || url.startsWith('data:image/') || inputEl?.dataset?.mediaType === 'image';
+    const mediaTag = isImagePreview
+        ? `<img id="rk_preview_image_tag" src="${url}" alt="Preview" style="max-width: 80vw; max-height: 70vh; border-radius: 8px; background: #000000; object-fit: contain;">`
+        : `<video id="rk_preview_video_tag" src="${url}" controls autoplay style="max-width: 80vw; max-height: 70vh; border-radius: 8px; background: #000000;"></video>`;
+
     modal.innerHTML = `
         <div style="background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 18px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span style="color: #38bdf8; font-weight: bold; font-size: 15px;">🎬 XEM THỬ VIDEO / MEDIA RA KHƠI</span>
+                <span style="color: #38bdf8; font-weight: bold; font-size: 15px;">🎬 XEM THỬ MEDIA TĂNG TỐC</span>
                 <button onclick="document.getElementById('video_preview_modal').style.display='none'; const v=document.getElementById('rk_preview_video_tag'); if(v) v.pause();" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: bold;">✕ Đóng</button>
             </div>
-            <video id="rk_preview_video_tag" src="${url}" controls autoplay style="max-width: 80vw; max-height: 70vh; border-radius: 8px; background: #000000;"></video>
+            ${mediaTag}
             <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; word-break: break-all;">
                 URL: ${url}
             </div>
