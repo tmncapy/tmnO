@@ -19,7 +19,9 @@
             hostname.endsWith('github.io') ||
             hostname.endsWith('gitlab.io') ||
             hostname.endsWith('pages.dev') ||
-            hostname.endsWith('surge.sh')
+            hostname.endsWith('surge.sh') ||
+            hostname.endsWith('web.app') ||
+            hostname.endsWith('firebaseapp.com')
         ) {
             return false;
         }
@@ -31,6 +33,9 @@
     function getAppBasePath() {
         if (typeof window === 'undefined' || !window.location || !window.location.pathname) return '/';
         const path = window.location.pathname;
+        if (/\/Olympia\/?$/i.test(path)) {
+            return path.endsWith('/') ? path : path + '/';
+        }
         const dir = path.substring(0, path.lastIndexOf('/') + 1);
         return dir || '/';
     }

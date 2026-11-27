@@ -118,7 +118,10 @@ let serverState = {
   vqQuestionShown: false,
   vuotSong: null,
   vuotSongRow: 0,
+  vsRoundStartTime: 0,
+  vsLockedContestants: { 1: false, 2: false, 3: false, 4: false },
   currentXuatPhatTurn: 0,
+  s1QuestionStates: {},
   xpBuzzerOpen: false,
   xpBuzzerLocked: true,
   xpBuzzerWinner: 0,
@@ -130,14 +133,26 @@ let serverState = {
   vqBuzzerWinner: 0,
   vqBellUnlockedAt: 0,
   vqBuzzerWinnerTime: '',
+  chpQuestionShown: false,
+  chpParticipants: [1, 2, 3, 4],
+  chpEliminated: [],
+  chpBuzzerOpen: false,
+  chpBuzzerLocked: true,
+  chpBuzzerWinner: 0,
+  chpBellUnlockedAt: 0,
+  chpBuzzerWinnerTime: '',
+  chpRightWinnerName: '',
+  chpRemainingMs: 15000,
   s1HasSelectedDeForTurn: { 1: false, 2: false, 3: false, 4: false },
   s1ChosenDeMap: { 1: null, 2: null, 3: null, 4: null },
   contestants: [
-    { name: 'Thí sinh 1', score: 0 },
-    { name: 'Thí sinh 2', score: 0 },
-    { name: 'Thí sinh 3', score: 0 },
-    { name: 'Thí sinh 4', score: 0 }
+    { name: 'Thí sinh 1', info: '', score: 0 },
+    { name: 'Thí sinh 2', info: '', score: 0 },
+    { name: 'Thí sinh 3', info: '', score: 0 },
+    { name: 'Thí sinh 4', info: '', score: 0 }
   ],
+  scoreboardThumbnailStates: { 1: false, 2: false, 3: false, 4: false },
+  scoreboardInfoStates: { 1: false, 2: false, 3: false, 4: false },
   gameData: {
     xuatPhat: {},
     raKhoi: [],
@@ -145,10 +160,10 @@ let serverState = {
     vinhQuang: { 10: [], 20: [], 30: [] },
     cauHoiPhu: [],
     contestants: [
-      { name: 'Thí sinh 1', score: 0 },
-      { name: 'Thí sinh 2', score: 0 },
-      { name: 'Thí sinh 3', score: 0 },
-      { name: 'Thí sinh 4', score: 0 }
+      { name: 'Thí sinh 1', info: '', score: 0 },
+      { name: 'Thí sinh 2', info: '', score: 0 },
+      { name: 'Thí sinh 3', info: '', score: 0 },
+      { name: 'Thí sinh 4', info: '', score: 0 }
     ]
   },
   playerAnswers: {},
@@ -269,8 +284,18 @@ function handleIncomingAction(action, senderWs = null) {
 
   if (type === 'XUAT_PHAT_SELECT_CONTESTANT') {
     serverState.currentXuatPhatTurn = parseInt(action.turnIndex || action.contestantId) || 0;
+    serverState.s1QuestionStates = {};
+  } else if (type === 'XUAT_PHAT_SELECT_CHUNG' || type === 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI') {
+    serverState.s1QuestionStates = {};
+  } else if (type === 'XUAT_PHAT_RIGHT' || type === 'KHOI_DONG_RIGHT' || type === 'KD_RIGHT') {
+    const qIdx = parseInt(action.questionIndex, 10) || 1;
+    serverState.s1QuestionStates[qIdx] = 'correct';
+  } else if (type === 'XUAT_PHAT_WRONG' || type === 'KHOI_DONG_WRONG' || type === 'KD_WRONG') {
+    const qIdx = parseInt(action.questionIndex, 10) || 1;
+    serverState.s1QuestionStates[qIdx] = 'wrong';
   } else if (type === 'XUAT_PHAT_RESET') {
     serverState.currentXuatPhatTurn = 0;
+    serverState.s1QuestionStates = {};
     serverState.s1HasSelectedDeForTurn = { 1: false, 2: false, 3: false, 4: false };
     serverState.s1ChosenDeMap = { 1: null, 2: null, 3: null, 4: null };
   } else if (type === 'RESET_S1_DE') {
@@ -293,6 +318,7 @@ function handleIncomingAction(action, senderWs = null) {
     }
   } else if (type === 'RESET_ALL_DATA') {
     serverState.currentXuatPhatTurn = 0;
+    serverState.s1QuestionStates = {};
     serverState.s1HasSelectedDeForTurn = { 1: false, 2: false, 3: false, 4: false };
     serverState.s1ChosenDeMap = { 1: null, 2: null, 3: null, 4: null };
   }
@@ -363,6 +389,32 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.contestants = action.gameData.contestants;
     }
   }
+  if (action.scoreboardThumbnailStates && typeof action.scoreboardThumbnailStates === 'object') {
+    serverState.scoreboardThumbnailStates = Object.assign({}, serverState.scoreboardThumbnailStates, action.scoreboardThumbnailStates);
+  }
+  if (action.scoreboardInfoStates && typeof action.scoreboardInfoStates === 'object') {
+    serverState.scoreboardInfoStates = Object.assign({}, serverState.scoreboardInfoStates, action.scoreboardInfoStates);
+  }
+  if (type === 'TOGGLE_SCOREBOARD_THUMBNAIL' || type === 'SHOW_SCOREBOARD_THUMBNAIL' || type === 'HIDE_SCOREBOARD_THUMBNAIL') {
+    const targetId = action.contestantId || action.targetSlot || 'ALL';
+    const showVal = type === 'SHOW_SCOREBOARD_THUMBNAIL' ? true : (type === 'HIDE_SCOREBOARD_THUMBNAIL' ? false : !!action.show);
+    if (targetId === 'ALL') {
+      serverState.scoreboardThumbnailStates = { 1: showVal, 2: showVal, 3: showVal, 4: showVal };
+    } else {
+      const cId = parseInt(targetId, 10);
+      if (cId >= 1 && cId <= 4) serverState.scoreboardThumbnailStates[cId] = showVal;
+    }
+  }
+  if (type === 'TOGGLE_SCOREBOARD_INFO' || type === 'SHOW_SCOREBOARD_INFO' || type === 'HIDE_SCOREBOARD_INFO') {
+    const targetId = action.contestantId || action.targetSlot || 'ALL';
+    const showVal = type === 'SHOW_SCOREBOARD_INFO' ? true : (type === 'HIDE_SCOREBOARD_INFO' ? false : !!action.show);
+    if (targetId === 'ALL') {
+      serverState.scoreboardInfoStates = { 1: showVal, 2: showVal, 3: showVal, 4: showVal };
+    } else {
+      const cId = parseInt(targetId, 10);
+      if (cId >= 1 && cId <= 4) serverState.scoreboardInfoStates[cId] = showVal;
+    }
+  }
 
   // Handle Player Answer Submissions
   if (type === 'PLAYER_SUBMIT_ANSWER' && action.contestantId) {
@@ -385,6 +437,7 @@ function handleIncomingAction(action, senderWs = null) {
     const rUpper = (action.round || '').toString().toUpperCase();
     const isR1Bell = (rUpper === 'KD' || rUpper === 'XUAT_PHAT' || rUpper === 'KHOI_DONG' || rUpper === 'XP' || (!rUpper && serverState.activeRound === 'XUAT_PHAT'));
     const isR4Bell = (rUpper === 'VQ' || rUpper === 'VINH_QUANG' || rUpper === 'VE_DICH' || (!rUpper && serverState.activeRound === 'VINH_QUANG'));
+    const isR5Bell = (rUpper === 'CHP' || rUpper === 'CAU_HOI_PHU' || (!rUpper && (serverState.activeRound === 'CAU_HOI_PHU' || serverState.activeRound === 'CHP')));
 
     let resolvedBellTime = action.time || '00.00';
     if (isR1Bell) {
@@ -432,6 +485,41 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.vqBellUnlockedAt = 0;
       action.winnerId = bellNum;
       action.round = 'VQ';
+      action.bellTime = resolvedBellTime;
+      action.time = resolvedBellTime;
+    } else if (isR5Bell) {
+      const bellNum = parseInt(tsIdx, 10) || 0;
+      const participants = Array.isArray(serverState.chpParticipants) ? serverState.chpParticipants : [1, 2, 3, 4];
+      const eliminated = Array.isArray(serverState.chpEliminated) ? serverState.chpEliminated : [];
+      if (
+        serverState.chpBuzzerLocked ||
+        !serverState.chpBuzzerOpen ||
+        bellNum < 1 ||
+        bellNum > 4 ||
+        !participants.includes(bellNum) ||
+        eliminated.includes(bellNum)
+      ) {
+        return; // Ignore non-participant, eliminated, or late/out-of-turn buzzes in Round 5
+      }
+      serverState.chpBuzzerLocked = true;
+      serverState.chpBuzzerOpen = false;
+      serverState.chpBuzzerWinner = bellNum;
+      if (serverState.currentTimer && (serverState.currentTimer.round === 'CAU_HOI_PHU' || serverState.currentTimer.round === 'CHP')) {
+        serverState.chpRemainingMs = Math.max(0, serverState.currentTimer.targetTime - now);
+        serverState.currentTimer = null;
+      }
+      const rawBell = (action.bellTime !== undefined && action.bellTime !== null && String(action.bellTime).trim() !== '')
+        ? action.bellTime
+        : (action.time && action.time !== '00.00' ? action.time : '');
+      const parsedBell = rawBell !== '' ? parseFloat(String(rawBell).replace(/s|giây/gi, '').trim()) : NaN;
+      resolvedBellTime = (!isNaN(parsedBell) && parsedBell >= 0)
+        ? parsedBell.toFixed(2)
+        : (serverState.chpBellUnlockedAt > 0 ? Math.max(0, (now - serverState.chpBellUnlockedAt) / 1000).toFixed(2) : '0.00');
+      serverState.chpBuzzerWinnerTime = resolvedBellTime;
+      serverState.chpBellUnlockedAt = 0;
+      action.winnerId = bellNum;
+      action.round = 'CHP';
+      action.remainingMs = serverState.chpRemainingMs;
       action.bellTime = resolvedBellTime;
       action.time = resolvedBellTime;
     }
@@ -500,13 +588,33 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.gameData.contestants.forEach(c => { c.score = 0; });
     }
     serverState.currentXuatPhatTurn = 0;
+    serverState.s1QuestionStates = {};
     serverState.xpBuzzerOpen = false;
     serverState.xpBuzzerLocked = true;
     serverState.xpBuzzerWinner = 0;
+    serverState.xpBellUnlockedAt = 0;
+    serverState.xpBuzzerWinnerTime = '';
+    serverState.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    serverState.vsRoundStartTime = 0;
+    serverState.vuotSongRow = 0;
     serverState.vqMainContestant = 0;
     serverState.vqBuzzerOpen = false;
     serverState.vqBuzzerLocked = true;
     serverState.vqBuzzerWinner = 0;
+    serverState.vqBellUnlockedAt = 0;
+    serverState.vqBuzzerWinnerTime = '';
+    serverState.chpQuestionShown = false;
+    serverState.chpParticipants = [1, 2, 3, 4];
+    serverState.chpEliminated = [];
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpBuzzerWinnerTime = '';
+    serverState.chpRightWinnerName = '';
+    serverState.chpRemainingMs = 15000;
+    serverState.currentQuestion = null;
+    serverState.currentTimer = null;
     serverState.buzzerState = { buzzerUnlocked: false, buzzerWinner: null };
   }
 
@@ -532,22 +640,29 @@ function handleIncomingAction(action, senderWs = null) {
     action.buzzerState = serverState.buzzerState;
   }
 
-  // Track Active Round across scenes
-  if (action.activeRound || action.round) {
-    serverState.activeRound = action.activeRound || action.round;
-  } else if (type.startsWith('XUAT_PHAT_')) {
-    serverState.activeRound = 'XUAT_PHAT';
-  } else if (type.startsWith('RA_KHOI_')) {
-    serverState.activeRound = 'RA_KHOI';
-  } else if (type.startsWith('VUOT_SONG_')) {
-    serverState.activeRound = 'VUOT_SONG';
-  } else if (type.startsWith('VINH_QUANG_')) {
-    serverState.activeRound = 'VINH_QUANG';
-  } else if (type === 'SWITCH_VIEW') {
-    if (action.viewNum === 1) serverState.activeRound = 'XUAT_PHAT';
-    else if (action.viewNum === 2) serverState.activeRound = 'RA_KHOI';
-    else if (action.viewNum === 3 || action.viewNum === 4 || action.viewNum === 5) serverState.activeRound = 'VUOT_SONG';
-    else if (action.viewNum === 6 || action.viewNum === 7 || action.viewNum === 8) serverState.activeRound = 'VINH_QUANG';
+  // Track Active Round across scenes (Ignore Controller tab switches so Player does not switch with Controller tabs)
+  if (type !== 'SWITCH_ROUND_PLAYER_MC') {
+    if (action.activeRound || action.round) {
+      const incomingR = (action.activeRound || action.round || '').toString().toUpperCase();
+      if (incomingR && incomingR !== 'HE_THONG') {
+        serverState.activeRound = (incomingR === 'CHP' || incomingR === 'CAU_HOI_PHU') ? 'CAU_HOI_PHU' : (action.activeRound || action.round);
+      }
+    } else if (type.startsWith('XUAT_PHAT_')) {
+      serverState.activeRound = 'XUAT_PHAT';
+    } else if (type.startsWith('RA_KHOI_')) {
+      serverState.activeRound = 'RA_KHOI';
+    } else if (type.startsWith('VUOT_SONG_')) {
+      serverState.activeRound = 'VUOT_SONG';
+    } else if (type.startsWith('VINH_QUANG_')) {
+      serverState.activeRound = 'VINH_QUANG';
+    } else if (type.startsWith('CAU_HOI_PHU_')) {
+      serverState.activeRound = 'CAU_HOI_PHU';
+    } else if (type === 'SWITCH_VIEW') {
+      if (action.viewNum === 1) serverState.activeRound = 'XUAT_PHAT';
+      else if (action.viewNum === 2) serverState.activeRound = 'RA_KHOI';
+      else if (action.viewNum === 3 || action.viewNum === 4 || action.viewNum === 5) serverState.activeRound = 'VUOT_SONG';
+      else if (action.viewNum === 6 || action.viewNum === 7 || action.viewNum === 8) serverState.activeRound = 'VINH_QUANG';
+    }
   }
 
   // Allow external state syncs (from projector or controller) to update currentTimer directly
@@ -636,8 +751,9 @@ function handleIncomingAction(action, senderWs = null) {
       serverState.xpBuzzerWinner = 0;
       serverState.xpBellUnlockedAt = 0;
       serverState.xpBuzzerWinnerTime = '';
-    } else if (type === 'XUAT_PHAT_RESET' || type === 'XUAT_PHAT_FINISH' || type === 'START_ROUND_CLEAN') {
+    } else if (type === 'XUAT_PHAT_RESET' || type === 'XUAT_PHAT_FINISH' || (type === 'START_ROUND_CLEAN' && (!action.round || String(action.round).toUpperCase() === 'XUAT_PHAT'))) {
       serverState.currentXuatPhatTurn = 0;
+      serverState.s1QuestionStates = {};
       serverState.xpBuzzerOpen = false;
       serverState.xpBuzzerLocked = true;
       serverState.xpBuzzerWinner = 0;
@@ -647,6 +763,36 @@ function handleIncomingAction(action, senderWs = null) {
   }
 
   // 2. Vuot Song: Only visible when VUOT_SONG_SHOW_QUESTION is explicitly called
+  if (action.roundStartTime && (type.startsWith('VUOT_SONG_') || (type === 'START_ROUND_CLEAN' && String(action.round || '').toUpperCase() === 'VUOT_SONG'))) {
+    serverState.vsRoundStartTime = Number(action.roundStartTime) || now;
+  }
+  if (type === 'VUOT_SONG_LOCK_CONTESTANT') {
+    if (action.vsLockedContestants && typeof action.vsLockedContestants === 'object') {
+      serverState.vsLockedContestants = {
+        1: !!action.vsLockedContestants[1],
+        2: !!action.vsLockedContestants[2],
+        3: !!action.vsLockedContestants[3],
+        4: !!action.vsLockedContestants[4]
+      };
+    } else {
+      const cid = parseInt(action.contestantId, 10);
+      if (cid >= 1 && cid <= 4) {
+        serverState.vsLockedContestants[cid] = !!action.locked;
+      }
+    }
+  } else if (type === 'VUOT_SONG_UNLOCK_CONTESTANT') {
+    if (action.contestantId === 'ALL' || !action.contestantId) {
+      serverState.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    } else {
+      const cid = parseInt(action.contestantId, 10);
+      if (cid >= 1 && cid <= 4) {
+        serverState.vsLockedContestants[cid] = false;
+      }
+    }
+  } else if (type === 'VUOT_SONG_UNLOCK_ALL') {
+    serverState.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+  }
+
   if (type === 'VUOT_SONG_SHOW_QUESTION') {
     serverState.vsQuestionShown = true;
   } else if (
@@ -659,6 +805,11 @@ function handleIncomingAction(action, senderWs = null) {
     type === 'RESET_ALL_DATA'
   ) {
     serverState.vsQuestionShown = false;
+    if (type === 'VUOT_SONG_RESET' || (type === 'START_ROUND_CLEAN' && (!action.round || String(action.round).toUpperCase() === 'VUOT_SONG'))) {
+      serverState.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+      serverState.vsRoundStartTime = Number(action.roundStartTime) || now;
+      if (type === 'VUOT_SONG_RESET') serverState.vuotSongRow = 0;
+    }
   }
 
   // 3. Vinh Quang: Only visible when VINH_QUANG_SHOW_QUESTION is explicitly called
@@ -762,11 +913,179 @@ function handleIncomingAction(action, senderWs = null) {
     }
   }
 
-  // Track Question & Grid Info
-  if (action.questionText) {
+  // 4. Cau Hoi Phu: Round 5 state & buzzer tracking
+  if (type === 'CAU_HOI_PHU_SHOW_QUESTION') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpQuestionShown = true;
+    serverState.chpParticipants = Array.isArray(action.participatingContestants)
+      ? action.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4)
+      : [1, 2, 3, 4];
+    serverState.chpEliminated = [];
+    serverState.chpBuzzerOpen = true;
+    serverState.chpBuzzerLocked = false;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = now;
+    serverState.chpBuzzerWinnerTime = '';
+    serverState.chpRightWinnerName = '';
+    serverState.chpRemainingMs = 15000;
+    serverState.currentTimer = null;
+  } else if (type === 'CAU_HOI_PHU_START_TIMER') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpQuestionShown = true;
+    if (Array.isArray(action.participatingContestants)) {
+      serverState.chpParticipants = action.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+    }
+    serverState.chpEliminated = Array.isArray(action.eliminatedContestants)
+      ? action.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4)
+      : [];
+    serverState.chpBuzzerOpen = true;
+    serverState.chpBuzzerLocked = false;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = now;
+    serverState.chpBuzzerWinnerTime = '';
+    serverState.chpRightWinnerName = '';
+    const dur = Number(action.duration) || 15;
+    const remMs = Number(action.remainingMs) || (dur * 1000);
+    serverState.chpRemainingMs = remMs;
+    const st = action.startTime || now;
+    serverState.currentTimer = {
+      round: 'CAU_HOI_PHU',
+      duration: dur,
+      startTime: st,
+      targetTime: st + remMs,
+      questionText: action.questionText || serverState.currentQuestion?.questionText || ''
+    };
+  } else if (type === 'CAU_HOI_PHU_BUZZ') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpRightWinnerName = '';
+    const w = parseInt(action.winnerId || action.contestantId, 10) || 0;
+    if (w >= 1 && w <= 4) serverState.chpBuzzerWinner = w;
+    if (action.bellTime) serverState.chpBuzzerWinnerTime = String(action.bellTime);
+    if (action.remainingMs !== undefined) {
+      serverState.chpRemainingMs = Math.max(0, Number(action.remainingMs) || 0);
+    }
+    serverState.currentTimer = null;
+  } else if (type === 'CAU_HOI_PHU_RIGHT') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpRightWinnerName = action.contestantName || (action.winnerId ? `Thí sinh ${action.winnerId}` : 'Thí sinh');
+    serverState.currentTimer = null;
+  } else if (type === 'CAU_HOI_PHU_WRONG') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpRightWinnerName = '';
+    if (Array.isArray(action.eliminatedContestants)) {
+      serverState.chpEliminated = action.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+    } else {
+      const wrongId = parseInt(action.contestantId, 10) || 0;
+      if (wrongId >= 1 && wrongId <= 4 && !serverState.chpEliminated.includes(wrongId)) {
+        serverState.chpEliminated.push(wrongId);
+      }
+    }
+    if (action.remainingMs !== undefined) {
+      serverState.chpRemainingMs = Math.max(0, Number(action.remainingMs) || 0);
+    }
+    serverState.currentTimer = null;
+  } else if (type === 'CAU_HOI_PHU_CONTINUE') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    if (Array.isArray(action.participatingContestants)) {
+      serverState.chpParticipants = action.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+    }
+    if (Array.isArray(action.eliminatedContestants)) {
+      serverState.chpEliminated = action.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+    }
+    const remMs = action.remainingMs !== undefined ? Math.max(0, Number(action.remainingMs) || 0) : serverState.chpRemainingMs;
+    serverState.chpRemainingMs = remMs;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpRightWinnerName = '';
+    serverState.chpBuzzerOpen = remMs > 0;
+    serverState.chpBuzzerLocked = remMs <= 0;
+    serverState.chpBellUnlockedAt = remMs > 0 ? now : 0;
+    if (action.timerStarted !== false && remMs > 0) {
+      serverState.currentTimer = {
+        round: 'CAU_HOI_PHU',
+        duration: remMs / 1000,
+        startTime: now,
+        targetTime: now + remMs,
+        questionText: serverState.currentQuestion?.questionText || ''
+      };
+    } else {
+      serverState.currentTimer = null;
+    }
+  } else if (type === 'CAU_HOI_PHU_TIMEOUT') {
+    serverState.activeRound = 'CAU_HOI_PHU';
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpRemainingMs = 0;
+    serverState.currentTimer = null;
+  } else if (
+    type === 'CAU_HOI_PHU_RESET' ||
+    type === 'SWITCH_VIEW' ||
+    type === 'SWITCH_ROUND' ||
+    type === 'START_ROUND_CLEAN' ||
+    type === 'RESET_ALL_DATA'
+  ) {
+    serverState.chpQuestionShown = false;
+    serverState.chpEliminated = [];
+    serverState.chpBuzzerOpen = false;
+    serverState.chpBuzzerLocked = true;
+    serverState.chpBuzzerWinner = 0;
+    serverState.chpBellUnlockedAt = 0;
+    serverState.chpBuzzerWinnerTime = '';
+    serverState.chpRightWinnerName = '';
+    serverState.chpRemainingMs = 15000;
+    if (type === 'CAU_HOI_PHU_RESET') {
+      serverState.currentTimer = null;
+      if (Array.isArray(action.participatingContestants)) {
+        serverState.chpParticipants = action.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+      }
+    }
+  }
+
+  // Track Question & Grid Info (preserve mediaUrl, mediaType, pack, subject, row)
+  if (
+    type === 'START_ROUND_CLEAN' ||
+    type === 'XUAT_PHAT_RESET' ||
+    type === 'RA_KHOI_RESET' ||
+    type === 'VUOT_SONG_RESET' ||
+    type === 'VINH_QUANG_RESET' ||
+    type === 'CAU_HOI_PHU_RESET' ||
+    type === 'RESET_ALL_DATA'
+  ) {
+    serverState.currentQuestion = null;
+  } else if (
+    action.questionText !== undefined ||
+    action.question !== undefined ||
+    action.mediaUrl !== undefined ||
+    type === 'RA_KHOI_SELECT_QUESTION' ||
+    type === 'RA_KHOI_SHOW_QUESTION' ||
+    type === 'VUOT_SONG_SELECT_ROW' ||
+    type === 'VUOT_SONG_SHOW_QUESTION' ||
+    type === 'VINH_QUANG_SHOW_QUESTION' ||
+    type === 'CAU_HOI_PHU_SHOW_QUESTION'
+  ) {
+    const prevQ = serverState.currentQuestion || {};
+    const sameRound = prevQ.round === serverState.activeRound;
     serverState.currentQuestion = {
-      questionText: action.questionText,
-      questionIndex: action.questionIndex || 1,
+      questionText: action.questionText !== undefined ? action.questionText : (action.question !== undefined ? action.question : (sameRound ? (prevQ.questionText || '') : '')),
+      questionIndex: action.questionIndex !== undefined ? action.questionIndex : (action.row !== undefined ? action.row : (sameRound ? (prevQ.questionIndex || 1) : 1)),
+      mediaUrl: action.mediaUrl !== undefined ? action.mediaUrl : (sameRound ? (prevQ.mediaUrl || '') : ''),
+      mediaType: action.mediaType !== undefined ? action.mediaType : (sameRound ? (prevQ.mediaType || '') : ''),
+      pack: action.pack !== undefined ? action.pack : (sameRound ? prevQ.pack : undefined),
+      subject: action.subject !== undefined ? action.subject : (sameRound ? (prevQ.subject || '') : ''),
+      answerText: (action.answerText !== undefined || action.answer !== undefined) ? (action.answerText || action.answer || '') : (sameRound ? (prevQ.answerText || '') : ''),
+      row: action.row !== undefined ? action.row : (sameRound ? prevQ.row : undefined),
       round: serverState.activeRound
     };
   }
@@ -849,6 +1168,7 @@ function handleIncomingAction(action, senderWs = null) {
     if (serverState.activeRound === 'XUAT_PHAT') return !!serverState.xpQuestionShown;
     if (serverState.activeRound === 'VUOT_SONG') return !!serverState.vsQuestionShown;
     if (serverState.activeRound === 'VINH_QUANG') return !!serverState.vqQuestionShown;
+    if (serverState.activeRound === 'CAU_HOI_PHU' || serverState.activeRound === 'CHP') return !!serverState.chpQuestionShown;
     return true; // RA_KHOI
   };
 
@@ -867,14 +1187,30 @@ function handleIncomingAction(action, senderWs = null) {
       questionIndex: serverState.currentQuestion?.questionIndex || 1,
       xpQuestionShown: !!serverState.xpQuestionShown,
       currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+      s1QuestionStates: serverState.s1QuestionStates || {},
+      s1HasSelectedDeForTurn: serverState.s1HasSelectedDeForTurn || { 1: false, 2: false, 3: false, 4: false },
+      s1ChosenDeMap: serverState.s1ChosenDeMap || { 1: null, 2: null, 3: null, 4: null },
       xpBuzzerOpen: !!serverState.xpBuzzerOpen,
       xpBuzzerLocked: !!serverState.xpBuzzerLocked,
       xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
+      xpBellUnlockedAt: serverState.xpBellUnlockedAt || 0,
       vqMainContestant: serverState.vqMainContestant || 0,
       vqBuzzerOpen: !!serverState.vqBuzzerOpen,
       vqBuzzerLocked: !!serverState.vqBuzzerLocked,
       vqBuzzerWinner: serverState.vqBuzzerWinner || 0,
+      vqBellUnlockedAt: serverState.vqBellUnlockedAt || 0,
+      chpQuestionShown: !!serverState.chpQuestionShown,
+      chpParticipants: serverState.chpParticipants || [1, 2, 3, 4],
+      chpEliminated: serverState.chpEliminated || [],
+      chpBuzzerOpen: !!serverState.chpBuzzerOpen,
+      chpBuzzerLocked: !!serverState.chpBuzzerLocked,
+      chpBuzzerWinner: serverState.chpBuzzerWinner || 0,
+      chpBellUnlockedAt: serverState.chpBellUnlockedAt || 0,
+      chpRightWinnerName: serverState.chpRightWinnerName || '',
+      chpRemainingMs: serverState.chpRemainingMs !== undefined ? serverState.chpRemainingMs : 15000,
       vsQuestionShown: !!serverState.vsQuestionShown,
+      vsLockedContestants: serverState.vsLockedContestants || { 1: false, 2: false, 3: false, 4: false },
+      vsRoundStartTime: serverState.vsRoundStartTime || 0,
       vqQuestionShown: !!serverState.vqQuestionShown,
       vuotSong: serverState.vuotSong,
       vuotSongRow: serverState.vuotSongRow,
@@ -925,6 +1261,7 @@ wss.on('connection', (ws, req) => {
     if (serverState.activeRound === 'XUAT_PHAT') return !!serverState.xpQuestionShown;
     if (serverState.activeRound === 'VUOT_SONG') return !!serverState.vsQuestionShown;
     if (serverState.activeRound === 'VINH_QUANG') return !!serverState.vqQuestionShown;
+    if (serverState.activeRound === 'CAU_HOI_PHU' || serverState.activeRound === 'CHP') return !!serverState.chpQuestionShown;
     return true;
   };
   const showQ = isQVisible();
@@ -944,15 +1281,37 @@ wss.on('connection', (ws, req) => {
       questionIndex: serverState.currentQuestion?.questionIndex || 1,
       xpQuestionShown: !!serverState.xpQuestionShown,
       currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+      s1QuestionStates: serverState.s1QuestionStates || {},
+      s1HasSelectedDeForTurn: serverState.s1HasSelectedDeForTurn || { 1: false, 2: false, 3: false, 4: false },
+      s1ChosenDeMap: serverState.s1ChosenDeMap || { 1: null, 2: null, 3: null, 4: null },
       xpBuzzerOpen: !!serverState.xpBuzzerOpen,
       xpBuzzerLocked: !!serverState.xpBuzzerLocked,
       xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
+      xpBellUnlockedAt: serverState.xpBellUnlockedAt || 0,
+      vqMainContestant: serverState.vqMainContestant || 0,
+      vqBuzzerOpen: !!serverState.vqBuzzerOpen,
+      vqBuzzerLocked: !!serverState.vqBuzzerLocked,
+      vqBuzzerWinner: serverState.vqBuzzerWinner || 0,
+      vqBellUnlockedAt: serverState.vqBellUnlockedAt || 0,
+      chpQuestionShown: !!serverState.chpQuestionShown,
+      chpParticipants: serverState.chpParticipants || [1, 2, 3, 4],
+      chpEliminated: serverState.chpEliminated || [],
+      chpBuzzerOpen: !!serverState.chpBuzzerOpen,
+      chpBuzzerLocked: !!serverState.chpBuzzerLocked,
+      chpBuzzerWinner: serverState.chpBuzzerWinner || 0,
+      chpBellUnlockedAt: serverState.chpBellUnlockedAt || 0,
+      chpRightWinnerName: serverState.chpRightWinnerName || '',
+      chpRemainingMs: serverState.chpRemainingMs !== undefined ? serverState.chpRemainingMs : 15000,
       vsQuestionShown: !!serverState.vsQuestionShown,
+      vsLockedContestants: serverState.vsLockedContestants || { 1: false, 2: false, 3: false, 4: false },
+      vsRoundStartTime: serverState.vsRoundStartTime || 0,
       vqQuestionShown: !!serverState.vqQuestionShown,
       vuotSong: serverState.vuotSong,
       vuotSongRow: serverState.vuotSongRow,
       contestants: serverState.contestants,
       gameData: serverState.gameData,
+      scoreboardThumbnailStates: serverState.scoreboardThumbnailStates,
+      scoreboardInfoStates: serverState.scoreboardInfoStates,
       connectedClients: serverState.connectedClients,
       playerAnswers: serverState.playerAnswers,
       buzzerState: serverState.buzzerState,
@@ -1238,14 +1597,59 @@ const handleSseConnection = (req, res) => {
     'Access-Control-Allow-Origin': '*'
   });
 
+  const isSseQVisible = (() => {
+    if (serverState.activeRound === 'XUAT_PHAT') return !!serverState.xpQuestionShown;
+    if (serverState.activeRound === 'VUOT_SONG') return !!serverState.vsQuestionShown;
+    if (serverState.activeRound === 'VINH_QUANG') return !!serverState.vqQuestionShown;
+    if (serverState.activeRound === 'CAU_HOI_PHU' || serverState.activeRound === 'CHP') return !!serverState.chpQuestionShown;
+    return true;
+  })();
+
   res.write(`data: ${JSON.stringify({
     type: 'INITIAL_STATE_SYNC',
     event: 'buzzer-state-sync',
     roomCode: serverState.roomCode,
     roomAuth: serverState.roomAuth,
     slotAuth: getAllSlotAuths(),
+    activeRound: serverState.activeRound,
+    currentRound: serverState.activeRound,
+    currentTimer: getActiveTimerPayload(),
+    currentQuestion: isSseQVisible ? serverState.currentQuestion : null,
+    questionText: isSseQVisible ? (serverState.currentQuestion?.questionText || '') : '',
+    questionIndex: serverState.currentQuestion?.questionIndex || 1,
+    xpQuestionShown: !!serverState.xpQuestionShown,
+    currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+    s1QuestionStates: serverState.s1QuestionStates || {},
+    s1HasSelectedDeForTurn: serverState.s1HasSelectedDeForTurn || { 1: false, 2: false, 3: false, 4: false },
+    s1ChosenDeMap: serverState.s1ChosenDeMap || { 1: null, 2: null, 3: null, 4: null },
+    xpBuzzerOpen: !!serverState.xpBuzzerOpen,
+    xpBuzzerLocked: !!serverState.xpBuzzerLocked,
+    xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
+    xpBellUnlockedAt: serverState.xpBellUnlockedAt || 0,
+    vsQuestionShown: !!serverState.vsQuestionShown,
+    vsLockedContestants: serverState.vsLockedContestants || { 1: false, 2: false, 3: false, 4: false },
+    vsRoundStartTime: serverState.vsRoundStartTime || 0,
+    vuotSong: serverState.vuotSong,
+    vuotSongRow: serverState.vuotSongRow,
+    vqQuestionShown: !!serverState.vqQuestionShown,
+    vqMainContestant: serverState.vqMainContestant || 0,
+    vqBuzzerOpen: !!serverState.vqBuzzerOpen,
+    vqBuzzerLocked: !!serverState.vqBuzzerLocked,
+    vqBuzzerWinner: serverState.vqBuzzerWinner || 0,
+    vqBellUnlockedAt: serverState.vqBellUnlockedAt || 0,
+    chpQuestionShown: !!serverState.chpQuestionShown,
+    chpParticipants: serverState.chpParticipants || [1, 2, 3, 4],
+    chpEliminated: serverState.chpEliminated || [],
+    chpBuzzerOpen: !!serverState.chpBuzzerOpen,
+    chpBuzzerLocked: !!serverState.chpBuzzerLocked,
+    chpBuzzerWinner: serverState.chpBuzzerWinner || 0,
+    chpBellUnlockedAt: serverState.chpBellUnlockedAt || 0,
+    chpRightWinnerName: serverState.chpRightWinnerName || '',
+    chpRemainingMs: serverState.chpRemainingMs !== undefined ? serverState.chpRemainingMs : 15000,
     contestants: serverState.contestants,
     gameData: serverState.gameData,
+    scoreboardThumbnailStates: serverState.scoreboardThumbnailStates,
+    scoreboardInfoStates: serverState.scoreboardInfoStates,
     connectedClients: serverState.connectedClients,
     playerAnswers: serverState.playerAnswers,
     buzzerState: serverState.buzzerState,
@@ -1265,8 +1669,14 @@ app.get('/events', handleSseConnection);
 // GET /api/state & /state - Retrieve current authoritative game state
 const handleGetState = (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  const isVQ = serverState.activeRound === 'VINH_QUANG';
-  const effectiveQText = (isVQ && !serverState.vqQuestionShown) ? '' : (serverState.currentQuestion?.questionText || '');
+  const isQVisible = (() => {
+    if (serverState.activeRound === 'XUAT_PHAT') return !!serverState.xpQuestionShown;
+    if (serverState.activeRound === 'VUOT_SONG') return !!serverState.vsQuestionShown;
+    if (serverState.activeRound === 'VINH_QUANG') return !!serverState.vqQuestionShown;
+    if (serverState.activeRound === 'CAU_HOI_PHU' || serverState.activeRound === 'CHP') return !!serverState.chpQuestionShown;
+    return true;
+  })();
+  const effectiveQText = isQVisible ? (serverState.currentQuestion?.questionText || '') : '';
   res.json({
     type: 'FULL_STATE_SYNC',
     roomCode: serverState.roomCode,
@@ -1275,20 +1685,45 @@ const handleGetState = (req, res) => {
     activeRound: serverState.activeRound,
     currentRound: serverState.activeRound,
     currentTimer: getActiveTimerPayload(),
-    currentQuestion: isVQ && !serverState.vqQuestionShown ? null : serverState.currentQuestion,
+    currentQuestion: isQVisible ? serverState.currentQuestion : null,
     questionText: effectiveQText,
     questionIndex: serverState.currentQuestion?.questionIndex || 1,
+    xpQuestionShown: !!serverState.xpQuestionShown,
+    xpBuzzerOpen: !!serverState.xpBuzzerOpen,
+    xpBuzzerLocked: !!serverState.xpBuzzerLocked,
+    xpBuzzerWinner: serverState.xpBuzzerWinner || 0,
+    xpBellUnlockedAt: serverState.xpBellUnlockedAt || 0,
+    vsQuestionShown: !!serverState.vsQuestionShown,
+    vsLockedContestants: serverState.vsLockedContestants || { 1: false, 2: false, 3: false, 4: false },
+    vsRoundStartTime: serverState.vsRoundStartTime || 0,
     vqQuestionShown: !!serverState.vqQuestionShown,
+    vqMainContestant: serverState.vqMainContestant || 0,
+    vqBuzzerOpen: !!serverState.vqBuzzerOpen,
+    vqBuzzerLocked: !!serverState.vqBuzzerLocked,
+    vqBuzzerWinner: serverState.vqBuzzerWinner || 0,
+    vqBellUnlockedAt: serverState.vqBellUnlockedAt || 0,
+    chpQuestionShown: !!serverState.chpQuestionShown,
+    chpParticipants: serverState.chpParticipants || [1, 2, 3, 4],
+    chpEliminated: serverState.chpEliminated || [],
+    chpBuzzerOpen: !!serverState.chpBuzzerOpen,
+    chpBuzzerLocked: !!serverState.chpBuzzerLocked,
+    chpBuzzerWinner: serverState.chpBuzzerWinner || 0,
+    chpBellUnlockedAt: serverState.chpBellUnlockedAt || 0,
+    chpRightWinnerName: serverState.chpRightWinnerName || '',
+    chpRemainingMs: serverState.chpRemainingMs !== undefined ? serverState.chpRemainingMs : 15000,
     vuotSong: serverState.vuotSong,
     vuotSongRow: serverState.vuotSongRow,
     contestants: serverState.contestants,
     gameData: serverState.gameData,
+    scoreboardThumbnailStates: serverState.scoreboardThumbnailStates,
+    scoreboardInfoStates: serverState.scoreboardInfoStates,
     connectedClients: serverState.connectedClients,
     playerAnswers: serverState.playerAnswers,
     buzzerState: serverState.buzzerState,
     latestAction: serverState.latestAction,
     lastUpdated: serverState.lastUpdated,
     currentXuatPhatTurn: serverState.currentXuatPhatTurn || 0,
+    s1QuestionStates: serverState.s1QuestionStates || {},
     s1HasSelectedDeForTurn: serverState.s1HasSelectedDeForTurn || { 1: false, 2: false, 3: false, 4: false },
     s1ChosenDeMap: serverState.s1ChosenDeMap || { 1: null, 2: null, 3: null, 4: null },
     connectedWsClients: wsClients.size,
@@ -1655,7 +2090,11 @@ const staticOptions = {
   etag: true,
   lastModified: true,
   setHeaders: (res, filePath) => {
-    if (filePath.match(/\.(html|js|css)$/i)) {
+    if (filePath.match(/\.html$/i)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else if (filePath.match(/\.(js|css)$/i)) {
       res.setHeader('Cache-Control', 'no-cache');
     } else if (filePath.match(/\.(mp4|webm|ogg|mp3|wav|png|jpg|jpeg|gif|webp|ico|svg|woff|woff2|otf)$/i)) {
       res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
@@ -1668,6 +2107,7 @@ const publicDir = __dirname;
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir, staticOptions));
   app.use('/public', express.static(publicDir, staticOptions));
+  app.use('/Olympia', express.static(publicDir, staticOptions));
 }
 app.use(express.static(__dirname, staticOptions));
 
@@ -1692,19 +2132,26 @@ function sendPageOrFallback(res, filename, fallbackRedirect = null) {
   if (fallbackRedirect) {
     return res.redirect(fallbackRedirect);
   }
-  return res.status(404).send(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>404 - Không tìm thấy trang</title></head><body style="font-family:sans-serif;padding:40px;background:#f8fafc;color:#1e293b;"><h2>Trang <code>${filename}</code> chưa có trong thư mục Public.</h2><p><a href="/controller">Quay lại Bảng Điều Khiển (Controller)</a></p></body></html>`);
+  return res.status(404).send(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>404 - Không tìm thấy trang</title></head><body style="font-family:sans-serif;padding:40px;background:#f8fafc;color:#1e293b;"><h2>Trang <code>${filename}</code> chưa có trong thư mục Public.</h2><p><a href="controller">Quay lại Bảng Điều Khiển (Controller)</a></p></body></html>`);
 }
 
-// Route shortcuts
-app.get('/control', (req, res) => { sendPageOrFallback(res, 'controller.html'); });
-app.get('/player', (req, res) => { sendPageOrFallback(res, 'player.html'); });
-app.get('/host', (req, res) => { sendPageOrFallback(res, 'host.html'); });
-app.get('/controller', (req, res) => { sendPageOrFallback(res, 'controller.html'); });
-app.get('/projector', (req, res) => { sendPageOrFallback(res, 'projector.html'); });
-app.get('/graphic', (req, res) => { sendPageOrFallback(res, 'graphic.html'); });
-app.get('/scoreboard', (req, res) => { sendPageOrFallback(res, 'Scoreboard.html'); });
-app.get('/designer', (req, res) => { sendPageOrFallback(res, 'designer.html'); });
-app.get('/guide', (req, res) => { sendPageOrFallback(res, 'guide.html'); });
+// Route shortcuts (Root & /Olympia subpath)
+['/control', '/Olympia/control'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'controller.html'); }));
+['/player', '/Olympia/player'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'player.html'); }));
+['/host', '/Olympia/host'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'host.html'); }));
+['/controller', '/Olympia/controller'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'controller.html'); }));
+['/projector', '/Olympia/projector'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'projector.html'); }));
+['/graphic', '/Olympia/graphic'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'graphic.html'); }));
+['/scoreboard', '/Olympia/scoreboard', '/Scoreboard', '/Olympia/Scoreboard', '/scoreboard.html', '/Olympia/scoreboard.html'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'Scoreboard.html'); }));
+[1, 2, 3, 4].forEach(n => {
+  [`/scoreboard${n}`, `/Olympia/scoreboard${n}`, `/Scoreboard${n}`, `/Olympia/Scoreboard${n}`, `/Scoreboard${n}.html`, `/Olympia/Scoreboard${n}.html`].forEach(r => {
+    app.get(r, (req, res) => { sendPageOrFallback(res, `scoreboard${n}.html`); });
+  });
+});
+['/designer', '/Olympia/designer'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'designer.html'); }));
+['/guide', '/Olympia/guide'].forEach(r => app.get(r, (req, res) => { sendPageOrFallback(res, 'guide.html'); }));
+app.get('/Olympia', (req, res) => { sendPageOrFallback(res, 'index.html', '/Olympia/controller'); });
+app.get('/Olympia/', (req, res) => { sendPageOrFallback(res, 'index.html', '/Olympia/controller'); });
 app.get('/', (req, res) => { sendPageOrFallback(res, 'index.html', '/controller'); });
 
 // Start HTTP + WebSocket server

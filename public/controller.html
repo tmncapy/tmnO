@@ -7,7 +7,7 @@
     <script src="media-preloader.js?v=20261124g"></script>
     <!-- SheetJS for Excel Import/Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="controller.css?v=20261124g">
+    <link rel="stylesheet" href="controller.css?v=20261126c">
     <script>
         function switchTab(index) {
             const navItems = document.querySelectorAll('.nav-item');
@@ -87,10 +87,10 @@
             <button class="btn" onclick="reloadClientSlot('graphic')" style="font-size: 11px; font-weight: 700; padding: 5px 8px;" title="Tải lại Màn hình Graphic OBS">
                 GRAPHIC
             </button>
-            <a href="/huong_dan_controller.pdf" target="_blank" download="huong_dan_controller.pdf" class="btn" style="font-size: 11px; font-weight: 800; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center;" title="Tải xuống tài liệu Hướng Dẫn Sử Dụng Bàn Điều Khiển (File PDF)">
+            <a href="huong_dan_controller.pdf" target="_blank" download="huong_dan_controller.pdf" class="btn" style="font-size: 11px; font-weight: 800; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center;" title="Tải xuống tài liệu Hướng Dẫn Sử Dụng Bàn Điều Khiển (File PDF)">
                 TẢI FILE PDF
             </a>
-            <a href="/guide" target="_blank" class="btn" style="font-size: 11px; font-weight: 800; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center;" title="Mở trang Hướng dẫn sử dụng chi tiết & In PDF">
+            <a href="guide" target="_blank" class="btn" style="font-size: 11px; font-weight: 800; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center;" title="Mở trang Hướng dẫn sử dụng chi tiết & In PDF">
                 HƯỚNG DẪN
             </a>
         </div>
@@ -128,7 +128,7 @@
                         <span style="font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap;">
                             Link Thí sinh:
                         </span>
-                        <code id="player_direct_link_preview" style="font-size: 11px; font-weight: 600; background: #f8fafc; padding: 3px 8px; border-radius: 4px; color: #0f172a; flex: 1; min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #cbd5e1;"></code>
+                        <code id="player_direct_link_preview" style="font-size: 11px; font-weight: 600; background: #f8fafc; padding: 3px 8px; border-radius: 4px; color: #0f172a; flex: 1; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid #cbd5e1;"></code>
                         <button class="btn" onclick="copyPlayerDirectLink()" style="background: #ffffff; color: #334155; padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">Sao chép</button>
                         <button class="btn" onclick="openPlayerDirectLink()" style="background: #ffffff; color: #334155; padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">Mở thử</button>
                         <button class="btn" onclick="showPlayerQrModal()" style="background: #ffffff; color: #334155; padding: 3px 8px; font-size: 11px; font-weight: 600; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 3px; cursor: pointer;">QR</button>
@@ -136,107 +136,120 @@
                 </div>
 
                 <table class="conn-table">
+                    <colgroup>
+                        <col style="width: 198px;">
+                        <col style="width: 188px;">
+                        <col>
+                        <col>
+                    </colgroup>
                     <tr style="background: #f1f5f9; font-size: 11px; font-weight: bold; color: #475569; border-bottom: 1.5px solid #cbd5e1;">
-                        <th style="padding: 6px 8px; text-align: left; width: 220px;">TRẠNG THÁI & LỆNH</th>
-                        <th style="padding: 6px 8px; text-align: left; width: 220px;">MÃ AUTH & LINK</th>
-                        <th style="padding: 6px 8px; text-align: left;">TÊN HIỂN THỊ</th>
+                        <th style="padding: 6px 4px; text-align: left;">TRẠNG THÁI &amp; LỆNH</th>
+                        <th style="padding: 6px 4px; text-align: left;">MÃ AUTH &amp; LINK</th>
+                        <th style="padding: 6px 4px; text-align: left;">TÊN HIỂN THỊ</th>
+                        <th style="padding: 6px 4px; text-align: left;">INFO THÍ SINH</th>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_ts1" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('ts1')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;" title="Tải lại màn hình Thí sinh 1">Reload</button>
-                                <button type="button" class="btn" onclick="kickClientSlot('ts1')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 1">Kick</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_ts1" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('ts1')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;" title="Tải lại màn hình Thí sinh 1">Reload</button>
+                                <button type="button" class="btn" onclick="kickClientSlot('ts1')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 1">Kick</button>
                             </div>
                         </td>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                                 <span id="controller_ts1_link_title" style="display: none;">TS 1: Thí sinh 1</span>
-                                <span id="slot_auth_badge_1" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 101234</span>
-                                <button type="button" class="btn" onclick="copyPlayerDirectLink(1)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 1">Copy</button>
-                                <button type="button" class="btn" onclick="showPlayerQrModal(1)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 1">QR</button>
-                                <button type="button" class="btn" onclick="openPlayerDirectLink(1)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 1">Mở</button>
+                                <span id="slot_auth_badge_1" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 4px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 101234</span>
+                                <button type="button" class="btn" onclick="copyPlayerDirectLink(1)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 1">Copy</button>
+                                <button type="button" class="btn" onclick="showPlayerQrModal(1)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 1">QR</button>
+                                <button type="button" class="btn" onclick="openPlayerDirectLink(1)" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 1">Mở</button>
                             </div>
                         </td>
                         <td><input type="text" value="Thí sinh 1" id="ts_name_1" oninput="updateContestantName(1, this.value)" style="width: 100%;"></td>
+                        <td><input type="text" value="" id="ts_info_1" placeholder="Thông tin thí sinh 1..." oninput="updateContestantInfo(1, this.value)" style="width: 100%;"></td>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_ts2" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('ts2')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 2">Reload</button>
-                                <button type="button" class="btn" onclick="kickClientSlot('ts2')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 2">Kick</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_ts2" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('ts2')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 2">Reload</button>
+                                <button type="button" class="btn" onclick="kickClientSlot('ts2')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 2">Kick</button>
                             </div>
                         </td>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                                 <span id="controller_ts2_link_title" style="display: none;">TS 2: Thí sinh 2</span>
-                                <span id="slot_auth_badge_2" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 202345</span>
-                                <button type="button" class="btn" onclick="copyPlayerDirectLink(2)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 2">Copy</button>
-                                <button type="button" class="btn" onclick="showPlayerQrModal(2)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 2">QR</button>
-                                <button type="button" class="btn" onclick="openPlayerDirectLink(2)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 2">Mở</button>
+                                <span id="slot_auth_badge_2" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 4px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 202345</span>
+                                <button type="button" class="btn" onclick="copyPlayerDirectLink(2)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 2">Copy</button>
+                                <button type="button" class="btn" onclick="showPlayerQrModal(2)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 2">QR</button>
+                                <button type="button" class="btn" onclick="openPlayerDirectLink(2)" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 2">Mở</button>
                             </div>
                         </td>
                         <td><input type="text" value="Thí sinh 2" id="ts_name_2" oninput="updateContestantName(2, this.value)" style="width: 100%;"></td>
+                        <td><input type="text" value="" id="ts_info_2" placeholder="Thông tin thí sinh 2..." oninput="updateContestantInfo(2, this.value)" style="width: 100%;"></td>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_ts3" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('ts3')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 3">Reload</button>
-                                <button type="button" class="btn" onclick="kickClientSlot('ts3')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 3">Kick</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_ts3" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('ts3')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 3">Reload</button>
+                                <button type="button" class="btn" onclick="kickClientSlot('ts3')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 3">Kick</button>
                             </div>
                         </td>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                                 <span id="controller_ts3_link_title" style="display: none;">TS 3: Thí sinh 3</span>
-                                <span id="slot_auth_badge_3" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 303456</span>
-                                <button type="button" class="btn" onclick="copyPlayerDirectLink(3)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 3">Copy</button>
-                                <button type="button" class="btn" onclick="showPlayerQrModal(3)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 3">QR</button>
-                                <button type="button" class="btn" onclick="openPlayerDirectLink(3)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 3">Mở</button>
+                                <span id="slot_auth_badge_3" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 4px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 303456</span>
+                                <button type="button" class="btn" onclick="copyPlayerDirectLink(3)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 3">Copy</button>
+                                <button type="button" class="btn" onclick="showPlayerQrModal(3)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 3">QR</button>
+                                <button type="button" class="btn" onclick="openPlayerDirectLink(3)" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 3">Mở</button>
                             </div>
                         </td>
                         <td><input type="text" value="Thí sinh 3" id="ts_name_3" oninput="updateContestantName(3, this.value)" style="width: 100%;"></td>
+                        <td><input type="text" value="" id="ts_info_3" placeholder="Thông tin thí sinh 3..." oninput="updateContestantInfo(3, this.value)" style="width: 100%;"></td>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_ts4" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('ts4')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 4">Reload</button>
-                                <button type="button" class="btn" onclick="kickClientSlot('ts4')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 4">Kick</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_ts4" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('ts4')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Thí sinh 4">Reload</button>
+                                <button type="button" class="btn" onclick="kickClientSlot('ts4')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi vị trí Thí sinh 4">Kick</button>
                             </div>
                         </td>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px; white-space: nowrap;">
                                 <span id="controller_ts4_link_title" style="display: none;">TS 4: Thí sinh 4</span>
-                                <span id="slot_auth_badge_4" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 404567</span>
-                                <button type="button" class="btn" onclick="copyPlayerDirectLink(4)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 4">Copy</button>
-                                <button type="button" class="btn" onclick="showPlayerQrModal(4)" style="padding: 2px 6px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 4">QR</button>
-                                <button type="button" class="btn" onclick="openPlayerDirectLink(4)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 4">Mở</button>
+                                <span id="slot_auth_badge_4" style="font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 4px; border-radius: 4px; border: 1px solid #cbd5e1; display: inline-block;">Auth: 404567</span>
+                                <button type="button" class="btn" onclick="copyPlayerDirectLink(4)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Sao chép Link Thí sinh 4">Copy</button>
+                                <button type="button" class="btn" onclick="showPlayerQrModal(4)" style="padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Hiện QR Code Thí sinh 4">QR</button>
+                                <button type="button" class="btn" onclick="openPlayerDirectLink(4)" style="padding: 2px 4px; font-size: 10px; font-weight: bold; border-radius: 4px;" title="Mở thử Thí sinh 4">Mở</button>
                             </div>
                         </td>
                         <td><input type="text" value="Thí sinh 4" id="ts_name_4" oninput="updateContestantName(4, this.value)" style="width: 100%;"></td>
+                        <td><input type="text" value="" id="ts_info_4" placeholder="Thông tin thí sinh 4..." oninput="updateContestantInfo(4, this.value)" style="width: 100%;"></td>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_host" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('host')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại máy MC">Reload</button>
-                                <button type="button" class="btn" onclick="kickClientSlot('host')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi Máy MC">Kick</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_host" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('host')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại máy MC">Reload</button>
+                                <button type="button" class="btn" onclick="kickClientSlot('host')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Mời ra / Đá khỏi Máy MC">Kick</button>
                             </div>
                         </td>
                         <td style="text-align: center; color: #94a3b8; font-size: 11px;">—</td>
                         <td><input type="text" value="Máy MC" readonly style="font-weight: bold; background: #f1f5f9; width: 100%;"></td>
+                        <td style="text-align: center; color: #94a3b8; font-size: 11px;">—</td>
                     </tr>
                     <tr>
-                        <td style="width: 220px;">
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <span id="status_badge_projector" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
-                                <button type="button" class="btn" onclick="reloadClientSlot('projector')" style="padding: 2px 5px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Máy Chiếu">Reload</button>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                                <span id="status_badge_projector" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap;">Chưa kết nối</span>
+                                <button type="button" class="btn" onclick="reloadClientSlot('projector')" style="padding: 2px 4px; font-size: 10px; font-weight: bold; cursor: pointer;" title="Tải lại màn hình Máy Chiếu">Reload</button>
                             </div>
                         </td>
                         <td style="text-align: center; color: #94a3b8; font-size: 11px;">—</td>
                         <td><input type="text" value="Máy Chiếu" readonly style="font-weight: bold; background: #f1f5f9; width: 100%;"></td>
+                        <td style="text-align: center; color: #94a3b8; font-size: 11px;">—</td>
                     </tr>
                 </table>
 
@@ -245,11 +258,22 @@
                 </div>
 
                 <div class="conn-bottom" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <button class="btn" onclick="updateContestantNames()">Cập nhật tên thí sinh</button>
+                    <button class="btn" onclick="updateContestantNames()">Cập nhật tên &amp; info</button>
                     <button class="btn" onclick="reloadClientSlot('all')" style="font-weight: bold;" title="Tải lại tất cả các máy thí sinh, MC và máy chiếu">Tải lại tất cả máy</button>
                     <button class="btn" onclick="reloadClientSlot('players')" style="font-weight: bold;" title="Tải lại cả 4 máy thí sinh">Tải lại 4 Thí sinh</button>
                     <input type="text" id="statusMessage" placeholder="Thông báo hệ thống..." style="flex: 1; min-width: 150px;">
                     <button class="btn" onclick="showToast('Đã gửi thông báo thành công!')">Gửi</button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 6px 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                    <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Tên & Info">Hiện Info tất cả</button>
+                    <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info tất cả</button>
+                    <button class="btn sb_info_btn_ts1" onclick="toggleScoreboardInfo(undefined, 1)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px;" title="Bật/Tắt Scene Info Thí sinh 1">TS1: Ẩn</button>
+                    <button class="btn sb_info_btn_ts2" onclick="toggleScoreboardInfo(undefined, 2)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px;" title="Bật/Tắt Scene Info Thí sinh 2">TS2: Ẩn</button>
+                    <button class="btn sb_info_btn_ts3" onclick="toggleScoreboardInfo(undefined, 3)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px;" title="Bật/Tắt Scene Info Thí sinh 3">TS3: Ẩn</button>
+                    <button class="btn sb_info_btn_ts4" onclick="toggleScoreboardInfo(undefined, 4)" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 4px;" title="Bật/Tắt Scene Info Thí sinh 4">TS4: Ẩn</button>
+                    <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
                 </div>
             </div>
 
@@ -260,7 +284,7 @@
                     <button class="btn" onclick="projectorWindow = window.open('./projector.html', 'ddvq_projector')">Màn hình Máy Chiếu</button>
                     <button class="btn" style="font-weight: bold;" onclick="window.open('./graphic.html', '_blank')">Màn hình Graphic (Trong suốt)</button>
                     <button class="btn" style="font-weight: bold;" onclick="window.open('./host.html', '_blank')">Màn hình MC (Host)</button>
-                    <button class="btn btn-primary" onclick="window.open('./public/player.html', '_blank')">Màn hình Thí sinh</button>
+                    <button class="btn btn-primary" onclick="window.open('./player.html', '_blank')">Màn hình Thí sinh</button>
                     <button class="btn" onclick="resetAllData()">Thiết lập lại dữ liệu</button>
                 </div>
 
@@ -835,6 +859,11 @@
                 <span id="sb_thumb_status_tag" class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
                     Trạng thái: Ẩn tất cả
                 </span>
+                <span style="border-left: 1.5px solid #cbd5e1; height: 18px; margin: 0 2px;"></span>
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Info">Hiện Info</button>
+                <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info</button>
+                <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
                 ĐIỀU KHIỂN VÒNG THI KHỞI ĐỘNG
@@ -1040,6 +1069,11 @@
                 <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
                     Trạng thái: Ẩn tất cả
                 </span>
+                <span style="border-left: 1.5px solid #cbd5e1; height: 18px; margin: 0 2px;"></span>
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Info">Hiện Info</button>
+                <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info</button>
+                <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
                 ĐIỀU KHIỂN VÒNG THI VƯỢT CHƯỚNG NGẠI VẬT
@@ -1325,6 +1359,11 @@
                 <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
                     Trạng thái: Ẩn tất cả
                 </span>
+                <span style="border-left: 1.5px solid #cbd5e1; height: 18px; margin: 0 2px;"></span>
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Info">Hiện Info</button>
+                <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info</button>
+                <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
                 ĐIỀU KHIỂN VÒNG THI TĂNG TỐC
@@ -1557,6 +1596,11 @@
                 <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
                     Trạng thái: Ẩn tất cả
                 </span>
+                <span style="border-left: 1.5px solid #cbd5e1; height: 18px; margin: 0 2px;"></span>
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Info">Hiện Info</button>
+                <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info</button>
+                <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
                 ĐIỀU KHIỂN VÒNG THI VINH QUANG
@@ -1911,6 +1955,11 @@
                 <span class="sb_thumb_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">
                     Trạng thái: Ẩn tất cả
                 </span>
+                <span style="border-left: 1.5px solid #cbd5e1; height: 18px; margin: 0 2px;"></span>
+                <span style="font-weight: bold; color: #1e3a8a; font-size: 12px;">INFO BẢNG ĐIỂM:</span>
+                <button class="btn" onclick="toggleScoreboardInfo(true, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Chuyển tất cả bảng điểm sang Scene Info">Hiện Info</button>
+                <button class="btn" onclick="toggleScoreboardInfo(false, 'ALL')" style="font-weight: bold; padding: 3px 8px; font-size: 11px; border-radius: 3px;" title="Đưa tất cả bảng điểm về Scene Điểm">Ẩn Info</button>
+                <span class="sb_info_status_tag" style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 11px;">Info: Ẩn tất cả</span>
             </div>
             <div style="font-size: 12px; font-weight: bold; color: #475569;">
                 ĐIỀU KHIỂN VÒNG THI CÂU HỎI PHỤ
@@ -1924,98 +1973,82 @@
             <div style="flex: 1.1; display: flex; flex-direction: column; gap: 12px; min-width: 420px; max-width: 560px;">
 
                 <!-- TS 1 -->
-                <div id="chp_ts_row_1" style="display: flex; align-items: center; gap: 8px;">
+                <div id="chp_ts_row_1" style="display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 6px; border: 2px solid transparent; transition: all 0.15s ease;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <span id="ts1_score_disp_chp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(1)">✏️</span>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 5px; border: 2px solid #cbd5e1; border-bottom: none;">
-                            <input type="text" id="ts1_name_chp" value="Thí sinh 1" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
-                            <input type="text" id="ts1_extra_chp" placeholder="00.00" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px; text-align: center;">
-                            <label title="Chọn Thí sinh 1 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: bold; color: #334155; cursor: pointer; white-space: nowrap; user-select: none;">
-                                <input type="checkbox" id="chp_ts_1" checked onchange="updateCHPParticipants()"> Thi
+                        <div id="chp_card_hdr_1" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 6px; border: 2px solid #cbd5e1; border-bottom: none;">
+                            <input type="text" id="ts1_name_chp" value="Thí sinh 1" oninput="updateContestantName(1, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; outline: none;">
+                            <input type="text" id="ts1_extra_chp" placeholder="00.00" readonly style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; font-weight: bold; border-radius: 2px; text-align: center;">
+                            <label title="Chọn Thí sinh 1 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; color: #0f172a; cursor: pointer; white-space: nowrap; user-select: none; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                                <input type="checkbox" id="chp_ts_1" checked onchange="updateCHPParticipants()"> Tham gia
                             </label>
                         </div>
                         <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center;">
-                            <input type="text" id="ts1_ans_chp" placeholder="Đáp án TS1" style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none;">
+                            <input type="text" id="ts1_ans_chp" placeholder="Trạng thái TS1" readonly style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 12px; padding: 0 8px; outline: none;">
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                        <button onclick="adjustScore(1, 10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #16a34a; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Cộng 10 điểm">+10</button>
-                        <button onclick="adjustScore(1, -10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #dc2626; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Trừ 10 điểm">-10</button>
                     </div>
                 </div>
 
                 <!-- TS 2 -->
-                <div id="chp_ts_row_2" style="display: flex; align-items: center; gap: 8px;">
+                <div id="chp_ts_row_2" style="display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 6px; border: 2px solid transparent; transition: all 0.15s ease;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <span id="ts2_score_disp_chp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(2)">✏️</span>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 5px; border: 2px solid #cbd5e1; border-bottom: none;">
-                            <input type="text" id="ts2_name_chp" value="Thí sinh 2" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
-                            <input type="text" id="ts2_extra_chp" placeholder="00.00" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px; text-align: center;">
-                            <label title="Chọn Thí sinh 2 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: bold; color: #334155; cursor: pointer; white-space: nowrap; user-select: none;">
-                                <input type="checkbox" id="chp_ts_2" checked onchange="updateCHPParticipants()"> Thi
+                        <div id="chp_card_hdr_2" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 6px; border: 2px solid #cbd5e1; border-bottom: none;">
+                            <input type="text" id="ts2_name_chp" value="Thí sinh 2" oninput="updateContestantName(2, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; outline: none;">
+                            <input type="text" id="ts2_extra_chp" placeholder="00.00" readonly style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; font-weight: bold; border-radius: 2px; text-align: center;">
+                            <label title="Chọn Thí sinh 2 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; color: #0f172a; cursor: pointer; white-space: nowrap; user-select: none; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                                <input type="checkbox" id="chp_ts_2" checked onchange="updateCHPParticipants()"> Tham gia
                             </label>
                         </div>
                         <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center;">
-                            <input type="text" id="ts2_ans_chp" placeholder="Đáp án TS2" style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none;">
+                            <input type="text" id="ts2_ans_chp" placeholder="Trạng thái TS2" readonly style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 12px; padding: 0 8px; outline: none;">
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                        <button onclick="adjustScore(2, 10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #16a34a; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Cộng 10 điểm">+10</button>
-                        <button onclick="adjustScore(2, -10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #dc2626; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Trừ 10 điểm">-10</button>
                     </div>
                 </div>
 
                 <!-- TS 3 -->
-                <div id="chp_ts_row_3" style="display: flex; align-items: center; gap: 8px;">
+                <div id="chp_ts_row_3" style="display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 6px; border: 2px solid transparent; transition: all 0.15s ease;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <span id="ts3_score_disp_chp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(3)">✏️</span>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 5px; border: 2px solid #cbd5e1; border-bottom: none;">
-                            <input type="text" id="ts3_name_chp" value="Thí sinh 3" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
-                            <input type="text" id="ts3_extra_chp" placeholder="00.00" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px; text-align: center;">
-                            <label title="Chọn Thí sinh 3 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: bold; color: #334155; cursor: pointer; white-space: nowrap; user-select: none;">
-                                <input type="checkbox" id="chp_ts_3" checked onchange="updateCHPParticipants()"> Thi
+                        <div id="chp_card_hdr_3" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 6px; border: 2px solid #cbd5e1; border-bottom: none;">
+                            <input type="text" id="ts3_name_chp" value="Thí sinh 3" oninput="updateContestantName(3, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; outline: none;">
+                            <input type="text" id="ts3_extra_chp" placeholder="00.00" readonly style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; font-weight: bold; border-radius: 2px; text-align: center;">
+                            <label title="Chọn Thí sinh 3 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; color: #0f172a; cursor: pointer; white-space: nowrap; user-select: none; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                                <input type="checkbox" id="chp_ts_3" checked onchange="updateCHPParticipants()"> Tham gia
                             </label>
                         </div>
                         <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center;">
-                            <input type="text" id="ts3_ans_chp" placeholder="Đáp án TS3" style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none;">
+                            <input type="text" id="ts3_ans_chp" placeholder="Trạng thái TS3" readonly style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 12px; padding: 0 8px; outline: none;">
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                        <button onclick="adjustScore(3, 10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #16a34a; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Cộng 10 điểm">+10</button>
-                        <button onclick="adjustScore(3, -10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #dc2626; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Trừ 10 điểm">-10</button>
                     </div>
                 </div>
 
                 <!-- TS 4 -->
-                <div id="chp_ts_row_4" style="display: flex; align-items: center; gap: 8px;">
+                <div id="chp_ts_row_4" style="display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 6px; border: 2px solid transparent; transition: all 0.15s ease;">
                     <div style="position: relative; width: 75px; height: 56px; background: #fff; border: 3px solid #dc2626; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <span id="ts4_score_disp_chp" style="font-size: 30px; font-weight: bold; color: #dc2626;">0</span>
                         <span style="position: absolute; top: 2px; right: 4px; font-size: 10px; color: #888; cursor: pointer;" onclick="promptScore(4)">✏️</span>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                        <div style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 5px; border: 2px solid #cbd5e1; border-bottom: none;">
-                            <input type="text" id="ts4_name_chp" value="Thí sinh 4" oninput="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; outline: none;">
-                            <input type="text" id="ts4_extra_chp" placeholder="00.00" style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; border-radius: 2px; text-align: center;">
-                            <label title="Chọn Thí sinh 4 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: bold; color: #334155; cursor: pointer; white-space: nowrap; user-select: none;">
-                                <input type="checkbox" id="chp_ts_4" checked onchange="updateCHPParticipants()"> Thi
+                        <div id="chp_card_hdr_4" style="display: flex; background: #f1f5f9; padding: 4px 8px; border-radius: 2px 2px 0 0; align-items: center; gap: 6px; border: 2px solid #cbd5e1; border-bottom: none;">
+                            <input type="text" id="ts4_name_chp" value="Thí sinh 4" oninput="updateContestantName(4, this.value)" style="background: transparent; border: none; font-weight: bold; color: #000; font-size: 14px; flex: 1; min-width: 0; outline: none;">
+                            <input type="text" id="ts4_extra_chp" placeholder="00.00" readonly style="width: 70px; background: #fff; border: 1px solid #cbd5e1; height: 22px; font-size: 12px; font-weight: bold; border-radius: 2px; text-align: center;">
+                            <label title="Chọn Thí sinh 4 tham gia Câu Hỏi Phụ" style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: bold; color: #0f172a; cursor: pointer; white-space: nowrap; user-select: none; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">
+                                <input type="checkbox" id="chp_ts_4" checked onchange="updateCHPParticipants()"> Tham gia
                             </label>
                         </div>
                         <div style="height: 24px; background: #f8fafc; border-radius: 0 0 2px 2px; border: 2px solid #cbd5e1; border-top: none; display: flex; align-items: center;">
-                            <input type="text" id="ts4_ans_chp" placeholder="Đáp án TS4" style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 13px; padding: 0 6px; outline: none;">
+                            <input type="text" id="ts4_ans_chp" placeholder="Trạng thái TS4" readonly style="width: 100%; height: 100%; background: transparent; border: none; color: #334155; font-weight: bold; font-size: 12px; padding: 0 8px; outline: none;">
                         </div>
-                    </div>
-                    <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                        <button onclick="adjustScore(4, 10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #16a34a; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Cộng 10 điểm">+10</button>
-                        <button onclick="adjustScore(4, -10)" style="width: 40px; height: 32px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #dc2626; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Trừ 10 điểm">-10</button>
                     </div>
                 </div>
             </div>
@@ -2132,16 +2165,19 @@
                     </div>
                 </div>
 
-                <!-- ROW 1 CONTROLS: QUESTION ACTIONS + SOUND -->
+                <!-- ROW 1 CONTROLS: BẮT ĐẦU + CHẤM ĐÚNG / SAI / TIẾP TỤC + SOUND -->
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <button class="ctrl-btn-action" onclick="onClickCHPShowQuestion()" style="flex: 1; padding: 0 14px; white-space: nowrap;">
-                        Mở câu hỏi
+                    <button class="ctrl-btn-action" id="btn_chp_start_q" onclick="onClickCHPShowQuestion()" style="flex: 1.2; padding: 0 14px; white-space: nowrap; font-weight: bold;" title="Hiển thị đồ họa 0_ExtraQues.png, tên thí sinh tham gia và nội dung câu hỏi">
+                        Bắt đầu
                     </button>
-                    <button class="ctrl-btn-action" onclick="onClickCHPShowContestantAnswers()" style="flex: 1; padding: 0 14px; white-space: nowrap;">
-                        Đáp án TS
+                    <button class="ctrl-btn-action" id="btn_chp_right" onclick="onClickCHPRight()" style="flex: 0.8; background: #dcfce7; border-color: #16a34a; color: #15803d !important; font-weight: 800; padding: 0 12px; white-space: nowrap;" title="Thí sinh trả lời ĐÚNG (phát SFX/2_RightObstacle.mp3, không cộng điểm)">
+                        ✓ Đúng
                     </button>
-                    <button class="ctrl-btn-action" onclick="onClickCHPShowAnswer()" style="flex: 1; padding: 0 14px; white-space: nowrap;">
-                        Hiện đáp án đúng
+                    <button class="ctrl-btn-action" id="btn_chp_wrong" onclick="onClickCHPWrong()" style="flex: 0.8; background: #fee2e2; border-color: #dc2626; color: #b91c1c !important; font-weight: 800; padding: 0 12px; white-space: nowrap;" title="Thí sinh trả lời SAI (loại thí sinh ở câu này)">
+                        ✕ Sai
+                    </button>
+                    <button class="ctrl-btn-action" id="btn_chp_continue" onclick="onClickCHPContinue()" style="flex: 1; background: #fef3c7; border-color: #d97706; color: #92400e !important; font-weight: 800; padding: 0 12px; white-space: nowrap;" title="Tiếp tục chạy 15s, video và nhạc nền cho các thí sinh còn lại">
+                        ▶ Tiếp tục
                     </button>
                     <button class="ctrl-btn-action" onclick="onClickPhatAmThanh()" style="width: 75px;">
                         Phát âm
@@ -2153,8 +2189,8 @@
                     <button class="ctrl-btn-bottom" onclick="startRoundAndCleanGraphics(5)" title="Chuyển tab máy thí sinh sang Vòng Câu Hỏi Phụ & Ẩn toàn bộ Graphic trên Projector/Graphic">
                         Câu hỏi phụ
                     </button>
-                    <button class="ctrl-btn-bottom" onclick="onClickCHPStartTimer()">
-                        Bắt đầu 15s
+                    <button class="ctrl-btn-bottom" id="btn_chp_start_15s" onclick="onClickCHPStartTimer()" title="Phát Media/0_15sExtra.mp4, SFX/4_20.mp3 và mở chuông 15 giây">
+                        15s bắt đầu
                     </button>
                     <button class="ctrl-btn-bottom" onclick="onClickDungNhac()">
                         Dừng nhạc
@@ -2254,12 +2290,12 @@
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-sync.js?v=20261124m"></script>
-    <script src="setup.js?v=20261124m"></script>
-    <script src="setup_extra.js?v=20261124m"></script>
+    <script src="setup.js?v=20261126d"></script>
+    <script src="setup_extra.js?v=20261126b"></script>
     <script src="controllerR1.js?v=20261124m"></script>
     <script src="controllerR2.js?v=20261124m"></script>
     <script src="controllerR3.js?v=20261124m"></script>
     <script src="controllerR4.js?v=20261124m"></script>
-    <script src="controllerRExtra.js?v=20261124m"></script>
+    <script src="controllerRExtra.js?v=20261126a"></script>
 </body>
 </html>

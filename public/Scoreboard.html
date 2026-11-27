@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
     <title>ScoreBoard Full Window</title>
     <script src="designer-runtime.js"></script>
     <script src="media-preloader.js"></script>
@@ -14,8 +15,8 @@
         body, html {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             background-color: #000;
             display: flex;
@@ -23,50 +24,184 @@
             align-items: center;
         }
 
+        /* Exact PowerPoint 16:9 Slide (13.3333" x 7.5" -> 1920px x 1080px, 1" = 144px, 1pt = 2px) */
         .scoreboard-container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            background-image: url('Images/ScoreBoard.png');
-            background-size: 100% 100%;
+            width: 1920px;
+            height: 1080px;
+            flex-shrink: 0;
+            transform-origin: center center;
+            background-image: url('Media/ScoreBoard.png');
+            background-size: 1920px 1080px;
             background-repeat: no-repeat;
             background-position: center;
-            font-family: Arial, sans-serif;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            overflow: hidden;
         }
 
-        /* Số điểm: Tăng kích thước to hơn và căn vị trí */
-        .score {
+        .scoreboard-bg {
             position: absolute;
-            top: 38%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30vw; /* Đã phóng to số hơn */
-            font-weight: bold;
-            color: #ffffff;
-            line-height: 1;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        /* Tên thí sinh: Dời xuống thấp hơn */
+        /* Tên: 1.51 x 13.33, 0 x 0 (PPT), font Verdana, RGB(0, 32, 96), 66pt -> 217.44px x 1919.52px, 0 x 0, 132px */
         .name {
             position: absolute;
-            top: 90%; /* Tăng khoảng cách từ trên xuống để tên dời xuống thấp hơn */
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 5vw;
+            top: 0px;
+            left: 0px;
+            width: 1919.52px;
+            height: 217.44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 36px 4px 36px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 132px;
             font-weight: bold;
-            color: #ffffff;
-            letter-spacing: 0.2vw;
-            text-transform: uppercase;
+            color: rgb(0, 32, 96);
+            line-height: 1.35;
+            text-align: center;
+            white-space: nowrap;
+            overflow: visible;
+            z-index: 60;
+        }
+
+        .name-text {
+            display: inline-block;
+            flex: 0 0 auto;
+            transform-origin: center center;
+        }
+
+        /* Điểm: 5.99 x 13.33, 0 x 1.51 (PPT), font Verdana, RGB(255, 255, 255), 287pt -> 862.56px x 1919.52px, 0 x 217.44px, 574px */
+        .score {
+            position: absolute;
+            top: 217.44px;
+            left: 0px;
+            width: 1919.52px;
+            height: 862.56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 36px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 574px;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            line-height: 1.15;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            overflow: visible;
+            z-index: 60;
+        }
+
+        .score-text {
+            display: inline-block;
+            flex: 0 0 auto;
+            transform-origin: center center;
+        }
+
+        /* Info Scene (Media/Info.png) */
+        .scoreboard-info-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 80;
+            display: none;
+            overflow: hidden;
+        }
+
+        .scoreboard-info-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Info Tên: 2.05 x 11.03, 1.15 x 1.7 (PPT), Verdana, RGB(255, 255, 255), 88pt -> 295.20px x 1588.32px, 165.60px x 244.80px, 176px */
+        .info-name {
+            position: absolute;
+            left: 165.60px;
+            top: 244.80px;
+            width: 1588.32px;
+            height: 295.20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 36px 4px 36px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 176px;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            line-height: 1.35;
+            text-align: center;
+            white-space: nowrap;
+            overflow: visible;
+            z-index: 20;
+        }
+
+        .info-name-text {
+            display: inline-block;
+            flex: 0 0 auto;
+            transform-origin: center center;
+        }
+
+        /* Info Detail: 2.05 x 11.03, 1.15 x 3.75 (PPT), Verdana, RGB(255, 255, 255), 48pt -> 295.20px x 1588.32px, 165.60px x 540.00px, 96px */
+        .info-detail {
+            position: absolute;
+            left: 165.60px;
+            top: 540.00px;
+            width: 1588.32px;
+            height: 295.20px;
+            display: flex;
+            align-items: safe center;
+            justify-content: center;
+            padding: 0 24px 6px 24px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 96px;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            line-height: 1.25;
+            text-align: center;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow: hidden;
+            z-index: 20;
+        }
+
+        .info-detail-text {
+            width: 100%;
+            text-align: center;
+            padding-bottom: 4px;
+            overflow: visible;
         }
     </style>
 </head>
 <body>
 
-    <div class="scoreboard-container">
+    <div class="scoreboard-container" id="stage-wrapper">
+        <img class="scoreboard-bg" src="Media/ScoreBoard.png" alt="">
         <div id="orange_flash_overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(249, 115, 22, 0.85); pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.1s ease;"></div>
-        <img id="scoreboard_thumbnail_img" src="Images/thumbnail.png" alt="Thumbnail" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 100; display: none;">
-        <div class="score" id="sb_score" style="position: absolute; z-index: 60;">0</div>
-        <div class="name" id="sb_name" style="position: absolute; z-index: 60;">THÍ SINH</div>
+        <img id="scoreboard_thumbnail_img" src="Media/thumbnail.png" alt="Thumbnail" onerror="this.style.display='none'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; z-index: 100; display: none;">
+        <div class="name" id="sb_name"><span class="name-text" id="sb_name_text">THÍ SINH</span></div>
+        <div class="score" id="sb_score_box"><span class="score-text" id="sb_score">0</span></div>
+        <div class="scoreboard-info-scene" id="scoreboard_info_scene">
+            <img class="scoreboard-info-bg" src="Media/Info.png" alt="">
+            <div class="info-name" id="info_name_box"><span class="info-name-text" id="info_name">THÍ SINH</span></div>
+            <div class="info-detail" id="info_detail_box"><div class="info-detail-text" id="info_detail"></div></div>
+        </div>
     </div>
 
     <script src="supabase-sync.js"></script>
@@ -75,13 +210,87 @@
         let playerIdx = parseInt(urlParams.get('player') || urlParams.get('ts') || '1') - 1;
         if (playerIdx < 0 || playerIdx > 3) playerIdx = 0;
 
+        function scaleStage() {
+            const stage = document.getElementById('stage-wrapper');
+            if (!stage) return;
+            const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            stage.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', scaleStage);
+        window.addEventListener('DOMContentLoaded', scaleStage);
+        scaleStage();
+
+        function fitSingleLine(boxEl, textEl) {
+            if (!boxEl || !textEl) return;
+            textEl.style.transform = 'none';
+            const cs = window.getComputedStyle(boxEl);
+            const padLeft = parseFloat(cs.paddingLeft) || 0;
+            const padRight = parseFloat(cs.paddingRight) || 0;
+            const maxWidth = Math.max(100, boxEl.clientWidth - padLeft - padRight);
+            const textWidth = Math.max(textEl.offsetWidth || 0, textEl.scrollWidth || 0);
+            if (textWidth > maxWidth && textWidth > 0) {
+                textEl.style.transform = `scaleX(${maxWidth / textWidth})`;
+            }
+        }
+
+        function fitInfoDetail() {
+            const boxEl = document.getElementById('info_detail_box');
+            const textEl = document.getElementById('info_detail');
+            if (!boxEl || !textEl) return;
+            let size = 96;
+            boxEl.style.fontSize = size + 'px';
+            while (boxEl.scrollHeight > boxEl.clientHeight && size > 24) {
+                size -= 4;
+                boxEl.style.fontSize = size + 'px';
+            }
+        }
+
+        function fitNameText() {
+            fitSingleLine(document.getElementById('sb_name'), document.getElementById('sb_name_text'));
+            fitSingleLine(document.getElementById('sb_score_box'), document.getElementById('sb_score'));
+            fitSingleLine(document.getElementById('info_name_box'), document.getElementById('info_name'));
+            fitInfoDetail();
+        }
+        window.addEventListener('resize', fitNameText);
+        window.addEventListener('load', fitNameText);
+
         function updateScoreboardView(contestants) {
             if (!Array.isArray(contestants) || !contestants[playerIdx]) return;
             const c = contestants[playerIdx];
             const scoreEl = document.getElementById('sb_score');
-            const nameEl = document.getElementById('sb_name');
+            const nameTextEl = document.getElementById('sb_name_text');
+            const infoNameEl = document.getElementById('info_name');
+            const infoDetailEl = document.getElementById('info_detail');
             if (scoreEl) scoreEl.innerText = c.score !== undefined ? c.score : 0;
-            if (nameEl) nameEl.innerText = (c.name || `THÍ SINH ${playerIdx + 1}`).toUpperCase();
+            const displayName = (c.name || `Thí sinh ${playerIdx + 1}`).toString();
+            if (nameTextEl) nameTextEl.innerText = displayName;
+            if (infoNameEl) infoNameEl.innerText = displayName;
+            if (infoDetailEl && c.info !== undefined && c.info !== null) {
+                infoDetailEl.innerText = c.info.toString();
+            }
+            fitNameText();
+        }
+
+        function setInfoSceneVisible(show) {
+            const infoSceneEl = document.getElementById('scoreboard_info_scene');
+            if (!infoSceneEl) return;
+            infoSceneEl.style.display = show ? 'block' : 'none';
+            if (show) fitNameText();
+        }
+
+        function toggleInfoView(data) {
+            const infoSceneEl = document.getElementById('scoreboard_info_scene');
+            if (!infoSceneEl) return;
+            const contestantId = playerIdx + 1;
+            const targetId = data.contestantId || data.targetSlot || 'ALL';
+            if (targetId === 'ALL' || parseInt(targetId) === contestantId) {
+                let show = false;
+                if (data.type === 'SHOW_SCOREBOARD_INFO') show = true;
+                else if (data.type === 'HIDE_SCOREBOARD_INFO') show = false;
+                else show = data.show !== undefined ? data.show : (infoSceneEl.style.display === 'none' || !infoSceneEl.style.display);
+                setInfoSceneVisible(show);
+                try { localStorage.setItem('ddvq_scoreboard_info_shown_' + contestantId, show ? 'true' : 'false'); } catch(e){}
+            }
         }
 
         function toggleThumbnailView(data) {
@@ -143,6 +352,17 @@
                 }
             }
 
+            if (data.type === 'TOGGLE_SCOREBOARD_INFO' || data.type === 'SHOW_SCOREBOARD_INFO' || data.type === 'HIDE_SCOREBOARD_INFO') {
+                toggleInfoView(data);
+            } else if (data.scoreboardInfoStates) {
+                const contestantId = playerIdx + 1;
+                if (data.scoreboardInfoStates[contestantId] !== undefined) {
+                    const show = !!data.scoreboardInfoStates[contestantId];
+                    setInfoSceneVisible(show);
+                    try { localStorage.setItem('ddvq_scoreboard_info_shown_' + contestantId, show ? 'true' : 'false'); } catch(e){}
+                }
+            }
+
             if (
                 data.type === 'S3_FLASH_SCOREBOARD' ||
                 (data.type === 'PLAYER_RING_BELL' && (data.round === 'VUOT_SONG' || data.round === 'VS' || data.round === 'VCNV')) ||
@@ -157,6 +377,8 @@
 
             if (data.contestants) {
                 updateScoreboardView(data.contestants);
+            } else if (data.gameData && Array.isArray(data.gameData.contestants)) {
+                updateScoreboardView(data.gameData.contestants);
             }
             if (data.type === 'INITIAL_STATE_SYNC' && data.contestants) {
                 updateScoreboardView(data.contestants);
@@ -167,9 +389,12 @@
             if (data.type === 'UPDATE_CONTESTANTS' && data.contestants) {
                 updateScoreboardView(data.contestants);
             }
+            if (data.latestAction && typeof data.latestAction === 'object') {
+                window.handleBroadcastMessage(data.latestAction);
+            }
         };
 
-        // Restore saved thumbnail state
+        // Restore saved thumbnail & info states
         try {
             const contestantId = playerIdx + 1;
             const savedSelf = localStorage.getItem('ddvq_scoreboard_thumbnail_shown_' + contestantId);
@@ -181,6 +406,13 @@
                 } else if (savedSelf === 'false') {
                     thumbEl.style.display = 'none';
                 }
+            }
+            const savedInfoSelf = localStorage.getItem('ddvq_scoreboard_info_shown_' + contestantId);
+            const savedInfoAll = localStorage.getItem('ddvq_scoreboard_info_shown');
+            if (savedInfoSelf === 'true' || (savedInfoSelf === null && savedInfoAll === 'true')) {
+                setInfoSceneVisible(true);
+            } else if (savedInfoSelf === 'false') {
+                setInfoSceneVisible(false);
             }
         } catch(e) {}
 
@@ -211,10 +443,7 @@
             fetch(stateUrl)
                 .then(r => r.json())
                 .then(data => {
-                    const contestants = data && (data.contestants || (data.gameData && data.gameData.contestants));
-                    if (contestants && Array.isArray(contestants)) {
-                        updateScoreboardView(contestants);
-                    }
+                    window.handleBroadcastMessage(data);
                 })
                 .catch(() => {});
         }

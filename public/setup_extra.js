@@ -277,7 +277,11 @@ function getPlayerBaseUrl() {
             const proto = (window.location.protocol && window.location.protocol.startsWith('http')) ? window.location.protocol : 'http:';
             origin = `${proto}//${window.location.host}`.replace(/\/+$/, '');
         }
-        return origin;
+        const basePath = (typeof window.getAppBasePath === 'function')
+            ? window.getAppBasePath()
+            : (window.location.pathname ? window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) : '/');
+        const cleanBase = (!basePath || basePath === '/') ? '' : basePath.replace(/\/+$/, '');
+        return origin + cleanBase;
     }
     return '';
 }
@@ -350,16 +354,16 @@ function generateRandomRoomCredentials() {
 function getPlayerDirectLink(slot) {
     const roomInput = document.getElementById('room_code_input');
     const code = (roomInput ? roomInput.value.trim().toUpperCase() : '') || localStorage.getItem('ddvq_room_code') || 'DDVQ2026';
-    const baseUrl = getPlayerBaseUrl().replace(/\/public\/?$/i, '');
+    const baseUrl = getPlayerBaseUrl().replace(/\/+$/, '');
     
     if (slot && parseInt(slot) >= 1 && parseInt(slot) <= 4) {
         const slotNum = parseInt(slot);
         const slotAuth = getSlotAuth(slotNum);
-        return `${baseUrl}/public/player.html?roomid=${encodeURIComponent(code)}&slot=${slotNum}&id=${slotNum}&auth=${encodeURIComponent(slotAuth)}`;
+        return `${baseUrl}/player.html?roomid=${encodeURIComponent(code)}&slot=${slotNum}&id=${slotNum}&auth=${encodeURIComponent(slotAuth)}`;
     }
     const authInput = document.getElementById('room_auth_input');
     const masterAuth = (authInput ? authInput.value.trim() : '') || localStorage.getItem('ddvq_room_auth') || '123456';
-    return `${baseUrl}/public/player.html?roomid=${encodeURIComponent(code)}&auth=${encodeURIComponent(masterAuth)}`;
+    return `${baseUrl}/player.html?roomid=${encodeURIComponent(code)}&auth=${encodeURIComponent(masterAuth)}`;
 }
 
 function copyPlayerDirectLink(slot) {
@@ -540,6 +544,7 @@ function respondToStateRequest() {
         vuotSong: gameData.vuotSong,
         vuotSongRow: typeof currentVSRow !== 'undefined' ? currentVSRow : 0,
         scoreboardThumbnailStates: window.scoreboardThumbnailStates,
+        scoreboardInfoStates: window.scoreboardInfoStates,
         timestamp: Date.now()
     };
 
@@ -1352,17 +1357,27 @@ window.vqIncorrectAnswer = function(idx) {
 }
 
 window.isSummaryShown = false;
+let tongKetStep = 'idle'; // 'idle' | 'counting' | 'ready'
+let tongKetCountdownInterval = null;
 
-function updateTongKetButtonsUI(isShown) {
+function updateTongKetButtonsUI(state, secLeft) {
     const btns = document.querySelectorAll('.btn-tong-ket');
     btns.forEach(btn => {
-        if (isShown) {
-            btn.innerHTML = 'Ẩn tổng kết';
-            btn.style.backgroundColor = '#dc2626';
+        if (state === 'counting') {
+            btn.innerHTML = `${secLeft}s`;
+            btn.style.background = '#f59e0b';
+            btn.style.backgroundColor = '#f59e0b';
             btn.style.color = '#ffffff';
-            btn.style.borderColor = '#b91c1c';
+            btn.style.borderColor = '#d97706';
+        } else if (state === 'ready') {
+            btn.innerHTML = 'Hiện';
+            btn.style.background = '#059669';
+            btn.style.backgroundColor = '#059669';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#047857';
         } else {
             btn.innerHTML = 'Tổng kết';
+            btn.style.background = '';
             btn.style.backgroundColor = '';
             btn.style.color = '';
             btn.style.borderColor = '';
@@ -1370,31 +1385,72 @@ function updateTongKetButtonsUI(isShown) {
     });
 }
 
+function resetTongKetButton() {
+    if (tongKetCountdownInterval) {
+        clearInterval(tongKetCountdownInterval);
+        tongKetCountdownInterval = null;
+    }
+    tongKetStep = 'idle';
+    window.isSummaryShown = false;
+    updateTongKetButtonsUI('idle');
+}
+window.resetTongKetButton = resetTongKetButton;
+
 function onClickTongKet() {
-    if (typeof saveAllData === 'function') saveAllData();
-    window.isSummaryShown = !window.isSummaryShown;
-
-    const contestants = [];
-    for (let i = 1; i <= 4; i++) {
-        const nameInput = document.getElementById(`ts${i}_name`);
-        const name = (nameInput && nameInput.value.trim()) || (gameData.contestants && gameData.contestants[i - 1] && gameData.contestants[i - 1].name) || `Thí sinh ${i}`;
-        const score = (gameData.contestants && gameData.contestants[i - 1] && typeof gameData.contestants[i - 1].score !== 'undefined') ? gameData.contestants[i - 1].score : 0;
-        contestants.push({ id: i, name, score });
+    if (tongKetStep === 'counting') {
+        return;
     }
 
-    const payload = {
-        type: 'TOGGLE_SUMMARY',
-        show: window.isSummaryShown,
-        contestants: contestants,
-        timestamp: Date.now()
-    };
+    if (tongKetStep === 'idle') {
+        if (tongKetCountdownInterval) {
+            clearInterval(tongKetCountdownInterval);
+            tongKetCountdownInterval = null;
+        }
+        tongKetStep = 'counting';
+        let secLeft = 3;
+        updateTongKetButtonsUI('counting', secLeft);
 
-    sendToProjector('TOGGLE_SUMMARY', payload);
-    if (typeof sendSupabaseAction === 'function') {
-        sendSupabaseAction(payload);
+        tongKetCountdownInterval = setInterval(() => {
+            secLeft--;
+            if (secLeft > 0) {
+                updateTongKetButtonsUI('counting', secLeft);
+            } else {
+                clearInterval(tongKetCountdownInterval);
+                tongKetCountdownInterval = null;
+                tongKetStep = 'ready';
+                updateTongKetButtonsUI('ready');
+            }
+        }, 1000);
+        return;
     }
 
-    updateTongKetButtonsUI(window.isSummaryShown);
+    if (tongKetStep === 'ready') {
+        resetTongKetButton();
+        if (typeof saveAllData === 'function') saveAllData();
+
+        const contestants = [];
+        for (let i = 1; i <= 4; i++) {
+            const nameInput = document.getElementById(`ts${i}_name`);
+            const name = (nameInput && nameInput.value.trim()) || (gameData.contestants && gameData.contestants[i - 1] && gameData.contestants[i - 1].name) || `Thí sinh ${i}`;
+            const score = (gameData.contestants && gameData.contestants[i - 1] && typeof gameData.contestants[i - 1].score !== 'undefined')
+                ? (Number(gameData.contestants[i - 1].score) || 0)
+                : 0;
+            contestants.push({ id: i, name, score });
+        }
+
+        const payload = {
+            type: 'TOGGLE_SUMMARY',
+            show: true,
+            mode: 'points_checking',
+            contestants: contestants,
+            timestamp: Date.now()
+        };
+
+        sendToProjector('TOGGLE_SUMMARY', payload);
+        if (typeof sendSupabaseAction === 'function') {
+            sendSupabaseAction(payload);
+        }
+    }
 }
 
 function onClickPlayIntroVideo(src) {
@@ -1461,7 +1517,7 @@ function updateScoreboardThumbnailBadges() {
     });
 }
 
-// Toggle Scoreboard Thumbnail (Images/thumbnail.png) for ALL or SPECIFIC contestant
+// Toggle Scoreboard Thumbnail (Media/thumbnail.png) for ALL or SPECIFIC contestant
 function toggleScoreboardThumbnail(show, contestantId = 'ALL') {
     if (contestantId === 'ALL' || !contestantId) {
         let isShown = false;
@@ -1558,6 +1614,164 @@ function toggleScoreboardThumbnail(show, contestantId = 'ALL') {
         }
     }
 }
+
+// Scoreboard Info Scene State Map (TS1, TS2, TS3, TS4)
+window.scoreboardInfoStates = (function() {
+    const states = { 1: false, 2: false, 3: false, 4: false };
+    try {
+        for (let c = 1; c <= 4; c++) {
+            const savedSelf = localStorage.getItem('ddvq_scoreboard_info_shown_' + c);
+            const savedAll = localStorage.getItem('ddvq_scoreboard_info_shown');
+            if (savedSelf === 'true' || (savedSelf === null && savedAll === 'true')) {
+                states[c] = true;
+            } else if (savedSelf === 'false') {
+                states[c] = false;
+            }
+        }
+    } catch(e) {}
+    return states;
+})();
+
+function updateScoreboardInfoBadges() {
+    for (let c = 1; c <= 4; c++) {
+        const isShown = !!window.scoreboardInfoStates[c];
+        const btns = document.querySelectorAll(`#sb_info_btn_ts${c}, .sb_info_btn_ts${c}`);
+        btns.forEach(btn => {
+            if (isShown) {
+                btn.innerHTML = `TS${c}: Hiện`;
+                btn.style.background = '#dbeafe';
+                btn.style.borderColor = '#3b82f6';
+                btn.style.color = '#1e3a8a';
+            } else {
+                btn.innerHTML = `TS${c}: Ẩn`;
+                btn.style.background = '#ffffff';
+                btn.style.borderColor = '#cbd5e1';
+                btn.style.color = '#475569';
+            }
+        });
+    }
+
+    const anyShown = Object.values(window.scoreboardInfoStates).some(v => !!v);
+    const allShown = Object.values(window.scoreboardInfoStates).every(v => !!v);
+    const tags = document.querySelectorAll('#sb_info_status_tag, .sb_info_status_tag');
+    tags.forEach(tag => {
+        if (allShown) {
+            tag.innerHTML = 'Info: Hiện tất cả';
+            tag.style.background = '#dbeafe';
+            tag.style.color = '#1e3a8a';
+        } else if (anyShown) {
+            tag.innerHTML = 'Info: Hiện một phần';
+            tag.style.background = '#dbeafe';
+            tag.style.color = '#1e3a8a';
+        } else {
+            tag.innerHTML = 'Info: Ẩn tất cả';
+            tag.style.background = '#e2e8f0';
+            tag.style.color = '#475569';
+        }
+    });
+}
+window.updateScoreboardInfoBadges = updateScoreboardInfoBadges;
+
+// Toggle Scoreboard Info Scene (Media/Info.png + Name + Info) for ALL or SPECIFIC contestant
+function toggleScoreboardInfo(show, contestantId = 'ALL') {
+    if (contestantId === 'ALL' || !contestantId) {
+        let isShown = false;
+        if (show === undefined) {
+            const anyHidden = Object.values(window.scoreboardInfoStates).some(v => !v);
+            isShown = anyHidden;
+        } else {
+            isShown = show === true;
+        }
+
+        for (let c = 1; c <= 4; c++) {
+            window.scoreboardInfoStates[c] = isShown;
+            try { localStorage.setItem('ddvq_scoreboard_info_shown_' + c, isShown ? 'true' : 'false'); } catch(e){}
+        }
+        try { localStorage.setItem('ddvq_scoreboard_info_shown', isShown ? 'true' : 'false'); } catch(e){}
+
+        updateScoreboardInfoBadges();
+
+        const payload = {
+            type: 'TOGGLE_SCOREBOARD_INFO',
+            show: isShown,
+            contestantId: 'ALL',
+            scoreboardInfoStates: window.scoreboardInfoStates,
+            contestants: gameData.contestants,
+            timestamp: Date.now()
+        };
+
+        if (typeof sendToProjector === 'function') sendToProjector('TOGGLE_SCOREBOARD_INFO', payload);
+        if (typeof sendSupabaseAction === 'function') sendSupabaseAction(payload);
+        try { localStorage.setItem('ddvq_latest_action', JSON.stringify(payload)); } catch(e) {}
+        try {
+            if (typeof BroadcastChannel !== 'undefined') {
+                const bc = new BroadcastChannel('ddvq_game_channel');
+                bc.postMessage(payload);
+            }
+        } catch(e) {}
+
+        if (typeof hasLocalServerBackend === 'function' && hasLocalServerBackend()) {
+            fetch(getApiUrl('/api/action'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(() => {});
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(isShown ? 'Đã chuyển TẤT CẢ Bảng điểm sang Scene Info!' : 'Đã đưa TẤT CẢ Bảng điểm về Scene Điểm!');
+        }
+    } else {
+        const cId = parseInt(contestantId);
+        if (cId >= 1 && cId <= 4) {
+            let isShown = false;
+            if (show === undefined) {
+                isShown = !window.scoreboardInfoStates[cId];
+            } else {
+                isShown = show === true;
+            }
+
+            window.scoreboardInfoStates[cId] = isShown;
+            try { localStorage.setItem('ddvq_scoreboard_info_shown_' + cId, isShown ? 'true' : 'false'); } catch(e){}
+
+            updateScoreboardInfoBadges();
+
+            const payload = {
+                type: 'TOGGLE_SCOREBOARD_INFO',
+                show: isShown,
+                contestantId: cId,
+                targetSlot: cId,
+                scoreboardInfoStates: window.scoreboardInfoStates,
+                contestants: gameData.contestants,
+                timestamp: Date.now()
+            };
+
+            if (typeof sendToProjector === 'function') sendToProjector('TOGGLE_SCOREBOARD_INFO', payload);
+            if (typeof sendSupabaseAction === 'function') sendSupabaseAction(payload);
+            try { localStorage.setItem('ddvq_latest_action', JSON.stringify(payload)); } catch(e) {}
+            try {
+                if (typeof BroadcastChannel !== 'undefined') {
+                    const bc = new BroadcastChannel('ddvq_game_channel');
+                    bc.postMessage(payload);
+                }
+            } catch(e) {}
+
+            if (typeof hasLocalServerBackend === 'function' && hasLocalServerBackend()) {
+                fetch(getApiUrl('/api/action'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+            }
+
+            if (typeof showToast === 'function') {
+                const contestantName = gameData?.contestants?.[cId - 1]?.name || `Thí sinh ${cId}`;
+                showToast(isShown ? `Đã HIỂN THỊ Info cho ${contestantName} (TS${cId})!` : `Đã đưa Bảng điểm ${contestantName} (TS${cId}) về Scene Điểm!`);
+            }
+        }
+    }
+}
+window.toggleScoreboardInfo = toggleScoreboardInfo;
 
 // ==========================================
 // CÀI ĐẶT ÂM THANH HỆ THỐNG

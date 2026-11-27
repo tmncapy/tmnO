@@ -207,6 +207,8 @@
             font-size: 1.1rem;
             color: #333;
             font-weight: 500;
+            line-height: 1.35;
+            padding-bottom: 2px;
             max-width: 28vw;
             white-space: nowrap;
             overflow: hidden;
@@ -260,19 +262,20 @@
 
         .black-box {
             width: 100%;
-            height: 220px;
+            height: 40vh;
             background-color: #000000;
             color: #ffffff;
             padding: 18px 24px;
-            font-size: 1.45rem;
+            font-size: 1.6rem;
             line-height: 1.45;
             border-radius: 4px;
             box-shadow: inset 0 0 10px rgba(255,255,255,0.15);
             overflow-y: auto;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: safe center;
             text-align: center;
+            word-break: break-word;
         }
 
         .black-box img, .black-box video {
@@ -285,12 +288,13 @@
         /* Common Answer Area */
         .answer-area {
             flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 15px 0;
+            gap: 10px;
+            padding: 10px 0;
         }
 
         .input-group {
@@ -352,7 +356,8 @@
 
         .status-bar {
             width: 100%;
-            height: 42px;
+            min-height: 42px;
+            height: auto;
             background-color: #d87093;
             border-radius: 4px;
             display: flex;
@@ -361,8 +366,9 @@
             color: #ffffff;
             font-size: 1.25rem;
             font-weight: bold;
+            line-height: 1.4;
             letter-spacing: 0.5px;
-            padding: 0 12px;
+            padding: 4px 12px;
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
             transition: background-color 0.3s;
@@ -411,13 +417,17 @@
 
         .btn-bell {
             width: 340px;
-            height: 75px;
+            min-height: 75px;
+            height: auto;
+            padding: 10px 16px;
             background: linear-gradient(to bottom, #ef4444, #dc2626);
             border: 3px solid #b91c1c;
             border-radius: 8px;
             color: #ffffff;
             font-size: 1.4rem;
             font-weight: bold;
+            line-height: 1.25;
+            text-align: center;
             letter-spacing: 1px;
             cursor: pointer;
             text-transform: uppercase;
@@ -652,7 +662,7 @@
             <div class="scene-main">
                 <div class="question-area">
                     <div class="row-label" id="s1_q_label">Câu hỏi Khởi Động</div>
-                    <div class="black-box" id="s1_q_text" style="height: 220px; font-size: 1.6rem;">Đang chờ bắt đầu lượt thi Khởi Động...</div>
+                    <div class="black-box" id="s1_q_text">Đang chờ bắt đầu lượt thi Khởi Động...</div>
                 </div>
 
                 <div class="answer-area">
@@ -694,7 +704,7 @@
             <div class="scene-main">
                 <div class="question-area">
                     <div class="row-label" id="s2_row_label">Câu hỏi Tăng Tốc</div>
-                    <div class="black-box" id="s2_q_text" style="height: 240px;"></div>
+                    <div class="black-box" id="s2_q_text"></div>
                 </div>
 
                 <div class="answer-area">
@@ -784,10 +794,10 @@
             <div class="scene-main">
                 <div class="question-area">
                     <div class="row-label" id="s4_row_label">Câu hỏi Về Đích</div>
-                    <div class="black-box" id="s4_q_text" style="height: 240px;"></div>
+                    <div class="black-box" id="s4_q_text"></div>
                 </div>
 
-                <div class="action-area" id="s4_action_area" style="display: flex; margin-top: 10px; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                <div class="action-area" id="s4_action_area" style="display: flex; margin-top: 15px; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
                     <button class="btn-bell" id="s4_btn_bell" onclick="ringBell('VQ')" disabled style="opacity: 0.4; cursor: not-allowed;">
                         BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI
                     </button>
@@ -818,18 +828,13 @@
             <div class="scene-main">
                 <div class="question-area">
                     <div class="row-label" id="s5_row_label">Câu hỏi phụ số 1</div>
-                    <div class="black-box" id="s5_q_text" style="height: 240px;"></div>
+                    <div class="black-box" id="s5_q_text"></div>
                 </div>
 
-                <div class="answer-area">
-                    <div class="input-group">
-                        <input type="text" id="s5_ans_input" class="answer-input" placeholder="" disabled autocomplete="off" oninput="onPlayerAnswerTyping('CHP')">
-                    </div>
-
-                    <div class="status-group">
-                        <div class="status-label"> </div>
-                        <div class="status-bar" id="s5_status_bar">---</div>
-                    </div>
+                <div class="action-area" id="s5_action_area" style="display: flex; margin-top: 15px; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                    <button class="btn-bell" id="s5_btn_bell" onclick="ringBell('CHP')" disabled style="opacity: 0.4; cursor: not-allowed;">
+                        BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI
+                    </button>
                 </div>
             </div>
         </div>
@@ -987,13 +992,13 @@
             localStorage.setItem('ddvq_room_code', currentRoomCode);
 
             // Setup enter key listener on input fields
-            ['s2_ans_input', 's3_ans_input', 's5_ans_input'].forEach(id => {
+            ['s2_ans_input', 's3_ans_input'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            const roundKey = id.startsWith('s2') ? 'RA_KHOI' : (id.startsWith('s3') ? 'VUOT_SONG' : 'CHP');
+                            const roundKey = id.startsWith('s2') ? 'RA_KHOI' : 'VUOT_SONG';
                             submitPlayerAnswer(roundKey);
                         }
                     });
@@ -1110,6 +1115,13 @@
         let s4FastestBuzzedId = 0;
         let isS4BellOpen = false;
         let s4BellUnlockedAt = 0;
+        let s5Participants = [1, 2, 3, 4];
+        let s5Eliminated = [];
+        let s5IsBellOpen = false;
+        let s5FastestBuzzedId = 0;
+        let s5BellUnlockedAt = 0;
+        let s5RemainingMs = 15000;
+        let s5RightWinnerName = '';
 
         function applyS1Turn5ModeUI() {
             const actionArea = document.getElementById('s1_action_area');
@@ -1212,6 +1224,81 @@
             }
         }
 
+        function updateS5BellLockState(winnerNameOverride) {
+            const btn = document.getElementById('s5_btn_bell');
+            const myId = parseInt(currentContestantId, 10);
+            const isParticipant = s5Participants.includes(myId);
+            const isEliminated = s5Eliminated.includes(myId);
+
+            if (!isParticipant) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.35';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'KHÔNG THAM GIA PHẦN THI NÀY';
+                }
+                return;
+            }
+
+            if (isEliminated) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.35';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'BẠN ĐÃ BỊ LOẠI KHỎI CÂU HỎI NÀY';
+                }
+                return;
+            }
+
+            if (s5RightWinnerName) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.4';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = 'ĐÃ CÓ KẾT QUẢ CÂU HỎI PHỤ';
+                }
+                return;
+            }
+
+            if (s5FastestBuzzedId >= 1 && s5FastestBuzzedId <= 4) {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.add('pressed');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.4';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = s5FastestBuzzedId === myId ? 'ĐÃ BẤM CHUÔNG!' : `TS${s5FastestBuzzedId} ĐÃ BẤM CHUÔNG`;
+                }
+                return;
+            }
+
+            if (s5IsBellOpen) {
+                isBellLocked = false;
+                if (btn) {
+                    btn.classList.remove('pressed', 'active');
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.innerText = 'BẤM CHUÔNG GIÀNH QUYỀN TRẢ LỜI';
+                }
+            } else {
+                isBellLocked = true;
+                if (btn) {
+                    btn.classList.remove('pressed', 'active');
+                    btn.disabled = true;
+                    btn.style.opacity = '0.4';
+                    btn.style.cursor = 'not-allowed';
+                    btn.innerText = s5RemainingMs <= 0 ? 'ĐÃ HẾT 15 GIÂY' : 'CHỜ BẮT ĐẦU 15S...';
+                }
+            }
+        }
+
         // Handle Realtime Sync Messages from Controller / Server
         function handleIncomingSyncMessage(data) {
             if (!data) return;
@@ -1228,6 +1315,8 @@
                 (msgRoundUpper === 'KD' || msgRoundUpper === 'XUAT_PHAT' || msgRoundUpper === 'KHOI_DONG' || msgRoundUpper === 'XP');
             const isR4BellMsg = (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') &&
                 (msgRoundUpper === 'VQ' || msgRoundUpper === 'VINH_QUANG' || msgRoundUpper === 'VE_DICH' || (!msgRoundUpper && activeSceneNum === 4));
+            const isR5BellMsg = (data.type === 'PLAYER_RING_BELL' || data.type === 'RING_BELL') &&
+                (msgRoundUpper === 'CHP' || msgRoundUpper === 'CAU_HOI_PHU' || (!msgRoundUpper && activeSceneNum === 5));
 
             if (data.type === 'LOCK_BELLS' || data.type === 'XUAT_PHAT_SHOW_FASTEST_HL' || isR1BellMsg) {
                 const buzzedId = parseInt(data.contestantIndex || data.whoBuzzed || data.contestantId || data.winnerId || 0, 10);
@@ -1254,6 +1343,37 @@
                     s4FastestBuzzedId = buzzedId;
                 }
                 updateS4BellLockState(data.contestantName);
+            }
+            if (isR5BellMsg || data.type === 'CAU_HOI_PHU_BUZZ') {
+                const buzzedId = parseInt(data.winnerId || data.contestantIndex || data.whoBuzzed || data.contestantId || 0, 10);
+                if (isR5BellMsg) {
+                    if (!s5IsBellOpen) return;
+                    if (s5FastestBuzzedId !== 0 && buzzedId !== s5FastestBuzzedId) return;
+                    if (s5Participants.length > 0 && !s5Participants.includes(buzzedId)) return;
+                    if (s5Eliminated.includes(buzzedId)) return;
+                }
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                if (data.remainingMs !== undefined) {
+                    s5RemainingMs = Math.max(0, Number(data.remainingMs) || 0);
+                } else if (sceneTimerStartTime > 0 && sceneTimerDuration > 0) {
+                    s5RemainingMs = Math.max(0, (sceneTimerDuration * 1000) - (Date.now() - sceneTimerStartTime));
+                }
+                sceneTimerStartTime = 0;
+                sceneTimerDuration = 0;
+                if (s5RemainingMs > 0) {
+                    currentTimerVal = Math.max(0, Math.ceil(s5RemainingMs / 1000));
+                    updateTimerDisplay(5, currentTimerVal);
+                }
+                s5IsBellOpen = false;
+                s5BellUnlockedAt = 0;
+                s5RightWinnerName = '';
+                if (buzzedId >= 1 && buzzedId <= 4) {
+                    s5FastestBuzzedId = buzzedId;
+                }
+                updateS5BellLockState(data.contestantName);
             }
             if (
                 data.type === 'UNLOCK_BELLS' ||
@@ -1358,6 +1478,28 @@
                 updateS4BellLockState();
             }
 
+            // Restore Round 5 (Câu hỏi phụ) state on state snapshot
+            if (Array.isArray(data.chpParticipants)) {
+                s5Participants = data.chpParticipants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            }
+            if (Array.isArray(data.chpEliminated)) {
+                s5Eliminated = data.chpEliminated.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            }
+            if (data.chpRemainingMs !== undefined) {
+                s5RemainingMs = Math.max(0, Number(data.chpRemainingMs) || 0);
+            }
+            if (data.chpBuzzerLocked !== undefined || data.chpBuzzerOpen !== undefined || data.chpBuzzerWinner !== undefined) {
+                s5FastestBuzzedId = parseInt(data.chpBuzzerWinner, 10) || 0;
+                s5IsBellOpen = !!data.chpBuzzerOpen && !data.chpBuzzerLocked && s5FastestBuzzedId === 0;
+                if (activeSceneNum === 5 && data.chpQuestionShown) {
+                    const s5Box = document.getElementById('s5_q_text');
+                    const s5Label = document.getElementById('s5_row_label');
+                    if (s5Box && data.questionText) s5Box.innerText = data.questionText;
+                    if (s5Label && data.questionIndex) s5Label.innerText = `Câu hỏi phụ số ${data.questionIndex}`;
+                }
+                updateS5BellLockState();
+            }
+
             if (data.type === 'START_ROUND_CLEAN') {
                 const rName = (data.round || data.activeRound || '').toString().toUpperCase();
                 const rIdx = parseInt(data.roundIndex || data.sceneNum || 0, 10);
@@ -1379,6 +1521,18 @@
                     clearPlayerSceneUI(4);
                     updateTimerDisplay(4, 20);
                     updateS4BellLockState();
+                }
+                if (rName === 'CAU_HOI_PHU' || rName === 'CHP' || rIdx === 5) {
+                    s5Participants = [1, 2, 3, 4];
+                    s5Eliminated = [];
+                    s5IsBellOpen = false;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = 0;
+                    s5RemainingMs = 15000;
+                    s5RightWinnerName = '';
+                    clearPlayerSceneUI(5);
+                    updateTimerDisplay(5, 15);
+                    updateS5BellLockState();
                 }
             }
 
@@ -1417,11 +1571,15 @@
                         }
                     } else {
                         if (tScene === 4) isVQ25sActive = false;
+                        if (tScene === 5) s5IsBellOpen = false;
                         stopSceneTimer(tScene, 0);
+                        if (tScene === 5) updateS5BellLockState();
                     }
                 } else if (activeSceneNum === 4) {
                     isVQ25sActive = false;
                     stopSceneTimer(4, 20);
+                } else if (activeSceneNum === 5 && data.chpRemainingMs !== undefined) {
+                    updateTimerDisplay(5, Math.max(0, Math.ceil(Number(data.chpRemainingMs) / 1000)));
                 }
             }
 
@@ -1562,7 +1720,8 @@
                     if (data.questionText) {
                         if (s2Box) s2Box.innerText = data.questionText;
                     } else if (data.mediaUrl) {
-                        if (s2Box) s2Box.innerHTML = `<img src="${data.mediaUrl}" alt="Media Question" style="max-height: 200px; border-radius: 6px;">`;
+                        const resolvedMediaUrl = (typeof getApiUrl === 'function') ? getApiUrl(data.mediaUrl) : data.mediaUrl;
+                        if (s2Box) s2Box.innerHTML = `<img src="${resolvedMediaUrl}" alt="Media Question" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px;">`;
                     } else {
                         if (s2Box) s2Box.innerText = '';
                     }
@@ -1732,7 +1891,8 @@
                         if (data.questionText) {
                             if (s4Box) s4Box.innerText = data.questionText;
                         } else if (data.mediaUrl) {
-                            if (s4Box) s4Box.innerHTML = `<img src="${data.mediaUrl}" alt="Media Question" style="max-height: 200px; border-radius: 6px;">`;
+                            const resolvedMediaUrl = (typeof getApiUrl === 'function') ? getApiUrl(data.mediaUrl) : data.mediaUrl;
+                            if (s4Box) s4Box.innerHTML = `<img src="${resolvedMediaUrl}" alt="Media Question" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px;">`;
                         } else if (isVQShowQ) {
                             if (s4Box) s4Box.innerText = '';
                         }
@@ -1789,35 +1949,94 @@
             // Round 5: Câu hỏi phụ
             if (data.type && data.type.startsWith('CAU_HOI_PHU_')) {
                 switchScene(5);
-                const participants = data.participatingContestants || [1, 2, 3, 4];
-                const isParticipant = participants.includes(parseInt(currentContestantId));
+                if (Array.isArray(data.participatingContestants)) {
+                    s5Participants = data.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+                }
+                if (Array.isArray(data.eliminatedContestants)) {
+                    s5Eliminated = data.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+                }
 
                 if (data.type === 'CAU_HOI_PHU_RESET') {
+                    s5IsBellOpen = false;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = 0;
+                    s5RemainingMs = 15000;
+                    s5RightWinnerName = '';
                     clearPlayerSceneUI(5);
+                    updateTimerDisplay(5, 15);
+                    updateS5BellLockState();
                 } else if (data.type === 'CAU_HOI_PHU_SHOW_QUESTION') {
+                    s5IsBellOpen = true;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = Date.now();
+                    s5RemainingMs = 15000;
+                    s5RightWinnerName = '';
                     const s5Box = document.getElementById('s5_q_text');
                     const s5Label = document.getElementById('s5_row_label');
                     if (s5Box) s5Box.innerText = data.questionText || data.question || '';
                     if (s5Label) s5Label.innerText = `Câu hỏi phụ số ${data.questionIndex || 1}`;
-                    const s5Inp = document.getElementById('s5_ans_input');
-                    if (s5Inp) s5Inp.value = '';
-                    const s5Stat = document.getElementById('s5_status_bar');
-                    if (s5Stat) { s5Stat.innerText = '---'; s5Stat.classList.remove('submitted'); }
-
-                    if (isParticipant) {
-                        setInputState(5, false, 'Nhập câu trả lời (khi bấm Bắt đầu 15s)...');
-                    } else {
-                        setInputState(5, false, 'Thí sinh không tham gia phần thi này');
-                    }
+                    stopSceneTimer(5, 15);
+                    updateS5BellLockState();
                 } else if (data.type === 'CAU_HOI_PHU_START_TIMER') {
                     const s5Box = document.getElementById('s5_q_text');
+                    const s5Label = document.getElementById('s5_row_label');
                     if (data.questionText && s5Box) s5Box.innerText = data.questionText;
-                    if (isParticipant) {
-                        startSceneTimer(5, data.duration || 15);
-                        setInputState(5, true, 'Nhập câu trả lời Câu hỏi phụ...');
-                    } else {
-                        setInputState(5, false, 'Thí sinh không tham gia phần thi này');
+                    if (data.questionIndex && s5Label) s5Label.innerText = `Câu hỏi phụ số ${data.questionIndex}`;
+                    s5FastestBuzzedId = 0;
+                    s5RightWinnerName = '';
+                    s5RemainingMs = Number(data.remainingMs) || ((Number(data.duration) || 15) * 1000);
+                    s5IsBellOpen = true;
+                    s5BellUnlockedAt = Date.now();
+                    startSceneTimer(5, Math.max(0.1, s5RemainingMs / 1000), data.startTime || Date.now(), true);
+                    updateS5BellLockState();
+                } else if (data.type === 'CAU_HOI_PHU_RIGHT') {
+                    s5IsBellOpen = false;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = 0;
+                    s5RightWinnerName = data.contestantName || (data.winnerId ? `Thí sinh ${data.winnerId}` : 'Thí sinh');
+                    stopSceneTimer(5);
+                    updateS5BellLockState();
+                } else if (data.type === 'CAU_HOI_PHU_WRONG') {
+                    s5IsBellOpen = false;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = 0;
+                    s5RightWinnerName = '';
+                    const wrongId = parseInt(data.contestantId, 10) || 0;
+                    if (!Array.isArray(data.eliminatedContestants) && wrongId >= 1 && wrongId <= 4 && !s5Eliminated.includes(wrongId)) {
+                        s5Eliminated.push(wrongId);
                     }
+                    if (data.remainingMs !== undefined) {
+                        s5RemainingMs = Math.max(0, Number(data.remainingMs) || 0);
+                    }
+                    if (data.allEliminated) {
+                        stopSceneTimer(5);
+                    }
+                    updateS5BellLockState();
+                } else if (data.type === 'CAU_HOI_PHU_CONTINUE') {
+                    s5FastestBuzzedId = 0;
+                    s5RightWinnerName = '';
+                    const remMs = (data.remainingMs !== undefined) ? Math.max(0, Number(data.remainingMs) || 0) : s5RemainingMs;
+                    s5RemainingMs = remMs;
+                    if (data.timerStarted === false) {
+                        s5IsBellOpen = true;
+                        s5BellUnlockedAt = Date.now();
+                        stopSceneTimer(5, 15);
+                    } else if (remMs > 0) {
+                        s5IsBellOpen = true;
+                        s5BellUnlockedAt = Date.now();
+                        startSceneTimer(5, remMs / 1000, Date.now(), true);
+                    } else {
+                        s5IsBellOpen = false;
+                        stopSceneTimer(5, 0);
+                    }
+                    updateS5BellLockState();
+                } else if (data.type === 'CAU_HOI_PHU_TIMEOUT') {
+                    s5IsBellOpen = false;
+                    s5FastestBuzzedId = 0;
+                    s5BellUnlockedAt = 0;
+                    s5RemainingMs = 0;
+                    stopSceneTimer(5, 0);
+                    updateS5BellLockState();
                 }
             }
 
@@ -1825,6 +2044,13 @@
                 vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
                 saveVSLockedState();
                 resetS1CorrectCount();
+                s5Participants = [1, 2, 3, 4];
+                s5Eliminated = [];
+                s5IsBellOpen = false;
+                s5FastestBuzzedId = 0;
+                s5BellUnlockedAt = 0;
+                s5RemainingMs = 15000;
+                s5RightWinnerName = '';
                 clearPlayerSceneUI(1);
                 clearPlayerSceneUI(2);
                 clearPlayerSceneUI(3);
@@ -1832,6 +2058,7 @@
                 clearPlayerSceneUI(5);
                 resetBellState(3);
                 applyVSPlayerLockUI();
+                updateS5BellLockState();
                 if (!data.contestants && !(data.gameData && data.gameData.contestants)) {
                     contestantScore = 0;
                     updatePlayerTopBar();
@@ -1969,12 +2196,18 @@
                 sceneTimerDuration = 0;
                 if (sceneNum === 1) setS15sAlertVisible(false);
                 if (sceneNum === 4) isVQ25sActive = false;
-                else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
+                else if (sceneNum === 5) {
+                    s5RemainingMs = 0;
+                    s5IsBellOpen = false;
+                    updateS5BellLockState();
+                } else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
                 return;
             }
 
             if (sceneNum === 4) {
                 if (lockOnly || !isVQ25sActive) isVQ25sActive = false;
+            } else if (sceneNum === 5) {
+                // Scene 5 uses buzzer button, no text input
             } else if (sceneNum === 3 && isCurrentPlayerVSLocked()) {
                 setInputState(3, false, 'Bạn đã bị loại khỏi phần thi');
             } else {
@@ -1987,6 +2220,9 @@
             timerInterval = setInterval(() => {
                 const elapsedSec = (Date.now() - sceneTimerStartTime) / 1000;
                 currentTimerVal = Math.max(0, Math.ceil(sceneTimerDuration - elapsedSec));
+                if (sceneNum === 5) {
+                    s5RemainingMs = Math.max(0, (sceneTimerDuration - elapsedSec) * 1000);
+                }
                 updateTimerDisplay(sceneNum, currentTimerVal);
                 if (elapsedSec >= sceneTimerDuration) {
                     clearInterval(timerInterval);
@@ -1996,7 +2232,11 @@
                     currentTimerVal = 0;
                     if (sceneNum === 1) setS15sAlertVisible(false);
                     if (sceneNum === 4) isVQ25sActive = false;
-                    else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
+                    else if (sceneNum === 5) {
+                        s5RemainingMs = 0;
+                        s5IsBellOpen = false;
+                        updateS5BellLockState();
+                    } else setInputState(sceneNum, false, 'Hết thời gian trả lời...');
                 }
             }, 100);
         }
@@ -2053,10 +2293,11 @@
                 if (qBox) qBox.innerText = '';
                 const rLabel = document.getElementById('s5_row_label');
                 if (rLabel) rLabel.innerText = 'Câu hỏi phụ số 1';
-                const inp = document.getElementById('s5_ans_input');
-                if (inp) inp.value = '';
-                const stat = document.getElementById('s5_status_bar');
-                if (stat) { stat.innerText = '---'; stat.classList.remove('submitted'); }
+                const fb = document.getElementById('s5_bell_feedback');
+                if (fb) {
+                    fb.style.display = 'none';
+                    fb.innerText = '';
+                }
             }
         }
 
@@ -2100,11 +2341,8 @@
                 maxDuration = 15;
             } else if (rUpper === 'VINH_QUANG' || rUpper === 'VQ' || rUpper === 'VE_DICH' || (!roundKey && activeSceneNum === 4)) {
                 return;
-            } else if (rUpper === 'CHP' || (!roundKey && activeSceneNum === 5)) {
-                inputId = 's5_ans_input';
-                statusId = 's5_status_bar';
-                normalizedRound = 'CHP';
-                maxDuration = 15;
+            } else if (rUpper === 'CHP' || rUpper === 'CAU_HOI_PHU' || (!roundKey && activeSceneNum === 5)) {
+                return;
             }
 
             if (normalizedRound === 'VS' && isCurrentPlayerVSLocked()) {
@@ -2133,7 +2371,7 @@
             if (statusEl) {
                 const displayTime = Number(calculatedTime || 0).toFixed(2);
                 statusEl.style.whiteSpace = 'nowrap';
-                statusEl.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;">${escapePlayerHtml(answerText)}</span><span style="flex-shrink:0;white-space:pre;"> (${displayTime})</span>`;
+                statusEl.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;line-height:1.45;padding:1px 0;">${escapePlayerHtml(answerText)}</span><span style="flex-shrink:0;white-space:pre;line-height:1.45;"> (${displayTime})</span>`;
                 statusEl.classList.add('submitted');
             }
 
@@ -2196,6 +2434,14 @@
                 isS4BellOpen = false;
                 s4FastestBuzzedId = parseInt(currentContestantId, 10) || 1;
             }
+            if (rkUpper === 'CHP' || rkUpper === 'CAU_HOI_PHU') {
+                const myId = parseInt(currentContestantId, 10) || 1;
+                if (!s5IsBellOpen || s5FastestBuzzedId !== 0 || !s5Participants.includes(myId) || s5Eliminated.includes(myId)) {
+                    return;
+                }
+                s5IsBellOpen = false;
+                s5FastestBuzzedId = myId;
+            }
             if (isBellLocked) return;
             isBellLocked = true;
             let btnId = '';
@@ -2211,7 +2457,6 @@
                 btnId = 's4_btn_bell';
             } else {
                 btnId = 's5_btn_bell';
-                feedbackId = 's5_bell_feedback';
             }
 
             const btn = document.getElementById(btnId);
@@ -2229,6 +2474,7 @@
             const isR1Bell = (rkUpper === 'KD' || rkUpper === 'XP');
             const isR3Bell = (rkUpper === 'VCNV' || rkUpper === 'CNV' || rkUpper === 'VS' || rkUpper === 'VUOT_SONG');
             const isR4Bell = (rkUpper === 'VQ' || rkUpper === 'VINH_QUANG' || rkUpper === 'VE_DICH');
+            const isR5Bell = (rkUpper === 'CHP' || rkUpper === 'CAU_HOI_PHU');
             let elapsedStr = "00.00";
             let bellTimeSec = undefined;
             if (isR3Bell) {
@@ -2243,6 +2489,12 @@
             } else if (isR4Bell && s4BellUnlockedAt > 0) {
                 bellTimeSec = Math.max(0, (Date.now() - s4BellUnlockedAt) / 1000).toFixed(2);
                 elapsedStr = bellTimeSec;
+            } else if (isR5Bell && s5BellUnlockedAt > 0) {
+                bellTimeSec = Math.max(0, (Date.now() - s5BellUnlockedAt) / 1000).toFixed(2);
+                elapsedStr = bellTimeSec;
+            }
+            if (isR5Bell) {
+                updateS5BellLockState(contestantName);
             }
 
             const payload = {
@@ -2399,6 +2651,9 @@
                         e.preventDefault();
                         triggerRandomDeFromPlayer();
                     }
+                } else if (activeSceneNum === 5 && s5IsBellOpen) {
+                    e.preventDefault();
+                    ringBell('CHP');
                 }
             }
         });

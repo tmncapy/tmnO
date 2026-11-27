@@ -35,6 +35,54 @@
       {
         "source": "/scoreboard",
         "destination": "/Scoreboard.html"
+      },
+      {
+        "source": "/scoreboard1",
+        "destination": "/scoreboard1.html"
+      },
+      {
+        "source": "/scoreboard2",
+        "destination": "/scoreboard2.html"
+      },
+      {
+        "source": "/scoreboard3",
+        "destination": "/scoreboard3.html"
+      },
+      {
+        "source": "/scoreboard4",
+        "destination": "/scoreboard4.html"
+      },
+      {
+        "source": "/Olympia",
+        "destination": "/Olympia/controller.html"
+      },
+      {
+        "source": "/Olympia/",
+        "destination": "/Olympia/controller.html"
+      },
+      {
+        "source": "/Olympia/control",
+        "destination": "/Olympia/controller.html"
+      },
+      {
+        "source": "/Olympia/scoreboard",
+        "destination": "/Olympia/Scoreboard.html"
+      },
+      {
+        "source": "/Olympia/scoreboard1",
+        "destination": "/Olympia/scoreboard1.html"
+      },
+      {
+        "source": "/Olympia/scoreboard2",
+        "destination": "/Olympia/scoreboard2.html"
+      },
+      {
+        "source": "/Olympia/scoreboard3",
+        "destination": "/Olympia/scoreboard3.html"
+      },
+      {
+        "source": "/Olympia/scoreboard4",
+        "destination": "/Olympia/scoreboard4.html"
       }
     ],
     "headers": [

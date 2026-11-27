@@ -80,16 +80,20 @@ html, body {
 }
 
 .left-col {
-    flex: 0 0 540px;
+    flex: 0 0 clamp(600px, 47vw, 720px);
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
     overflow-y: auto;
-    padding-right: 4px;
+    overflow-x: hidden;
+    padding-right: 6px;
+    scrollbar-gutter: stable;
 }
 
 .right-col {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -99,7 +103,7 @@ html, body {
     padding: 12px;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1200px) {
     .main-container {
         flex-direction: column;
         overflow-y: auto;
@@ -107,6 +111,7 @@ html, body {
     .left-col {
         flex: none;
         width: 100%;
+        padding-right: 0;
         overflow-y: visible;
     }
     .right-col {
@@ -115,6 +120,8 @@ html, body {
 }
 
 .panel {
+    width: 100%;
+    min-width: 0;
     background: #ffffff;
     border: 1.5px solid #cbd5e1;
     border-radius: 8px;
@@ -156,18 +163,22 @@ html, body {
 
 .conn-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin-bottom: 8px;
 }
 
 .conn-table td, .conn-table th {
-    padding: 5px 6px;
+    padding: 5px 4px;
     border-bottom: 1px solid #e2e8f0;
     vertical-align: middle;
+    overflow: hidden;
 }
 
 .conn-table input[type="text"] {
-    padding: 4px 8px;
+    width: 100%;
+    min-width: 0;
+    padding: 4px 6px;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     font-size: 12px;

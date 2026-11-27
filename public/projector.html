@@ -37,7 +37,7 @@
 
         @font-face {
             font-family: 'MyriadProSemibold';
-            src: url('/MYRIADPRO-SEMIBOLD.OTF') format('opentype');
+            src: url('MYRIADPRO-SEMIBOLD.OTF') format('opentype');
             font-weight: 600;
             font-style: normal;
             font-display: swap;
@@ -148,10 +148,11 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 0 26px;
+            padding: 0 24px 3px 24px;
             opacity: 0;
             transition: none;
             pointer-events: none;
+            overflow: visible;
             color: #ffffff;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.65);
         }
@@ -161,18 +162,28 @@
         #xp_contestant_box_3 { left: 953.28px; width: 362.88px; }
         #xp_contestant_box_4 { left: 1304.64px; width: 358.56px; }
 
-        .xp-ts-name {
+        .xp-ts-name-wrap {
             flex: 1;
             min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: visible;
+        }
+
+        .xp-ts-name {
+            display: inline-block;
+            flex: 0 0 auto;
             text-align: left;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 600;
-            line-height: 1.15;
+            line-height: 1.45;
             letter-spacing: 0.2px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            text-overflow: clip;
+            transform-origin: left center;
             color: #ffffff;
         }
 
@@ -182,7 +193,8 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 600;
-            line-height: 1.1;
+            line-height: 1.45;
+            overflow: visible;
             font-variant-numeric: tabular-nums;
             color: #ffffff;
         }
@@ -197,10 +209,11 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            padding: 16px 36px;
+            padding: 14px 36px 12px 36px;
             opacity: 0;
             transition: none;
             pointer-events: none;
+            overflow: hidden;
         }
 
         #xp_question_text {
@@ -209,11 +222,12 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 600;
-            line-height: 1.32;
+            line-height: 1.35;
+            padding-bottom: 4px;
             text-align: left;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
             word-break: break-word;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Round 2: Vượt Chướng Ngại Vật (Exact PowerPoint 16:9 -> 1920x1080, 1" = 144px, instant Appear - no fade) */
@@ -303,10 +317,11 @@
             display: none;
             align-items: center;
             justify-content: center;
+            padding-bottom: 2px;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 30px;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.25;
             color: #00143d;
             text-align: center;
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.55);
@@ -338,24 +353,27 @@
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 0 8px;
+            padding: 0 8px 2px 8px;
             transition: none;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
 
         #vs_cnv_count_text {
-            width: 100%;
+            width: auto;
+            display: inline-block;
+            flex: 0 0 auto;
             color: #ffffff;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 32px;
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.4;
             letter-spacing: 0.2px;
             text-align: center;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            text-overflow: clip;
+            transform-origin: center center;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
         }
 
@@ -383,10 +401,11 @@
             font-size: 28px;
             font-weight: 600;
             line-height: 1.35;
+            padding-bottom: 4px;
             text-align: left;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
             word-break: break-word;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Round 2 Answer Scene (#view-file-2-answers): Exact PPT 16:9 (1" = 144px, Appear - no fade) */
@@ -426,10 +445,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 26px;
+            padding: 0 26px 4px 26px;
             transition: none;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .vs-ans-box-text {
@@ -440,7 +459,7 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 48px;
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.38;
             text-align: center;
             text-transform: uppercase;
             white-space: nowrap;
@@ -476,12 +495,13 @@
             top: 943.2px;
             width: 208.8px;
             height: 43.2px;
+            padding: 0 30px 2px 16px;
             display: none;
             align-items: center;
             justify-content: center;
             transition: none;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Rank 1 (fastest): 5.73 x 6.55 | Rank 2: 4.18 x 6.55 | Rank 3: 2.64 x 6.55 | Rank 4: 1.09 x 6.55 */
@@ -505,17 +525,20 @@
         .vs-buzzer-name {
             position: relative;
             z-index: 2;
-            width: 100%;
-            padding: 0 28px 0 18px;
+            width: auto;
+            display: inline-block;
+            flex: 0 0 auto;
+            padding: 0;
             color: #ffffff;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
-            font-size: 32px;
+            font-size: 20px;
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.38;
             text-align: center;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            overflow: visible;
+            text-overflow: clip;
+            transform-origin: center center;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
             transition: none;
             pointer-events: none;
@@ -562,7 +585,7 @@
             height: 171.36px;
             z-index: 30;
             display: none;
-            align-items: center;
+            align-items: safe center;
             justify-content: center;
             padding: 10px 28px;
             overflow: hidden;
@@ -576,11 +599,12 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 700;
-            line-height: 1.3;
+            line-height: 1.32;
+            padding-bottom: 4px;
             text-align: center;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
             word-break: break-word;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Media Box measured in PPT: Height 4.62" (665.28px) x Width 7.01" (1009.44px), X 2.26" (325.44px) x Y 2.04" (293.76px) */
@@ -662,30 +686,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding-bottom: 4px;
             transition: none;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
         }
 
         /* Name Width: 3.0407" (437.8608px) at X 2.9281" (421.6464px) */
         .r3-ans-name-box {
             left: 421.6464px;
             width: 437.8608px;
-            padding: 0 24px;
+            padding: 0 24px 4px 24px;
         }
 
         /* Answer Width: 2.8125" (405px) at X 5.9688" (859.5072px) */
         .r3-ans-answer-box {
             left: 859.5072px;
             width: 405px;
-            padding: 0 22px;
+            padding: 0 22px 4px 22px;
         }
 
         /* Time Width: 1.6240" (233.856px) at X 8.7813" (1264.5072px) */
         .r3-ans-time-box {
             left: 1264.5072px;
             width: 233.856px;
-            padding: 0 18px;
+            padding: 0 18px 4px 18px;
         }
 
         .r3-ans-box-text {
@@ -696,7 +721,7 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 48px;
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.38;
             text-align: center;
             text-transform: uppercase;
             white-space: nowrap;
@@ -859,11 +884,11 @@
             top: 751.5936px;
             width: 306.2304px;
             height: 58.3344px;
-            padding: 0 12px;
+            padding: 0 18px 2px 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow: visible;
             pointer-events: none;
         }
         #r4_ts_name_box_1 { left: 278.8848px; }
@@ -878,8 +903,9 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.42;
             white-space: nowrap;
+            overflow: visible;
             text-align: center;
             transform-origin: center center;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
@@ -892,18 +918,24 @@
             top: 780.5376px;
             width: 137.3184px;
             height: 193.0752px;
+            padding: 0 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: visible;
             pointer-events: none;
         }
         #r4_main_score_text {
+            display: inline-block;
+            flex: 0 0 auto;
             color: #ffffff;
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 88px;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.15;
+            white-space: nowrap;
             text-align: center;
+            transform-origin: center center;
             font-variant-numeric: tabular-nums;
             text-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
         }
@@ -928,17 +960,17 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 700;
-            line-height: 1;
+            line-height: 1.25;
             text-align: center;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
         }
 
-        /* Question Textbox (H=1.4000" 201.6000px, W=7.9352" 1142.6688px, X=1.8836" 271.2384px, Y=5.6486" 813.3984px) */
+        /* Question Textbox (H=1.4000" 201.6000px, W=1162.6688px, X=263.7384px, Y=5.6486" 813.3984px, 14pt PPT = 28px) */
         #r4_question_box {
             position: absolute;
-            left: 271.2384px;
+            left: 263.7384px;
             top: 813.3984px;
-            width: 1142.6688px;
+            width: 1162.6688px;
             height: 201.6000px;
             z-index: 32;
             display: none;
@@ -955,11 +987,133 @@
             font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
             font-size: 28px;
             font-weight: 700;
-            line-height: 1.32;
+            line-height: 1.35;
+            padding-bottom: 4px;
             text-align: left;
             text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
             word-break: break-word;
+            overflow: visible;
+        }
+
+        /* Round 5: Câu Hỏi Phụ (Exact PPT 16:9 -> 1920x1080, 1" = 144px, 1pt = 2px) */
+        #r5_bg_img {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 10;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r5_timer_15s_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 15;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        #r5_players_layer {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            z-index: 25;
+            display: none;
+            pointer-events: none;
+        }
+
+        /* Graphic Player: H=0.41" (59.04px) x W=2.59" (372.96px), X=9.76" (1405.44px) */
+        .r5-player-slot {
+            position: absolute;
+            left: 1405.44px;
+            width: 372.96px;
+            height: 59.04px;
+            padding: 0 42px 2px 18px;
+            display: none;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: visible;
+            pointer-events: none;
+            transition: opacity 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .r5-player-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .r5-player-name-text {
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+            flex: 0 0 auto;
+            padding: 0;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.42;
+            white-space: nowrap;
+            overflow: visible;
+            text-align: left;
+            transform-origin: left center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
+        }
+
+        .r5-player-slot.buzzed {
+            z-index: 28;
+        }
+
+        .r5-player-slot.eliminated {
+        }
+
+        .r5-player-slot.winner {
+            z-index: 29;
+        }
+
+        /* Textbox câu hỏi: H=1.42" (204.48px) x W=8.32" (1198.08px), X=1.18" (169.92px) x Y=5.02" (722.88px), UTM Avo 14pt=28px, left/top */
+        #r5_question_box {
+            position: absolute;
+            left: 169.92px;
+            top: 722.88px;
+            width: 1198.08px;
+            height: 204.48px;
+            z-index: 25;
+            display: none;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 12px 20px;
             overflow: hidden;
+            pointer-events: none;
+        }
+
+        #r5_question_text {
+            width: 100%;
+            color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.35;
+            padding-bottom: 4px;
+            text-align: left;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            word-break: break-word;
+            overflow: visible;
         }
 
         /* Intro Media Overlay */
@@ -983,62 +1137,91 @@
             display: none;
         }
 
-        /* Summary Overlay */
+        /* Summary Overlay (Points Checking Scene - Exact PPT 16:9 -> 1920x1080, 1" = 144px, 1pt = 2px) */
         #summary_overlay {
             position: absolute;
             inset: 0;
             width: 1920px;
             height: 1080px;
-            background: rgba(6, 20, 48, 0.94);
+            background: transparent;
             z-index: 90;
             display: none;
-            flex-direction: column;
+            pointer-events: none;
+        }
+
+        #summary_points_video {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            object-fit: fill;
+            z-index: 1;
+            display: none;
+            transition: none;
+            pointer-events: none;
+        }
+
+        /* Tên: H=0.46" (66.24px) x W=5.37" (773.28px), X=3.98" (573.12px) x Y=5.19" (747.36px), 20pt = 40px */
+        #summary_rank_name_box {
+            position: absolute;
+            left: 573.12px;
+            top: 747.36px;
+            width: 773.28px;
+            height: 66.24px;
+            z-index: 5;
+            display: none;
             align-items: center;
             justify-content: center;
-            padding: 80px 160px;
+            padding: 0 18px 2px 18px;
+            overflow: visible;
+            pointer-events: none;
+        }
+
+        #summary_rank_name_text {
+            display: inline-block;
+            flex: 0 0 auto;
             color: #ffffff;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.42;
+            white-space: nowrap;
+            overflow: visible;
+            text-align: center;
+            transform-origin: center center;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
         }
 
-        .summary-title {
-            font-size: 60px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: #facc15;
-            margin-bottom: 48px;
-            text-transform: uppercase;
-            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-        }
-
-        .summary-grid {
-            width: 100%;
-            max-width: 1320px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .summary-row {
-            display: flex;
+        /* Điểm: H=1.49" (214.56px) x W=5.37" (773.28px), X=3.98" (573.12px) x Y=5.65" (813.60px), 48pt = 96px */
+        #summary_rank_score_box {
+            position: absolute;
+            left: 573.12px;
+            top: 813.60px;
+            width: 773.28px;
+            height: 214.56px;
+            z-index: 5;
+            display: none;
             align-items: center;
-            justify-content: space-between;
-            padding: 26px 42px;
-            border-radius: 14px;
-            background: linear-gradient(90deg, rgba(16, 55, 115, 0.92), rgba(10, 34, 78, 0.92));
-            border: 2px solid rgba(96, 165, 250, 0.45);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+            justify-content: center;
+            padding: 0 18px;
+            overflow: visible;
+            pointer-events: none;
         }
 
-        .summary-name {
-            font-size: 38px;
-            font-weight: 600;
+        #summary_rank_score_text {
+            display: inline-block;
+            flex: 0 0 auto;
             color: #ffffff;
-        }
-
-        .summary-score {
-            font-size: 46px;
-            font-weight: 600;
-            color: #facc15;
+            font-family: 'UTM Avo', 'Montserrat', 'MyriadProSemibold', 'Segoe UI', Arial, sans-serif;
+            font-size: 96px;
+            font-weight: 700;
+            line-height: 1.15;
+            white-space: nowrap;
+            text-align: center;
+            transform-origin: center center;
             font-variant-numeric: tabular-nums;
+            text-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
         }
 
     </style>
@@ -1048,27 +1231,27 @@
     <div id="stage-wrapper">
         <!-- Round 1: Khởi Động -->
         <div id="view-file-1" class="projector-scene active">
-            <video id="xp_showques_video" src="/Media/1_showques_4P.webm" muted playsinline preload="auto"></video>
+            <video id="xp_showques_video" src="Media/1_showques_4P.webm" muted playsinline preload="auto"></video>
 
-            <div id="xp_highlight_1" class="xp-highlight"><img src="/Media/1.s1.png" alt="Highlight 1"></div>
-            <div id="xp_highlight_2" class="xp-highlight"><img src="/Media/1.s2.png" alt="Highlight 2"></div>
-            <div id="xp_highlight_3" class="xp-highlight"><img src="/Media/1.s3.png" alt="Highlight 3"></div>
-            <div id="xp_highlight_4" class="xp-highlight"><img src="/Media/1.s4.png" alt="Highlight 4"></div>
+            <div id="xp_highlight_1" class="xp-highlight"><img src="Media/1.s1.png" alt="Highlight 1"></div>
+            <div id="xp_highlight_2" class="xp-highlight"><img src="Media/1.s2.png" alt="Highlight 2"></div>
+            <div id="xp_highlight_3" class="xp-highlight"><img src="Media/1.s3.png" alt="Highlight 3"></div>
+            <div id="xp_highlight_4" class="xp-highlight"><img src="Media/1.s4.png" alt="Highlight 4"></div>
 
             <div id="xp_contestant_box_1" class="xp-contestant-box">
-                <span id="xp_ts_name_1" class="xp-ts-name">1. Thí sinh 1</span>
+                <span class="xp-ts-name-wrap"><span id="xp_ts_name_1" class="xp-ts-name">1. Thí sinh 1</span></span>
                 <span id="xp_ts_score_1" class="xp-ts-score">0</span>
             </div>
             <div id="xp_contestant_box_2" class="xp-contestant-box">
-                <span id="xp_ts_name_2" class="xp-ts-name">2. Thí sinh 2</span>
+                <span class="xp-ts-name-wrap"><span id="xp_ts_name_2" class="xp-ts-name">2. Thí sinh 2</span></span>
                 <span id="xp_ts_score_2" class="xp-ts-score">0</span>
             </div>
             <div id="xp_contestant_box_3" class="xp-contestant-box">
-                <span id="xp_ts_name_3" class="xp-ts-name">3. Thí sinh 3</span>
+                <span class="xp-ts-name-wrap"><span id="xp_ts_name_3" class="xp-ts-name">3. Thí sinh 3</span></span>
                 <span id="xp_ts_score_3" class="xp-ts-score">0</span>
             </div>
             <div id="xp_contestant_box_4" class="xp-contestant-box">
-                <span id="xp_ts_name_4" class="xp-ts-name">4. Thí sinh 4</span>
+                <span class="xp-ts-name-wrap"><span id="xp_ts_name_4" class="xp-ts-name">4. Thí sinh 4</span></span>
                 <span id="xp_ts_score_4" class="xp-ts-score">0</span>
             </div>
 
@@ -1079,16 +1262,16 @@
 
         <!-- Round 2: Vượt Chướng Ngại Vật -->
         <div id="view-file-2" class="projector-scene">
-            <img id="vs_bg_img" src="/Media/2.bg.png" alt="Vượt Chướng Ngại Vật Background">
-            <video id="vs_timer_video" src="/Media/2_15s.mp4" muted playsinline preload="auto"></video>
+            <img id="vs_bg_img" src="Media/2.bg.png" alt="Vượt Chướng Ngại Vật Background">
+            <video id="vs_timer_video" src="Media/2_15s.mp4" muted playsinline preload="auto"></video>
             <img id="vs_hint_img" alt="Ảnh gợi ý Chướng Ngại Vật">
-            <img id="vs_piece_1" class="vs-piece-img" src="/Media/Manh1.png" alt="Mảnh ghép 1">
-            <img id="vs_piece_2" class="vs-piece-img" src="/Media/Manh2.png" alt="Mảnh ghép 2">
-            <img id="vs_piece_3" class="vs-piece-img" src="/Media/Manh3.png" alt="Mảnh ghép 3">
-            <img id="vs_piece_4" class="vs-piece-img" src="/Media/Manh4.png" alt="Mảnh ghép 4">
-            <img id="vs_piece_5" class="vs-piece-img" src="/Media/Manh5.png" alt="Mảnh ghép 5 (Trung tâm)">
+            <img id="vs_piece_1" class="vs-piece-img" src="Media/Manh1.png" alt="Mảnh ghép 1">
+            <img id="vs_piece_2" class="vs-piece-img" src="Media/Manh2.png" alt="Mảnh ghép 2">
+            <img id="vs_piece_3" class="vs-piece-img" src="Media/Manh3.png" alt="Mảnh ghép 3">
+            <img id="vs_piece_4" class="vs-piece-img" src="Media/Manh4.png" alt="Mảnh ghép 4">
+            <img id="vs_piece_5" class="vs-piece-img" src="Media/Manh5.png" alt="Mảnh ghép 5 (Trung tâm)">
             <div id="vs_rows_container"></div>
-            <img id="vs_count_img" src="/Media/2.count.png" alt="Số hàng ngang">
+            <img id="vs_count_img" src="Media/2.count.png" alt="Số hàng ngang">
             <div id="vs_cnv_count_box">
                 <span id="vs_cnv_count_text"></span>
             </div>
@@ -1096,16 +1279,16 @@
                 <div id="vs_question_text"></div>
             </div>
             <div id="vs_buzzers_grid" class="vs-buzzer-layer">
-                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
             </div>
         </div>
 
         <!-- Round 2: Đáp Án Thí Sinh (Vượt Chướng Ngại Vật) -->
         <div id="view-file-2-answers" class="projector-scene">
-            <video id="vs_answer_video" src="/Media/2_answer_4P.mp4" muted playsinline preload="auto"></video>
+            <video id="vs_answer_video" src="Media/2_answer_4P.mp4" muted playsinline preload="auto"></video>
             <div id="vs_answer_text_layer">
                 <div id="vs_ans_p1" class="vs-ans-box"><span id="vs_ans_p1_text" class="vs-ans-box-text"></span></div>
                 <div id="vs_ans_a1" class="vs-ans-box"><span id="vs_ans_a1_text" class="vs-ans-box-text"></span></div>
@@ -1117,18 +1300,18 @@
                 <div id="vs_ans_a4" class="vs-ans-box"><span id="vs_ans_a4_text" class="vs-ans-box-text"></span></div>
             </div>
             <div id="vs_buzzers_answers" class="vs-buzzer-layer">
-                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
-                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="/Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-1"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 1"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-2"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 2"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-3"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 3"><span class="vs-buzzer-name"></span></div>
+                <div class="vs-buzzer-slot vs-buzzer-rank-4"><img class="vs-buzzer-bg" src="Media/2.buzzer.png" alt="Buzzer 4"><span class="vs-buzzer-name"></span></div>
             </div>
         </div>
 
         <!-- Round 3: Tăng Tốc -->
         <div id="view-file-3" class="projector-scene">
-            <video id="r3_showques_video" src="/Media/3_showques.mp4" muted playsinline preload="auto"></video>
-            <video id="r3_timer_video_20" src="/Media/3_20s.mp4" muted playsinline preload="auto"></video>
-            <video id="r3_timer_video_30" src="/Media/3_30s.mp4" muted playsinline preload="auto"></video>
+            <video id="r3_showques_video" src="Media/3_showques.mp4" muted playsinline preload="auto"></video>
+            <video id="r3_timer_video_20" src="Media/3_20s.mp4" muted playsinline preload="auto"></video>
+            <video id="r3_timer_video_30" src="Media/3_30s.mp4" muted playsinline preload="auto"></video>
             <div id="r3_question_box">
                 <div id="r3_question_text"></div>
             </div>
@@ -1140,11 +1323,11 @@
 
         <!-- Round 3: Đáp Án Thí Sinh (Tăng Tốc - A, B, C, D nhanh đến chậm) -->
         <div id="view-file-3-answers" class="projector-scene">
-            <video id="r3_answer_video" src="/Media/3_answer_4P.mp4" muted playsinline preload="auto"></video>
-            <img id="r3_wrong_overlay_1" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh A trả lời sai">
-            <img id="r3_wrong_overlay_2" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh B trả lời sai">
-            <img id="r3_wrong_overlay_3" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh C trả lời sai">
-            <img id="r3_wrong_overlay_4" class="r3-wrong-overlay" src="/Media/3_wrong.png" alt="Thí sinh D trả lời sai">
+            <video id="r3_answer_video" src="Media/3_answer_4P.mp4" muted playsinline preload="auto"></video>
+            <img id="r3_wrong_overlay_1" class="r3-wrong-overlay" src="Media/3_wrong.png" alt="Thí sinh A trả lời sai">
+            <img id="r3_wrong_overlay_2" class="r3-wrong-overlay" src="Media/3_wrong.png" alt="Thí sinh B trả lời sai">
+            <img id="r3_wrong_overlay_3" class="r3-wrong-overlay" src="Media/3_wrong.png" alt="Thí sinh C trả lời sai">
+            <img id="r3_wrong_overlay_4" class="r3-wrong-overlay" src="Media/3_wrong.png" alt="Thí sinh D trả lời sai">
             <div id="r3_answer_text_layer">
                 <div id="r3_ans_p1" class="r3-ans-box r3-ans-name-box"><span id="r3_ans_p1_text" class="r3-ans-box-text"></span></div>
                 <div id="r3_ans_a1" class="r3-ans-box r3-ans-answer-box"><span id="r3_ans_a1_text" class="r3-ans-box-text"></span></div>
@@ -1166,39 +1349,39 @@
 
         <!-- Round 4: Về Đích / Vinh Quang -->
         <div id="view-file-4" class="projector-scene">
-            <video id="r4_showpack_video" src="/Media/4_showpack.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_showpack_video" src="Media/4_showpack.mp4" muted playsinline preload="auto"></video>
             <div id="r4_pack_highlights_layer">
-                <img id="r4_pack_hl_20_1" class="r4-pack-hl-img" src="/Media/4.20.1.png" alt="Câu 1 - 20 điểm">
+                <img id="r4_pack_hl_20_1" class="r4-pack-hl-img" src="Media/4.20.1.png" alt="Câu 1 - 20 điểm">
                 <span id="r4_pack_txt_20_1" class="r4-pack-hl-text">20</span>
-                <img id="r4_pack_hl_20_2" class="r4-pack-hl-img" src="/Media/4.20.2.png" alt="Câu 2 - 20 điểm">
+                <img id="r4_pack_hl_20_2" class="r4-pack-hl-img" src="Media/4.20.2.png" alt="Câu 2 - 20 điểm">
                 <span id="r4_pack_txt_20_2" class="r4-pack-hl-text">20</span>
-                <img id="r4_pack_hl_20_3" class="r4-pack-hl-img" src="/Media/4.20.3.png" alt="Câu 3 - 20 điểm">
+                <img id="r4_pack_hl_20_3" class="r4-pack-hl-img" src="Media/4.20.3.png" alt="Câu 3 - 20 điểm">
                 <span id="r4_pack_txt_20_3" class="r4-pack-hl-text">20</span>
-                <img id="r4_pack_hl_30_1" class="r4-pack-hl-img" src="/Media/4.30.1.png" alt="Câu 1 - 30 điểm">
+                <img id="r4_pack_hl_30_1" class="r4-pack-hl-img" src="Media/4.30.1.png" alt="Câu 1 - 30 điểm">
                 <span id="r4_pack_txt_30_1" class="r4-pack-hl-text">30</span>
-                <img id="r4_pack_hl_30_2" class="r4-pack-hl-img" src="/Media/4.30.2.png" alt="Câu 2 - 30 điểm">
+                <img id="r4_pack_hl_30_2" class="r4-pack-hl-img" src="Media/4.30.2.png" alt="Câu 2 - 30 điểm">
                 <span id="r4_pack_txt_30_2" class="r4-pack-hl-text">30</span>
-                <img id="r4_pack_hl_30_3" class="r4-pack-hl-img" src="/Media/4.30.3.png" alt="Câu 3 - 30 điểm">
+                <img id="r4_pack_hl_30_3" class="r4-pack-hl-img" src="Media/4.30.3.png" alt="Câu 3 - 30 điểm">
                 <span id="r4_pack_txt_30_3" class="r4-pack-hl-text">30</span>
             </div>
 
-            <video id="r4_showques_video" src="/Media/4_showques_4P.mp4" muted playsinline preload="auto"></video>
-            <video id="r4_timer_15s_video" class="r4-timer-video" src="/Media/4.15s.mp4" muted playsinline preload="auto"></video>
-            <video id="r4_timer_20s_video" class="r4-timer-video" src="/Media/4.20s.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_showques_video" src="Media/4_showques_4P.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_timer_15s_video" class="r4-timer-video" src="Media/4.15s.mp4" muted playsinline preload="auto"></video>
+            <video id="r4_timer_20s_video" class="r4-timer-video" src="Media/4.20s.mp4" muted playsinline preload="auto"></video>
 
-            <img id="r4_cau_hl_1" class="r4-cau-hl" src="/Media/4.cau1.png" alt="Highlight câu hỏi 1">
-            <img id="r4_cau_hl_2" class="r4-cau-hl" src="/Media/4.cau2.png" alt="Highlight câu hỏi 2">
-            <img id="r4_cau_hl_3" class="r4-cau-hl" src="/Media/4.cau3.png" alt="Highlight câu hỏi 3">
+            <img id="r4_cau_hl_1" class="r4-cau-hl" src="Media/4.cau1.png" alt="Highlight câu hỏi 1">
+            <img id="r4_cau_hl_2" class="r4-cau-hl" src="Media/4.cau2.png" alt="Highlight câu hỏi 2">
+            <img id="r4_cau_hl_3" class="r4-cau-hl" src="Media/4.cau3.png" alt="Highlight câu hỏi 3">
 
-            <img id="r4_ts_hl_1" class="r4-ts-hl" src="/Media/4.ts1.png" alt="Thí sinh chính 1">
-            <img id="r4_ts_hl_2" class="r4-ts-hl" src="/Media/4.ts2.png" alt="Thí sinh chính 2">
-            <img id="r4_ts_hl_3" class="r4-ts-hl" src="/Media/4.ts3.png" alt="Thí sinh chính 3">
-            <img id="r4_ts_hl_4" class="r4-ts-hl" src="/Media/4.ts4.png" alt="Thí sinh chính 4">
+            <img id="r4_ts_hl_1" class="r4-ts-hl" src="Media/4.ts1.png" alt="Thí sinh chính 1">
+            <img id="r4_ts_hl_2" class="r4-ts-hl" src="Media/4.ts2.png" alt="Thí sinh chính 2">
+            <img id="r4_ts_hl_3" class="r4-ts-hl" src="Media/4.ts3.png" alt="Thí sinh chính 3">
+            <img id="r4_ts_hl_4" class="r4-ts-hl" src="Media/4.ts4.png" alt="Thí sinh chính 4">
 
-            <img id="r4_chuong_hl_1" class="r4-chuong-hl" src="/Media/4.chuong1.png" alt="Bấm chuông 1">
-            <img id="r4_chuong_hl_2" class="r4-chuong-hl" src="/Media/4.chuong2.png" alt="Bấm chuông 2">
-            <img id="r4_chuong_hl_3" class="r4-chuong-hl" src="/Media/4.chuong3.png" alt="Bấm chuông 3">
-            <img id="r4_chuong_hl_4" class="r4-chuong-hl" src="/Media/4.chuong4.png" alt="Bấm chuông 4">
+            <img id="r4_chuong_hl_1" class="r4-chuong-hl" src="Media/4.chuong1.png" alt="Bấm chuông 1">
+            <img id="r4_chuong_hl_2" class="r4-chuong-hl" src="Media/4.chuong2.png" alt="Bấm chuông 2">
+            <img id="r4_chuong_hl_3" class="r4-chuong-hl" src="Media/4.chuong3.png" alt="Bấm chuông 3">
+            <img id="r4_chuong_hl_4" class="r4-chuong-hl" src="Media/4.chuong4.png" alt="Bấm chuông 4">
 
             <div id="r4_meta_layer">
                 <div id="r4_ts_name_box_1" class="r4-ts-name-box"><span id="r4_ts_name_text_1" class="r4-ts-name-text"></span></div>
@@ -1217,7 +1400,34 @@
                 <div id="r4_question_text"></div>
             </div>
 
-            <img id="r4_star_gif" src="/Media/star.gif" alt="Ngôi sao hy vọng">
+            <img id="r4_star_gif" src="Media/star.gif" alt="Ngôi sao hy vọng">
+        </div>
+
+        <!-- Round 5: Câu Hỏi Phụ -->
+        <div id="view-file-5" class="projector-scene">
+            <img id="r5_bg_img" src="Media/0_ExtraQues.png" alt="Câu hỏi phụ Background">
+            <video id="r5_timer_15s_video" src="Media/0_15sExtra.mp4" muted playsinline preload="auto"></video>
+            <div id="r5_players_layer">
+                <div id="r5_player_slot_1" class="r5-player-slot">
+                    <img class="r5-player-bg" src="Media/0_PlayerExtra.png" alt="Thí sinh 1">
+                    <span id="r5_player_name_1" class="r5-player-name-text"></span>
+                </div>
+                <div id="r5_player_slot_2" class="r5-player-slot">
+                    <img class="r5-player-bg" src="Media/0_PlayerExtra.png" alt="Thí sinh 2">
+                    <span id="r5_player_name_2" class="r5-player-name-text"></span>
+                </div>
+                <div id="r5_player_slot_3" class="r5-player-slot">
+                    <img class="r5-player-bg" src="Media/0_PlayerExtra.png" alt="Thí sinh 3">
+                    <span id="r5_player_name_3" class="r5-player-name-text"></span>
+                </div>
+                <div id="r5_player_slot_4" class="r5-player-slot">
+                    <img class="r5-player-bg" src="Media/0_PlayerExtra.png" alt="Thí sinh 4">
+                    <span id="r5_player_name_4" class="r5-player-name-text"></span>
+                </div>
+            </div>
+            <div id="r5_question_box">
+                <div id="r5_question_text"></div>
+            </div>
         </div>
 
         <!-- Intro Video / Image Overlay -->
@@ -1226,27 +1436,11 @@
             <img id="intro_image_player" alt="Intro Media">
         </div>
 
-        <!-- Summary Scoreboard Overlay -->
+        <!-- Summary Scoreboard Overlay (Points Checking) -->
         <div id="summary_overlay">
-            <div class="summary-title">Tổng Kết Điểm</div>
-            <div class="summary-grid">
-                <div class="summary-row">
-                    <span id="summary_ts1" class="summary-name">1. Thí sinh 1</span>
-                    <span id="summary_d1" class="summary-score">0</span>
-                </div>
-                <div class="summary-row">
-                    <span id="summary_ts2" class="summary-name">2. Thí sinh 2</span>
-                    <span id="summary_d2" class="summary-score">0</span>
-                </div>
-                <div class="summary-row">
-                    <span id="summary_ts3" class="summary-name">3. Thí sinh 3</span>
-                    <span id="summary_d3" class="summary-score">0</span>
-                </div>
-                <div class="summary-row">
-                    <span id="summary_ts4" class="summary-name">4. Thí sinh 4</span>
-                    <span id="summary_d4" class="summary-score">0</span>
-                </div>
-            </div>
+            <video id="summary_points_video" src="Media/0,pointchecking.mp4" muted playsinline preload="auto"></video>
+            <div id="summary_rank_name_box"><span id="summary_rank_name_text"></span></div>
+            <div id="summary_rank_score_box"><span id="summary_rank_score_text"></span></div>
         </div>
     </div>
 
@@ -1259,6 +1453,9 @@
             if (!stage) return;
             const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
             stage.style.transform = `scale(${scale})`;
+            if (typeof refitActiveProjectorTexts === 'function') {
+                refitActiveProjectorTexts();
+            }
         }
         window.addEventListener('resize', scaleStage);
         window.addEventListener('DOMContentLoaded', scaleStage);
@@ -1281,82 +1478,88 @@
 
         // Preload Round 1 & Round 2 SFX
         const SFX_PATHS = {
-            startRound: '/SFX/1_StartRound.mp3',
-            pStart: '/SFX/1_PStart.mp3',
-            showQues: '/SFX/1_StartStartQuestionShow.mp3',
-            buzz: '/SFX/1_buzz.mp3',
-            loop1: '/SFX/1_thinking_O10_loop_1.mp3',
-            loop2: '/SFX/1_thinking_O10_loop_2.mp3',
-            loop3: '/SFX/1_thinking_O10_loop_3.mp3',
-            loop4: '/SFX/1_thinking_O10_loop_4.mp3',
-            finish: '/SFX/1_Finish.mp3',
-            right: '/SFX/1_Right.mp3',
-            wrong: '/SFX/1_Wrong.mp3',
-            r1Timer5s: '/SFX/1_Start.mp3',
-            r2StartRound: '/SFX/2_StartRound.mp3',
-            r2RowShow: '/SFX/2_RowShow.mp3',
-            r2RowChose: '/SFX/2_RowChose.mp3',
-            r2RowQues: '/SFX/2_RowQues.mp3',
-            r2OnTime: '/SFX/2_OnTime.mp3',
-            r2ShowPiece: '/SFX/2_ShowPiece.mp3',
-            r2ShowAnswer: '/SFX/2_ShowAnswer.mp3',
-            r2RightRow: '/SFX/2_RightRow.mp3',
-            r2WrongRow: '/SFX/2_WrongRow.mp3',
-            r2Activate: '/SFX/2_Activate.mp3',
-            r3StartRound: '/SFX/3_StartRound.mp3',
-            r3Show: '/SFX/3_Show.mp3',
-            r3Time20: '/SFX/3_20.mp3',
-            r3Time30: '/SFX/3_30.mp3',
-            r3Answer: '/SFX/3_Answer.mp3',
-            r3Right: '/SFX/3_Right.mp3',
-            r3Wrong: '/SFX/3_Wrong.mp3',
-            r4StartRound: '/SFX/4_StartRound.mp3',
-            r4Player: '/SFX/4_Player.mp3',
-            r4Show: '/SFX/4_Show.mp3',
-            r4Pick: '/SFX/4_Pick.mp3',
-            r4Choose: '/SFX/4_Choose.mp3',
-            r4Right: '/SFX/4_Right.mp3',
-            r4Wrong: '/SFX/4_Wrong.mp3',
-            r4Star: '/SFX/4_Star.mp3',
-            r4Time15: '/SFX/4_15s.mp3',
-            r4Time20: '/SFX/4_20s.mp3',
-            r4Other: '/SFX/4_Other.mp3',
-            r4Chance: '/SFX/4_Chance.mp3',
-            r4Finish: '/SFX/4_Finish.mp3'
+            startRound: 'SFX/1_StartRound.mp3',
+            pStart: 'SFX/1_PStart.mp3',
+            showQues: 'SFX/1_StartStartQuestionShow.mp3',
+            buzz: 'SFX/1_buzz.mp3',
+            loop1: 'SFX/1_thinking_O10_loop_1.mp3',
+            loop2: 'SFX/1_thinking_O10_loop_2.mp3',
+            loop3: 'SFX/1_thinking_O10_loop_3.mp3',
+            loop4: 'SFX/1_thinking_O10_loop_4.mp3',
+            finish: 'SFX/1_Finish.mp3',
+            right: 'SFX/1_Right.mp3',
+            wrong: 'SFX/1_Wrong.mp3',
+            r1Timer5s: 'SFX/1_Start.mp3',
+            r2StartRound: 'SFX/2_StartRound.mp3',
+            r2RowShow: 'SFX/2_RowShow.mp3',
+            r2RowChose: 'SFX/2_RowChose.mp3',
+            r2RowQues: 'SFX/2_RowQues.mp3',
+            r2OnTime: 'SFX/2_OnTime.mp3',
+            r2ShowPiece: 'SFX/2_ShowPiece.mp3',
+            r2ShowAnswer: 'SFX/2_ShowAnswer.mp3',
+            r2RightRow: 'SFX/2_RightRow.mp3',
+            r2WrongRow: 'SFX/2_WrongRow.mp3',
+            r2Activate: 'SFX/2_Activate.mp3',
+            r3StartRound: 'SFX/3_StartRound.mp3',
+            r3Show: 'SFX/3_Show.mp3',
+            r3Time20: 'SFX/3_20.mp3',
+            r3Time30: 'SFX/3_30.mp3',
+            r3Answer: 'SFX/3_Answer.mp3',
+            r3Right: 'SFX/3_Right.mp3',
+            r3Wrong: 'SFX/3_Wrong.mp3',
+            r4StartRound: 'SFX/4_StartRound.mp3',
+            r4Player: 'SFX/4_Player.mp3',
+            r4Show: 'SFX/4_Show.mp3',
+            r4Pick: 'SFX/4_Pick.mp3',
+            r4Choose: 'SFX/4_Choose.mp3',
+            r4Right: 'SFX/4_Right.mp3',
+            r4Wrong: 'SFX/4_Wrong.mp3',
+            r4Star: 'SFX/4_Star.mp3',
+            r4Time15: 'SFX/4_15s.mp3',
+            r4Time20: 'SFX/4_20s.mp3',
+            r4Other: 'SFX/4_Other.mp3',
+            r4Chance: 'SFX/4_Chance.mp3',
+            r4Finish: 'SFX/4_Finish.mp3',
+            chpBgMusic: 'SFX/4_20.mp3',
+            chpRight: 'SFX/2_RightObstacle.mp3',
+            summaryPointsChecking: 'SFX/0_Points_Checking.mp3'
         };
 
-        // Preload Round 2, 3, 4 images for instant swap (Appear, no flicker)
+        // Preload Round 2, 3, 4 & 5 images for instant swap (Appear, no flicker)
         [
-            '/Media/2.bg.png',
-            '/Media/2.count.png',
-            '/Media/2.buzzer.png',
-            '/Media/h1.png',
-            '/Media/h2.png',
-            '/Media/h3.png',
-            '/Media/Manh1.png',
-            '/Media/Manh2.png',
-            '/Media/Manh3.png',
-            '/Media/Manh4.png',
-            '/Media/Manh5.png',
-            '/Media/3_wrong.png',
-            '/Media/4.20.1.png',
-            '/Media/4.20.2.png',
-            '/Media/4.20.3.png',
-            '/Media/4.30.1.png',
-            '/Media/4.30.2.png',
-            '/Media/4.30.3.png',
-            '/Media/4.cau1.png',
-            '/Media/4.cau2.png',
-            '/Media/4.cau3.png',
-            '/Media/4.ts1.png',
-            '/Media/4.ts2.png',
-            '/Media/4.ts3.png',
-            '/Media/4.ts4.png',
-            '/Media/4.chuong1.png',
-            '/Media/4.chuong2.png',
-            '/Media/4.chuong3.png',
-            '/Media/4.chuong4.png',
-            '/Media/star.gif'
+            'Media/2.bg.png',
+            'Media/2.count.png',
+            'Media/2.buzzer.png',
+            'Media/h1.png',
+            'Media/h2.png',
+            'Media/h3.png',
+            'Media/Manh1.png',
+            'Media/Manh2.png',
+            'Media/Manh3.png',
+            'Media/Manh4.png',
+            'Media/Manh5.png',
+            'Media/3_wrong.png',
+            'Media/4.20.1.png',
+            'Media/4.20.2.png',
+            'Media/4.20.3.png',
+            'Media/4.30.1.png',
+            'Media/4.30.2.png',
+            'Media/4.30.3.png',
+            'Media/4.cau1.png',
+            'Media/4.cau2.png',
+            'Media/4.cau3.png',
+            'Media/4.ts1.png',
+            'Media/4.ts2.png',
+            'Media/4.ts3.png',
+            'Media/4.ts4.png',
+            'Media/4.chuong1.png',
+            'Media/4.chuong2.png',
+            'Media/4.chuong3.png',
+            'Media/4.chuong4.png',
+            'Media/star.gif',
+            'Media/0_ExtraQues.png',
+            'Media/0_PlayerExtra.png',
+            'Media/0_Playerbuzzer.png'
         ].forEach(src => {
             const img = new Image();
             img.src = src;
@@ -1506,6 +1709,183 @@
             pendingBlockedAudio = null;
         }
 
+        function stopAllSummaryAudio() {
+            stopAudioItem(sfxBank.summaryPointsChecking);
+        }
+
+        function stopAllRound5Audio() {
+            stopAudioItem(sfxBank.r3Show);
+            stopAudioItem(sfxBank.chpBgMusic);
+            stopAudioItem(sfxBank.chpRight);
+            stopAudioItem(sfxBank.buzz);
+        }
+
+        function pauseAudioItem(audio) {
+            if (!audio) return;
+            try {
+                audio.pause();
+            } catch (e) {}
+        }
+
+        function resumeSfx(key) {
+            const audio = sfxBank[key];
+            if (!audio || !audioSettings.enabled) return;
+            try {
+                audio.volume = audioSettings.volume;
+                const p = audio.play();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(() => {});
+                }
+            } catch (e) {}
+        }
+
+        function measureUnscaledElementWidth(el, refBox) {
+            if (!el) return 0;
+            const box = refBox || el.parentElement;
+            const prevTransform = el.style.transform;
+            el.style.transform = 'none';
+            const boxOffsetW = box ? box.offsetWidth : 0;
+            const boxRectW = box ? box.getBoundingClientRect().width : 0;
+            const stageScale = (boxOffsetW > 0 && boxRectW > 0) ? (boxRectW / boxOffsetW) : 1;
+            const rectW = el.getBoundingClientRect().width;
+            const width = Math.max(
+                el.scrollWidth || 0,
+                el.offsetWidth || 0,
+                (rectW > 0 && stageScale > 0) ? (rectW / stageScale) : 0
+            );
+            el.style.transform = prevTransform;
+            return width;
+        }
+
+        function fitHorizontalScaleText(el, maxWidth, minRatio = 0.2) {
+            if (!el) return;
+            el.style.transform = 'none';
+            if (!(maxWidth > 0)) return;
+            const textWidth = measureUnscaledElementWidth(el);
+            if (textWidth > maxWidth && textWidth > 0) {
+                const ratio = Math.max(minRatio, maxWidth / textWidth);
+                el.style.transform = `scaleX(${ratio.toFixed(4)})`;
+            }
+        }
+
+        function fitQuestionBoxText(boxEl, textEl, baseSize = 28, baseLineHeight = 1.35, minSize = 14) {
+            if (!boxEl || !textEl) return;
+            let size = baseSize;
+            let lh = baseLineHeight;
+            textEl.style.fontSize = `${size}px`;
+            textEl.style.lineHeight = String(lh);
+
+            const cs = window.getComputedStyle(boxEl);
+            if (cs.display === 'none') return;
+            const padTop = parseFloat(cs.paddingTop) || 0;
+            const padBottom = parseFloat(cs.paddingBottom) || 0;
+            const maxHeight = boxEl.clientHeight - padTop - padBottom;
+            if (!(maxHeight > 0)) return;
+
+            while (textEl.scrollHeight > maxHeight + 1 && size > minSize) {
+                size -= 1;
+                if (size < baseSize - 4) {
+                    lh = Math.max(1.24, baseLineHeight - (baseSize - size) * 0.01);
+                }
+                textEl.style.fontSize = `${size}px`;
+                textEl.style.lineHeight = lh.toFixed(2);
+            }
+        }
+
+        function fitRound1ContestantNames() {
+            for (let i = 1; i <= 4; i++) {
+                const box = document.getElementById(`xp_contestant_box_${i}`);
+                const nameEl = document.getElementById(`xp_ts_name_${i}`);
+                const scoreEl = document.getElementById(`xp_ts_score_${i}`);
+                if (!box || !nameEl) continue;
+                const cs = window.getComputedStyle(box);
+                const padL = parseFloat(cs.paddingLeft) || 0;
+                const padR = parseFloat(cs.paddingRight) || 0;
+                const gap = parseFloat(cs.columnGap || cs.gap) || 10;
+                const scoreW = scoreEl ? measureUnscaledElementWidth(scoreEl, box) : 0;
+                const avail = Math.max(40, box.clientWidth - padL - padR - scoreW - gap - 2);
+                fitHorizontalScaleText(nameEl, avail, 0.2);
+            }
+        }
+
+        function refitActiveProjectorTexts() {
+            const s1 = document.getElementById('view-file-1');
+            if (s1 && s1.classList.contains('active')) {
+                fitRound1ContestantNames();
+                const xpBox = document.getElementById('xp_question_box');
+                const xpTxt = document.getElementById('xp_question_text');
+                if (xpBox && xpTxt && xpTxt.textContent.trim()) {
+                    fitQuestionBoxText(xpBox, xpTxt, 28, 1.35, 14);
+                }
+            }
+            const s2 = document.getElementById('view-file-2');
+            if (s2 && s2.classList.contains('active')) {
+                const cnvBox = document.getElementById('vs_cnv_count_box');
+                const cnvTxt = document.getElementById('vs_cnv_count_text');
+                if (cnvBox && cnvTxt && cnvBox.style.display !== 'none') {
+                    fitHorizontalScaleText(cnvTxt, Math.max(40, cnvBox.clientWidth - 18), 0.25);
+                }
+                const vsBox = document.getElementById('vs_question_box');
+                const vsTxt = document.getElementById('vs_question_text');
+                if (vsBox && vsTxt && vsBox.style.display !== 'none' && vsTxt.textContent.trim()) {
+                    fitQuestionBoxText(vsBox, vsTxt, 28, 1.35, 14);
+                }
+                if (typeof renderRound2Buzzers === 'function') renderRound2Buzzers();
+            }
+            const s2Ans = document.getElementById('view-file-2-answers');
+            if (s2Ans && s2Ans.classList.contains('active')) {
+                for (let i = 1; i <= 4; i++) {
+                    if (typeof applyRound2AnswerWarp === 'function') {
+                        applyRound2AnswerWarp(document.getElementById(`vs_ans_p${i}_text`));
+                        applyRound2AnswerWarp(document.getElementById(`vs_ans_a${i}_text`));
+                    }
+                }
+                if (typeof renderRound2Buzzers === 'function') renderRound2Buzzers();
+            }
+            const s3 = document.getElementById('view-file-3');
+            if (s3 && s3.classList.contains('active')) {
+                const r3Box = document.getElementById('r3_question_box');
+                const r3Txt = document.getElementById('r3_question_text');
+                if (r3Box && r3Txt && r3Box.style.display !== 'none' && r3Txt.textContent.trim()) {
+                    fitQuestionBoxText(r3Box, r3Txt, 28, 1.32, 14);
+                }
+            }
+            const s3Ans = document.getElementById('view-file-3-answers');
+            if (s3Ans && s3Ans.classList.contains('active')) {
+                for (let i = 1; i <= 4; i++) {
+                    if (typeof applyRound3AnswerWarp === 'function') {
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_p${i}_text`));
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_a${i}_text`));
+                        applyRound3AnswerWarp(document.getElementById(`r3_ans_t${i}_text`));
+                    }
+                }
+            }
+            const s4 = document.getElementById('view-file-4');
+            if (s4 && s4.classList.contains('active')) {
+                if (typeof updateRound4MetaUI === 'function' && typeof r4MetaRevealed !== 'undefined' && r4MetaRevealed) {
+                    updateRound4MetaUI();
+                }
+                const r4Box = document.getElementById('r4_question_box');
+                const r4Txt = document.getElementById('r4_question_text');
+                if (r4Box && r4Txt && r4Box.style.display !== 'none' && r4Txt.textContent.trim()) {
+                    fitQuestionBoxText(r4Box, r4Txt, 28, 1.35, 14);
+                }
+            }
+            const s5 = document.getElementById('view-file-5');
+            if (s5 && s5.classList.contains('active')) {
+                if (typeof fitRound5PlayerName === 'function') {
+                    for (let i = 1; i <= 4; i++) {
+                        fitRound5PlayerName(document.getElementById(`r5_player_name_${i}`));
+                    }
+                }
+                const r5Box = document.getElementById('r5_question_box');
+                const r5Txt = document.getElementById('r5_question_text');
+                if (r5Box && r5Txt && r5Box.style.display !== 'none' && r5Txt.textContent.trim()) {
+                    fitQuestionBoxText(r5Box, r5Txt, 28, 1.35, 14);
+                }
+            }
+        }
+
         function switchProjectorScene(sceneNum) {
             document.querySelectorAll('.projector-scene').forEach(el => {
                 el.classList.remove('active');
@@ -1514,6 +1894,7 @@
             if (target) {
                 target.classList.add('active');
             }
+            refitActiveProjectorTexts();
         }
 
         // Round 2 (Vượt Chướng Ngại Vật) Exact PPT Coordinates (1" = 144px on 1920x1080)
@@ -1560,10 +1941,13 @@
             if (isRound2RowsShown && label) {
                 textEl.textContent = label;
                 textEl.style.fontSize = '32px';
+                textEl.style.transform = 'none';
                 box.style.display = 'flex';
+                fitHorizontalScaleText(textEl, Math.max(40, box.clientWidth - 18), 0.25);
             } else {
                 box.style.display = 'none';
                 textEl.textContent = '';
+                textEl.style.transform = 'none';
             }
         }
 
@@ -1610,9 +1994,9 @@
 
         function getRound2CellSrc(rowNum) {
             const state = r2RowStates[rowNum] || 'default';
-            if (state === 'wrong') return '/Media/h3.png';
-            if (state === 'right') return '/Media/h2.png';
-            return r2SelectedRow === rowNum ? '/Media/h2.png' : '/Media/h1.png';
+            if (state === 'wrong') return 'Media/h3.png';
+            if (state === 'right') return 'Media/h2.png';
+            return r2SelectedRow === rowNum ? 'Media/h2.png' : 'Media/h1.png';
         }
 
         function updateRound2RowGraphics() {
@@ -1715,25 +2099,12 @@
         }
 
         function setRound2QuestionText(text) {
+            const boxEl = document.getElementById('vs_question_box');
             const textEl = document.getElementById('vs_question_text');
             if (!textEl) return;
             const cleanText = (text || '').toString().trim();
             textEl.textContent = cleanText;
-
-            const len = cleanText.length;
-            if (len > 320) {
-                textEl.style.fontSize = '20px';
-                textEl.style.lineHeight = '1.26';
-            } else if (len > 220) {
-                textEl.style.fontSize = '23px';
-                textEl.style.lineHeight = '1.3';
-            } else if (len > 140) {
-                textEl.style.fontSize = '26px';
-                textEl.style.lineHeight = '1.33';
-            } else {
-                textEl.style.fontSize = '28px';
-                textEl.style.lineHeight = '1.35';
-            }
+            fitQuestionBoxText(boxEl, textEl, 28, 1.35, 14);
         }
 
         function hideRound2QuestionBox() {
@@ -1777,8 +2148,7 @@
 
         function handleRound2OpenPiece(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
 
             const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
             if (incomingVS) syncRound2Data(incomingVS);
@@ -1807,8 +2177,7 @@
 
         function handleRound2ShowQuestion(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data && data.contestants) syncContestantsData(data.contestants);
             const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
             if (incomingVS) syncRound2Data(incomingVS);
@@ -1829,9 +2198,9 @@
                 }
             }
 
-            setRound2QuestionText(data ? data.questionText : '');
             const qBox = document.getElementById('vs_question_box');
             if (qBox) qBox.style.display = 'flex';
+            setRound2QuestionText(data ? data.questionText : '');
 
             stopAudioItem(sfxBank.r2StartRound);
             stopAudioItem(sfxBank.r2RowShow);
@@ -1842,8 +2211,7 @@
 
         function handleRound2StartTimer(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data && data.contestants) syncContestantsData(data.contestants);
 
             switchProjectorScene(2);
@@ -1856,11 +2224,11 @@
             if (data && data.questionText) {
                 const qBox = document.getElementById('vs_question_box');
                 const qText = document.getElementById('vs_question_text');
+                if (qBox) qBox.style.display = 'flex';
                 if (qText && !qText.textContent.trim()) {
                     setRound2QuestionText(data.questionText);
-                }
-                if (qBox && qText && qText.textContent.trim()) {
-                    qBox.style.display = 'flex';
+                } else if (qBox && qText && qText.textContent.trim()) {
+                    fitQuestionBoxText(qBox, qText, 28, 1.35, 14);
                 }
             }
 
@@ -1924,21 +2292,8 @@
             const cs = window.getComputedStyle(box);
             const padLeft = parseFloat(cs.paddingLeft) || 0;
             const padRight = parseFloat(cs.paddingRight) || 0;
-            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight);
-            const boxRectWidth = box.getBoundingClientRect().width;
-            const stageScale = (box.offsetWidth > 0 && boxRectWidth > 0)
-                ? (boxRectWidth / box.offsetWidth)
-                : 1;
-            const rectWidth = el.getBoundingClientRect().width;
-            const textWidth = (rectWidth > 0 && stageScale > 0)
-                ? (rectWidth / stageScale)
-                : (el.scrollWidth || el.offsetWidth || 0);
-            if (textWidth > maxWidth && textWidth > 0) {
-                const ratio = maxWidth / textWidth;
-                el.style.transform = `scaleX(${ratio})`;
-            } else {
-                el.style.transform = 'none';
-            }
+            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight - 2);
+            fitHorizontalScaleText(el, maxWidth, 0.2);
         }
 
         function fitRound2AnswerText(el, text) {
@@ -1951,8 +2306,7 @@
 
         function handleRound2PrepareAnswers(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data && data.contestants) syncContestantsData(data.contestants);
 
             stopAllRound1Audio();
@@ -1964,8 +2318,7 @@
 
         function handleRound2ShowAnswers(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
 
             stopAllRound1Audio();
             stopAllRound2Audio();
@@ -2010,8 +2363,7 @@
 
         function handleRound2OpenRowAnswer(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
 
             const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
             if (incomingVS) syncRound2Data(incomingVS);
@@ -2049,8 +2401,7 @@
 
         function handleRound2CloseRowAnswer(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
 
             const incomingVS = data && (data.vuotSong || (data.gameData && data.gameData.vuotSong));
             if (incomingVS) syncRound2Data(incomingVS);
@@ -2107,17 +2458,22 @@
                     const nameEl = slot.querySelector('.vs-buzzer-name');
                     if (entry) {
                         const displayName = cleanRound2BuzzerName(entry.name, entry.id);
+                        slot.style.display = 'flex';
                         if (nameEl) {
                             nameEl.textContent = displayName;
-                            const len = displayName.length;
-                            if (len > 20) nameEl.style.fontSize = '13px';
-                            else if (len > 15) nameEl.style.fontSize = '15px';
-                            else if (len > 11) nameEl.style.fontSize = '17px';
-                            else nameEl.style.fontSize = '19px';
+                            nameEl.style.fontSize = '20px';
+                            nameEl.style.transform = 'none';
+                            const cs = window.getComputedStyle(slot);
+                            const padL = parseFloat(cs.paddingLeft) || 16;
+                            const padR = parseFloat(cs.paddingRight) || 30;
+                            const maxW = Math.max(40, slot.clientWidth - padL - padR - 2);
+                            fitHorizontalScaleText(nameEl, maxW, 0.25);
                         }
-                        slot.style.display = 'flex';
                     } else {
-                        if (nameEl) nameEl.textContent = '';
+                        if (nameEl) {
+                            nameEl.textContent = '';
+                            nameEl.style.transform = 'none';
+                        }
                         slot.style.display = 'none';
                     }
                 });
@@ -2250,9 +2606,12 @@
         function normalizeRound3MediaUrl(url) {
             const clean = (url || '').toString().trim();
             if (!clean) return '';
-            if (clean.startsWith('./')) return '/' + clean.slice(2);
-            if (/^uploads\//i.test(clean)) return '/' + clean;
-            return clean;
+            if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+            if (typeof getApiUrl === 'function') {
+                return getApiUrl(clean);
+            }
+            if (clean.startsWith('./')) return clean.slice(2);
+            return clean.replace(/^\/+/, '');
         }
 
         function clearRound3Timers() {
@@ -2382,12 +2741,12 @@
             if (!qBox || !qTextEl) return;
             qTextEl.textContent = (text || '').toString().trim();
             qBox.style.display = 'flex';
+            fitQuestionBoxText(qBox, qTextEl, 28, 1.32, 14);
         }
 
         function handleRound3SelectQuestion(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             switchProjectorScene(3);
             hideAllRound3Graphics();
             stopAllRound3Audio(true);
@@ -2396,8 +2755,7 @@
 
         function handleRound3ShowQuestion(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             switchProjectorScene(3);
             hideAllRound3Graphics();
             stopAllRound3Audio(false);
@@ -2441,8 +2799,7 @@
 
         function handleRound3StartTimer(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             switchProjectorScene(3);
             clearRound3Timers();
             syncRound3QuestionMeta(data);
@@ -2504,21 +2861,8 @@
             const cs = window.getComputedStyle(box);
             const padLeft = parseFloat(cs.paddingLeft) || 0;
             const padRight = parseFloat(cs.paddingRight) || 0;
-            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight);
-            const boxRectWidth = box.getBoundingClientRect().width;
-            const stageScale = (box.offsetWidth > 0 && boxRectWidth > 0)
-                ? (boxRectWidth / box.offsetWidth)
-                : 1;
-            const rectWidth = el.getBoundingClientRect().width;
-            const textWidth = (rectWidth > 0 && stageScale > 0)
-                ? (rectWidth / stageScale)
-                : (el.scrollWidth || el.offsetWidth || 0);
-            if (textWidth > maxWidth && textWidth > 0) {
-                const ratio = maxWidth / textWidth;
-                el.style.transform = `scaleX(${ratio})`;
-            } else {
-                el.style.transform = 'none';
-            }
+            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight - 2);
+            fitHorizontalScaleText(el, maxWidth, 0.2);
         }
 
         function sortRound3ContestantsForDisplay(list) {
@@ -2558,8 +2902,7 @@
 
         function handleRound3PrepareAnswers(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data && data.contestants) syncContestantsData(data.contestants);
 
             stopAllRound1Audio();
@@ -2571,8 +2914,7 @@
 
         function handleRound3ShowAnswers(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
 
             stopAllRound1Audio();
             stopAllRound2Audio();
@@ -2692,12 +3034,8 @@
                 const scoreEl = document.getElementById(`xp_ts_score_${i}`);
                 if (nameEl) nameEl.textContent = `${i}. ${item.name}`;
                 if (scoreEl) scoreEl.textContent = `${item.score ?? 0}`;
-
-                const sumName = document.getElementById(`summary_ts${i}`);
-                const sumScore = document.getElementById(`summary_d${i}`);
-                if (sumName) sumName.textContent = `${i}. ${item.name}`;
-                if (sumScore) sumScore.textContent = `${item.score ?? 0}`;
             }
+            fitRound1ContestantNames();
             if (typeof updateRound4MetaUI === 'function' && r4MetaRevealed) {
                 updateRound4MetaUI();
             }
@@ -2785,7 +3123,7 @@
                 if (r4StarActive) {
                     if (!wasActive) {
                         starEl.src = '';
-                        starEl.src = '/Media/star.gif';
+                        starEl.src = 'Media/star.gif';
                     }
                     starEl.style.display = 'block';
                 } else {
@@ -2833,17 +3171,12 @@
 
         function applyRound4NameFit(textEl) {
             if (!textEl || !textEl.parentElement) return;
-            textEl.style.transform = 'scaleX(1)';
             const box = textEl.parentElement;
             const cs = window.getComputedStyle(box);
             const padL = parseFloat(cs.paddingLeft) || 0;
             const padR = parseFloat(cs.paddingRight) || 0;
-            const avail = box.clientWidth - padL - padR;
-            const natural = textEl.scrollWidth || textEl.getBoundingClientRect().width;
-            if (avail > 0 && natural > avail) {
-                const ratio = Math.max(0.35, avail / natural);
-                textEl.style.transform = `scaleX(${ratio.toFixed(4)})`;
-            }
+            const avail = Math.max(40, box.clientWidth - padL - padR - 2);
+            fitHorizontalScaleText(textEl, avail, 0.2);
         }
 
         function updateRound4MetaUI() {
@@ -2864,8 +3197,16 @@
             }
             const mainItem = r1Contestants[mainIdx - 1] || { name: `Thí sinh ${mainIdx}`, score: 0 };
             const mainScoreEl = document.getElementById('r4_main_score_text');
+            const mainScoreBox = document.getElementById('r4_main_score_box');
             if (mainScoreEl) {
                 mainScoreEl.textContent = `${mainItem.score ?? 0}`;
+                const boxCs = mainScoreBox ? window.getComputedStyle(mainScoreBox) : null;
+                const padL = boxCs ? (parseFloat(boxCs.paddingLeft) || 0) : 8;
+                const padR = boxCs ? (parseFloat(boxCs.paddingRight) || 0) : 8;
+                const maxScoreW = mainScoreBox && mainScoreBox.clientWidth > 0
+                    ? Math.max(40, mainScoreBox.clientWidth - padL - padR - 2)
+                    : 120;
+                fitHorizontalScaleText(mainScoreEl, maxScoreW, 0.3);
             }
             for (let s = 1; s <= 3; s++) {
                 const pEl = document.getElementById(`r4_q_point_text_${s}`);
@@ -2916,8 +3257,7 @@
 
         function handleRound4ShowPacks(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data.contestants) syncContestantsData(data.contestants);
             if (data.mainContestant) {
                 const mc = parseInt(data.mainContestant, 10);
@@ -2985,8 +3325,7 @@
 
         function handleRound4ChoosePack(data) {
             handleIntroStop();
-            const summaryEl = document.getElementById('summary_overlay');
-            if (summaryEl) summaryEl.style.display = 'none';
+            hideSummaryOverlay({ stopAudio: true });
             if (data.contestants) syncContestantsData(data.contestants);
             if (data.mainContestant) {
                 const mc = parseInt(data.mainContestant, 10);
@@ -3092,6 +3431,7 @@
             }
             if (qBox) {
                 qBox.style.display = 'flex';
+                fitQuestionBoxText(qBox, qText, 28, 1.35, 14);
             }
             if (data.hasStar !== undefined || data.starActive !== undefined) {
                 const nextStar = (data.hasStar !== undefined) ? !!data.hasStar : !!data.starActive;
@@ -3192,8 +3532,7 @@
 
             const cleanText = (text || '').toString().trim();
             textEl.textContent = cleanText;
-            textEl.style.fontSize = '28px';
-            textEl.style.lineHeight = '1.32';
+            fitQuestionBoxText(box, textEl, 28, 1.35, 14);
         }
 
         function hideAllRound1Graphics() {
@@ -3379,13 +3718,307 @@
             playSfx('buzz', { loop: false });
         }
 
+        // Round 5: Câu Hỏi Phụ State & Handlers
+        const R5_PLAYER_POSITIONS_IN = {
+            1: [{ x: 9.76, y: 5.4 }],
+            2: [{ x: 9.76, y: 5.4 }, { x: 9.76, y: 5.86 }],
+            3: [{ x: 9.76, y: 5.12 }, { x: 9.76, y: 5.57 }, { x: 9.76, y: 6.03 }],
+            4: [{ x: 9.76, y: 4.95 }, { x: 9.76, y: 5.4 }, { x: 9.76, y: 5.86 }, { x: 9.76, y: 6.31 }]
+        };
+        let r5Participants = [];
+        let r5Eliminated = [];
+        let r5BuzzedId = 0;
+        let r5RightWinnerId = 0;
+        let r5BuzzerOpen = false;
+
+        const r5Timer15sVideo = document.getElementById('r5_timer_15s_video');
+        if (r5Timer15sVideo) {
+            r5Timer15sVideo.addEventListener('ended', () => {
+                try { r5Timer15sVideo.pause(); } catch (e) {}
+            });
+        }
+
+        function fitRound5PlayerName(el) {
+            if (!el) return;
+            const slot = el.parentElement;
+            if (!slot) return;
+            el.style.transform = 'none';
+            const cs = window.getComputedStyle(slot);
+            const padL = parseFloat(cs.paddingLeft) || 18;
+            const padR = parseFloat(cs.paddingRight) || 42;
+            const maxW = Math.max(40, slot.clientWidth - padL - padR - 2);
+            fitHorizontalScaleText(el, maxW, 0.2);
+        }
+
+        function renderRound5Players() {
+            const layer = document.getElementById('r5_players_layer');
+            if (!layer) return;
+
+            const list = Array.isArray(r5Participants)
+                ? r5Participants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4)
+                : [];
+            const count = list.length;
+            const coords = R5_PLAYER_POSITIONS_IN[Math.min(4, Math.max(1, count))] || R5_PLAYER_POSITIONS_IN[4];
+
+            for (let slotIdx = 1; slotIdx <= 4; slotIdx++) {
+                const slotEl = document.getElementById(`r5_player_slot_${slotIdx}`);
+                const bgEl = slotEl ? slotEl.querySelector('.r5-player-bg') : null;
+                const nameEl = document.getElementById(`r5_player_name_${slotIdx}`);
+                if (!slotEl) continue;
+
+                const posIndex = list.indexOf(slotIdx);
+                if (posIndex === -1) {
+                    slotEl.style.display = 'none';
+                    slotEl.classList.remove('buzzed', 'eliminated', 'winner');
+                    if (bgEl) bgEl.setAttribute('src', 'Media/0_PlayerExtra.png');
+                    continue;
+                }
+
+                const pt = coords[posIndex] || coords[coords.length - 1];
+                slotEl.style.left = `${(pt.x * PPT_PPI).toFixed(2)}px`;
+                slotEl.style.top = `${(pt.y * PPT_PPI).toFixed(2)}px`;
+                slotEl.style.display = 'flex';
+
+                const isBuzzed = r5BuzzedId === slotIdx;
+                slotEl.classList.toggle('buzzed', isBuzzed);
+                slotEl.classList.toggle('eliminated', r5Eliminated.includes(slotIdx));
+                slotEl.classList.toggle('winner', r5RightWinnerId === slotIdx);
+
+                if (bgEl) {
+                    const targetSrc = isBuzzed ? 'Media/0_Playerbuzzer.png' : 'Media/0_PlayerExtra.png';
+                    if (bgEl.getAttribute('src') !== targetSrc) {
+                        bgEl.setAttribute('src', targetSrc);
+                    }
+                }
+
+                if (nameEl) {
+                    const cName = (r1Contestants[slotIdx - 1] && r1Contestants[slotIdx - 1].name) || `Thí sinh ${slotIdx}`;
+                    nameEl.textContent = cName;
+                    fitRound5PlayerName(nameEl);
+                }
+            }
+            layer.style.display = count > 0 ? 'block' : 'none';
+        }
+
+        function stopRound5TimerVideo(resetTime = true) {
+            if (!r5Timer15sVideo) return;
+            if (resetTime) {
+                r5Timer15sVideo.style.display = 'none';
+            }
+            try {
+                r5Timer15sVideo.pause();
+                if (resetTime) r5Timer15sVideo.currentTime = 0;
+            } catch (e) {}
+        }
+
+        function hideAllRound5Graphics() {
+            r5Participants = [];
+            r5Eliminated = [];
+            r5BuzzedId = 0;
+            r5RightWinnerId = 0;
+            r5BuzzerOpen = false;
+            stopRound5TimerVideo(true);
+            const bgImg = document.getElementById('r5_bg_img');
+            const layer = document.getElementById('r5_players_layer');
+            const qBox = document.getElementById('r5_question_box');
+            const qText = document.getElementById('r5_question_text');
+            if (bgImg) bgImg.style.display = 'none';
+            if (layer) layer.style.display = 'none';
+            if (qBox) qBox.style.display = 'none';
+            if (qText) qText.textContent = '';
+            for (let i = 1; i <= 4; i++) {
+                const slot = document.getElementById(`r5_player_slot_${i}`);
+                if (slot) {
+                    slot.style.display = 'none';
+                    slot.classList.remove('buzzed', 'eliminated', 'winner');
+                    const bgEl = slot.querySelector('.r5-player-bg');
+                    if (bgEl) bgEl.setAttribute('src', 'Media/0_PlayerExtra.png');
+                }
+            }
+        }
+
+        function handleRound5ShowQuestion(data) {
+            handleIntroStop();
+            hideSummaryOverlay({ stopAudio: true });
+            if (data && data.contestants) syncContestantsData(data.contestants);
+            hideAllRound1Graphics();
+            hideAllRound2Graphics();
+            hideAllRound3Graphics();
+            hideAllRound4Graphics();
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopAllRound3Audio();
+            stopAllRound4Audio();
+            stopAllRound5Audio();
+            stopRound5TimerVideo(true);
+
+            switchProjectorScene(5);
+
+            r5Participants = Array.isArray(data && data.participatingContestants)
+                ? data.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4)
+                : [1, 2, 3, 4];
+            r5Eliminated = Array.isArray(data && data.eliminatedContestants)
+                ? data.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4)
+                : [];
+            r5BuzzedId = 0;
+            r5RightWinnerId = 0;
+            r5BuzzerOpen = true;
+
+            const bgImg = document.getElementById('r5_bg_img');
+            if (bgImg) bgImg.style.display = 'block';
+
+            const qBox = document.getElementById('r5_question_box');
+            const qTextEl = document.getElementById('r5_question_text');
+            if (qTextEl) qTextEl.textContent = (data && (data.questionText || data.question)) || '';
+            if (qBox) {
+                qBox.style.display = 'flex';
+                fitQuestionBoxText(qBox, qTextEl, 28, 1.35, 14);
+            }
+
+            renderRound5Players();
+            playSfx('r3Show', { loop: false });
+        }
+
+        function handleRound5StartTimer(data) {
+            handleIntroStop();
+            hideSummaryOverlay({ stopAudio: true });
+            if (data && data.contestants) syncContestantsData(data.contestants);
+            switchProjectorScene(5);
+
+            if (Array.isArray(data && data.participatingContestants)) {
+                r5Participants = data.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            } else if (r5Participants.length === 0) {
+                r5Participants = [1, 2, 3, 4];
+            }
+            if (Array.isArray(data && data.eliminatedContestants)) {
+                r5Eliminated = data.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            } else {
+                r5Eliminated = [];
+            }
+            r5BuzzedId = 0;
+            r5RightWinnerId = 0;
+            r5BuzzerOpen = true;
+
+            const bgImg = document.getElementById('r5_bg_img');
+            if (bgImg) bgImg.style.display = 'block';
+
+            const qBox = document.getElementById('r5_question_box');
+            const qTextEl = document.getElementById('r5_question_text');
+            if (data && data.questionText && qTextEl) {
+                qTextEl.textContent = data.questionText;
+            }
+            if (qBox && qTextEl && qTextEl.textContent.trim()) {
+                qBox.style.display = 'flex';
+                fitQuestionBoxText(qBox, qTextEl, 28, 1.35, 14);
+            }
+
+            renderRound5Players();
+
+            if (r5Timer15sVideo) {
+                r5Timer15sVideo.style.display = 'block';
+                try {
+                    r5Timer15sVideo.currentTime = 0;
+                    const vp = r5Timer15sVideo.play();
+                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                } catch (e) {}
+            }
+
+            stopAudioItem(sfxBank.r3Show);
+            stopAudioItem(sfxBank.buzz);
+            stopAudioItem(sfxBank.chpRight);
+            playSfx('chpBgMusic', { loop: false });
+        }
+
+        function handleRound5Buzz(buzzedId) {
+            const id = parseInt(buzzedId, 10) || 0;
+            if (id < 1 || id > 4) return;
+            if (r5BuzzedId !== 0) return;
+            if (r5Participants.length > 0 && !r5Participants.includes(id)) return;
+            if (r5Eliminated.includes(id)) return;
+            if (!r5BuzzerOpen) return;
+
+            r5BuzzerOpen = false;
+            r5BuzzedId = id;
+
+            // Immediately pause 0_15sExtra.mp4 and SFX/4_20.mp3 (without resetting currentTime!)
+            stopRound5TimerVideo(false);
+            stopAudioItem(sfxBank.r3Show);
+            pauseAudioItem(sfxBank.chpBgMusic);
+
+            renderRound5Players();
+            playSfx('buzz', { loop: false });
+        }
+
+        function handleRound5Right(data) {
+            r5BuzzerOpen = false;
+            const winId = parseInt(data && (data.winnerId || data.contestantId), 10) || r5BuzzedId || 0;
+            r5RightWinnerId = winId;
+
+            stopRound5TimerVideo(true);
+            stopAudioItem(sfxBank.chpBgMusic);
+            stopAudioItem(sfxBank.buzz);
+            playSfx('chpRight', { loop: false });
+        }
+
+        function handleRound5Wrong(data) {
+            r5BuzzerOpen = false;
+            const wrongId = parseInt(data && data.contestantId, 10) || r5BuzzedId || 0;
+            if (Array.isArray(data && data.eliminatedContestants)) {
+                r5Eliminated = data.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            } else if (wrongId >= 1 && wrongId <= 4 && !r5Eliminated.includes(wrongId)) {
+                r5Eliminated.push(wrongId);
+            }
+            r5BuzzedId = 0;
+
+            if (data && data.allEliminated) {
+                stopRound5TimerVideo(true);
+                stopAudioItem(sfxBank.chpBgMusic);
+            }
+            renderRound5Players();
+        }
+
+        function handleRound5Continue(data) {
+            if (Array.isArray(data && data.participatingContestants)) {
+                r5Participants = data.participatingContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            }
+            if (Array.isArray(data && data.eliminatedContestants)) {
+                r5Eliminated = data.eliminatedContestants.map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 4);
+            }
+            r5BuzzedId = 0;
+            r5RightWinnerId = 0;
+            r5BuzzerOpen = true;
+            renderRound5Players();
+
+            stopAudioItem(sfxBank.buzz);
+            if (!data || data.timerStarted !== false) {
+                if (r5Timer15sVideo) {
+                    r5Timer15sVideo.style.display = 'block';
+                    try {
+                        const vp = r5Timer15sVideo.play();
+                        if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                    } catch (e) {}
+                }
+                resumeSfx('chpBgMusic');
+            }
+        }
+
+        function handleRound5Timeout() {
+            r5BuzzerOpen = false;
+            r5BuzzedId = 0;
+            stopRound5TimerVideo(true);
+            stopAudioItem(sfxBank.chpBgMusic);
+            renderRound5Players();
+        }
+
         function handleIntroPlay(data) {
+            hideSummaryOverlay({ stopAudio: true });
             const overlay = document.getElementById('intro_video_overlay');
             const vid = document.getElementById('intro_video_player');
             const img = document.getElementById('intro_image_player');
             if (!overlay || !vid || !img) return;
 
-            const src = data.src || '';
+            const rawSrc = data.src || '';
+            const src = (typeof getApiUrl === 'function') ? getApiUrl(rawSrc) : rawSrc;
             if (!src) return;
 
             overlay.style.display = 'flex';
@@ -3426,12 +4059,149 @@
             if (overlay) overlay.style.display = 'none';
         }
 
-        function handleToggleSummary(data) {
-            if (data.contestants) syncContestantsData(data.contestants);
+        let summarySequenceTimers = [];
+
+        const summaryPointsVideo = document.getElementById('summary_points_video');
+        if (summaryPointsVideo) {
+            summaryPointsVideo.addEventListener('ended', () => {
+                try {
+                    summaryPointsVideo.pause();
+                } catch (e) {}
+            });
+        }
+
+        function clearSummaryTimers() {
+            summarySequenceTimers.forEach(id => clearTimeout(id));
+            summarySequenceTimers = [];
+        }
+
+        function fitSummaryRankNameText(el) {
+            if (!el) return;
+            const box = el.parentElement;
+            if (!box) return;
+            el.style.transform = 'none';
+            const cs = window.getComputedStyle(box);
+            const padLeft = parseFloat(cs.paddingLeft) || 0;
+            const padRight = parseFloat(cs.paddingRight) || 0;
+            const maxWidth = Math.max(40, box.clientWidth - padLeft - padRight - 2);
+            fitHorizontalScaleText(el, maxWidth, 0.25);
+        }
+
+        function hideSummaryOverlay(options = {}) {
+            clearSummaryTimers();
             const overlay = document.getElementById('summary_overlay');
-            if (overlay) {
-                overlay.style.display = data.show ? 'flex' : 'none';
+            const vid = document.getElementById('summary_points_video');
+            const nameBox = document.getElementById('summary_rank_name_box');
+            const nameText = document.getElementById('summary_rank_name_text');
+            const scoreBox = document.getElementById('summary_rank_score_box');
+            const scoreText = document.getElementById('summary_rank_score_text');
+
+            if (nameBox) nameBox.style.display = 'none';
+            if (nameText) {
+                nameText.textContent = '';
+                nameText.style.transform = 'none';
             }
+            if (scoreBox) scoreBox.style.display = 'none';
+            if (scoreText) {
+                scoreText.textContent = '';
+                scoreText.style.transform = 'none';
+            }
+            if (vid) {
+                vid.style.display = 'none';
+                try {
+                    vid.pause();
+                    vid.currentTime = 0;
+                } catch (e) {}
+            }
+            if (overlay) overlay.style.display = 'none';
+            if (options && options.stopAudio) {
+                stopAllSummaryAudio();
+            }
+        }
+
+        function getSummaryRankedOrder() {
+            const items = [];
+            for (let i = 0; i < 4; i++) {
+                const c = r1Contestants[i] || { name: `Thí sinh ${i + 1}`, score: 0 };
+                const cleanName = (c.name || `Thí sinh ${i + 1}`)
+                    .toString()
+                    .replace(/\s*\(-?\d+\)\s*$/g, '')
+                    .trim() || `Thí sinh ${i + 1}`;
+                const scoreVal = Number.isFinite(Number(c.score)) ? Number(c.score) : 0;
+                items.push({ id: i + 1, name: cleanName, score: scoreVal });
+            }
+            // Rank 1st -> 4th (highest score first; ties ordered by contestant slot 1..4)
+            items.sort((a, b) => (b.score - a.score) || (a.id - b.id));
+            // Reveal order: Rank 4 -> Rank 3 -> Rank 2 -> Rank 1
+            return [items[3], items[2], items[1], items[0]];
+        }
+
+        function showSummaryRankEntry(entry) {
+            const nameBox = document.getElementById('summary_rank_name_box');
+            const nameText = document.getElementById('summary_rank_name_text');
+            const scoreBox = document.getElementById('summary_rank_score_box');
+            const scoreText = document.getElementById('summary_rank_score_text');
+            if (nameText) nameText.textContent = entry ? entry.name : '';
+            if (scoreText) scoreText.textContent = entry ? String(entry.score) : '';
+            if (nameBox) nameBox.style.display = 'flex';
+            if (scoreBox) scoreBox.style.display = 'flex';
+            if (nameText) fitSummaryRankNameText(nameText);
+            if (scoreText) fitSummaryRankNameText(scoreText);
+        }
+
+        function handleToggleSummary(data) {
+            if (data && data.contestants) syncContestantsData(data.contestants);
+            if (!data || data.show === false) {
+                hideSummaryOverlay({ stopAudio: true });
+                return;
+            }
+
+            handleIntroStop();
+            clearRound1Timers();
+            clearRound2AnswerTimer();
+            clearRound3Timers();
+            clearRound4Timers();
+            hideAllRound1Graphics();
+            hideAllRound2Graphics();
+            hideAllRound3Graphics();
+            hideAllRound4Graphics();
+            hideAllRound5Graphics();
+            stopAllRound1Audio();
+            stopAllRound2Audio();
+            stopAllRound3Audio();
+            stopAllRound4Audio();
+            stopAllRound5Audio();
+            hideSummaryOverlay({ stopAudio: true });
+
+            const overlay = document.getElementById('summary_overlay');
+            const vid = document.getElementById('summary_points_video');
+            if (!overlay) return;
+
+            overlay.style.display = 'block';
+            if (vid) {
+                vid.style.display = 'block';
+                try {
+                    vid.currentTime = 0;
+                    const p = vid.play();
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                } catch (e) {}
+            }
+
+            playSfx('summaryPointsChecking', { loop: false });
+
+            const revealOrder = getSummaryRankedOrder();
+            // +2s: Hạng 4, +4s: Hạng 3, +6s: Hạng 2, +8s: Hạng 1, +10s: Ẩn hết đồ hoạ, tên, điểm
+            [2000, 4000, 6000, 8000].forEach((delayMs, idx) => {
+                const tId = setTimeout(() => {
+                    showSummaryRankEntry(revealOrder[idx]);
+                }, delayMs);
+                summarySequenceTimers.push(tId);
+            });
+
+            const hideTimer = setTimeout(() => {
+                hideSummaryOverlay({ stopAudio: false });
+            }, 10000);
+            summarySequenceTimers.push(hideTimer);
         }
 
         // Message Deduplication across WS / BroadcastChannel / Storage / postMessage
@@ -3460,8 +4230,7 @@
             switch (type) {
                 case 'START_ROUND_CLEAN': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     if (data.contestants) syncContestantsData(data.contestants);
                     if (data.vuotSong) syncRound2Data(data.vuotSong);
 
@@ -3513,20 +4282,80 @@
                         hideAllRound2Graphics();
                         hideAllRound3Graphics();
                         hideAllRound4Graphics();
+                        hideAllRound5Graphics();
                         stopAllRound1Audio();
                         stopAllRound2Audio();
                         stopAllRound3Audio();
                         stopAllRound4Audio();
+                        stopAllRound5Audio();
                         r4LastStartRoundAt = Date.now();
                         playSfx('r4StartRound', { loop: false });
+                    } else if (data.roundIndex === 5 || data.round === 'CAU_HOI_PHU' || data.activeRound === 'CAU_HOI_PHU') {
+                        switchProjectorScene(5);
+                        activeTurnIndex = 0;
+                        xpFastestWinner = 0;
+                        xpBuzzerOpen = false;
+                        hideAllRound1Graphics();
+                        hideAllRound2Graphics();
+                        hideAllRound3Graphics();
+                        hideAllRound4Graphics();
+                        hideAllRound5Graphics();
+                        stopAllRound1Audio();
+                        stopAllRound2Audio();
+                        stopAllRound3Audio();
+                        stopAllRound4Audio();
+                        stopAllRound5Audio();
                     }
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_SHOW_QUESTION': {
+                    handleRound5ShowQuestion(data);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_START_TIMER': {
+                    handleRound5StartTimer(data);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_BUZZ': {
+                    const buzzTs = data.winnerId || data.contestantId || data.contestantIndex;
+                    handleRound5Buzz(buzzTs);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_RIGHT': {
+                    handleRound5Right(data);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_WRONG': {
+                    handleRound5Wrong(data);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_CONTINUE': {
+                    handleRound5Continue(data);
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_TIMEOUT': {
+                    handleRound5Timeout();
+                    break;
+                }
+
+                case 'CAU_HOI_PHU_RESET': {
+                    if (data.contestants) syncContestantsData(data.contestants);
+                    switchProjectorScene(5);
+                    hideAllRound5Graphics();
+                    stopAllRound5Audio();
                     break;
                 }
 
                 case 'VINH_QUANG_INTRO': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     if (data.contestants) syncContestantsData(data.contestants);
                     switchProjectorScene(4);
                     hideAllRound1Graphics();
@@ -3657,8 +4486,7 @@
 
                 case 'VINH_QUANG_FINISH': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     if (data.contestants) syncContestantsData(data.contestants);
                     r4MainContestant = 0;
                     r4SlotPoints = { 1: null, 2: null, 3: null };
@@ -3681,8 +4509,7 @@
 
                 case 'RA_KHOI_INTRO': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     switchProjectorScene(3);
                     hideAllRound1Graphics();
                     hideAllRound2Graphics();
@@ -3769,8 +4596,7 @@
 
                 case 'VUOT_SONG_SHOW_ROWS': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     if (data.contestants) syncContestantsData(data.contestants);
                     hideRound2AnswerSceneContent();
                     switchProjectorScene(2);
@@ -3943,8 +4769,7 @@
 
                 case 'XUAT_PHAT_SHOW_GRAPHIC_CAU_HOI': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     handleShowGraphicCauHoi(data);
                     break;
                 }
@@ -3952,8 +4777,7 @@
                 case 'XUAT_PHAT_HIEN_CAU_HOI':
                 case 'XUAT_PHAT_BAT_DAU_CAU_HOI': {
                     handleIntroStop();
-                    const summaryEl = document.getElementById('summary_overlay');
-                    if (summaryEl) summaryEl.style.display = 'none';
+                    hideSummaryOverlay({ stopAudio: true });
                     handleHienCauHoi(data);
                     break;
                 }
@@ -3964,8 +4788,6 @@
                 }
 
                 case 'XUAT_PHAT_START_TIMER': {
-                    stopThinkingLoops();
-                    playSfx('r1Timer5s', { loop: false });
                     break;
                 }
 
@@ -3977,7 +4799,9 @@
                         document.getElementById('view-file-2-answers')?.classList.contains('active');
                     const isR4SceneActive =
                         document.getElementById('view-file-4')?.classList.contains('active');
-                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && !isR2SceneActive && !isR4SceneActive && activeTurnIndex === 5)) {
+                    const isR5SceneActive =
+                        document.getElementById('view-file-5')?.classList.contains('active');
+                    if (r === 'KD' || r === 'XUAT_PHAT' || r === 'KHOI_DONG' || r === 'XP' || (!r && !isR2SceneActive && !isR4SceneActive && !isR5SceneActive && activeTurnIndex === 5)) {
                         const winner = data.winnerId || data.contestantId || data.contestantIndex;
                         handleXuatPhatFastestBuzz(winner, false);
                     } else if (r === 'VS' || r === 'VUOT_SONG' || r === 'VCNV' || r === 'CNV' || (!r && isR2SceneActive)) {
@@ -3986,6 +4810,9 @@
                     } else if (r === 'VQ' || r === 'VINH_QUANG' || r === 'VE_DICH' || (!r && isR4SceneActive)) {
                         const buzzTs = data.winnerId || data.contestantId || data.contestantIndex;
                         handleRound4BuzzerPress(buzzTs);
+                    } else if (r === 'CHP' || r === 'CAU_HOI_PHU' || (!r && isR5SceneActive)) {
+                        const buzzTs = data.winnerId || data.contestantId || data.contestantIndex;
+                        handleRound5Buzz(buzzTs);
                     }
                     break;
                 }
@@ -4097,6 +4924,8 @@
                     stopAllRound2Audio();
                     stopAllRound3Audio();
                     stopAllRound4Audio();
+                    stopAllRound5Audio();
+                    stopAllSummaryAudio();
                     break;
                 }
 
@@ -4156,10 +4985,13 @@
                     hideAllRound2Graphics();
                     hideAllRound3Graphics();
                     hideAllRound4Graphics();
+                    hideAllRound5Graphics();
                     stopAllRound1Audio();
                     stopAllRound2Audio();
                     stopAllRound3Audio();
                     stopAllRound4Audio();
+                    stopAllRound5Audio();
+                    hideSummaryOverlay({ stopAudio: true });
                     r1Contestants = [
                         { name: 'Thí sinh 1', score: 0 },
                         { name: 'Thí sinh 2', score: 0 },
@@ -4272,7 +5104,9 @@
                 'r4_showpack_video',
                 'r4_showques_video',
                 'r4_timer_15s_video',
-                'r4_timer_20s_video'
+                'r4_timer_20s_video',
+                'r5_timer_15s_video',
+                'summary_points_video'
             ];
             const videos = videoIds.map(id => document.getElementById(id)).filter(Boolean);
             if (videos.length === 0) return;
