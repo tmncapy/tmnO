@@ -1,3 +1,25 @@
+function cleanRawMediaPath(rawPath) {
+    if (!rawPath) return '';
+    let clean = String(rawPath).trim();
+    if (!clean || clean === '...' || clean === '…' || clean === 'null' || clean === 'undefined') return '';
+    if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+
+    clean = clean.replace(/^file:\/+/i, '').replace(/\\/g, '/');
+
+    const folderMatch = clean.match(/\/(?:public\/)?(uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\/(.+)$/i);
+    if (folderMatch) {
+        clean = '/' + folderMatch[1] + '/' + folderMatch[2];
+    } else if (/^(?:[A-Za-z]:\/|\/(?:Users|home|var|tmp|mnt|app|Desktop|Documents|Downloads)\/)/i.test(clean)) {
+        const parts = clean.split('/').filter(Boolean);
+        clean = parts.length ? parts[parts.length - 1] : '';
+    }
+
+    clean = clean.replace(/^(?:\.\/)+/, '');
+    clean = clean.replace(/^\/?(?:public|DuongDenVinhQuang-main)(?=\/)/i, '');
+    if (clean.startsWith('./')) clean = clean.slice(2);
+    return clean;
+}
+
 function getApiUrl(path) {
     if (typeof window !== 'undefined' && typeof window.getApiUrl === 'function' && window.getApiUrl !== getApiUrl) {
         return window.getApiUrl(path);
@@ -9,27 +31,26 @@ function getApiUrl(path) {
         return path;
     }
 
+    let cleanPath = cleanRawMediaPath(path);
+    if (!cleanPath) return '';
+
     let customHost = (typeof localStorage !== 'undefined' && localStorage.getItem('ddvq_server_host')) || 
         (typeof URLSearchParams !== 'undefined' && window.location ? new URLSearchParams(window.location.search).get('server') : null);
 
     if (customHost) {
         let cleanCustom = customHost.replace(/\/$/, '');
         cleanCustom = cleanCustom.replace(/\/DuongDenVinhQuang-main\/?$/i, '');
-        let cleanP = path.startsWith('/') ? path : '/' + path;
+        let cleanP = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
         cleanP = cleanP.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^\/_api$/, '/api');
         return cleanCustom + cleanP;
     }
 
     if (window.location.protocol === 'file:' || !window.location.host) {
-        let cleanP = path.startsWith('/') ? path : '/' + path;
+        let cleanP = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
         cleanP = cleanP.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^\/_api$/, '/api');
         return 'http://localhost:3000' + cleanP;
     }
 
-    let cleanPath = path;
-    if (cleanPath.startsWith('./')) {
-        cleanPath = cleanPath.substring(2);
-    }
     cleanPath = cleanPath.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^_\/api$/, '/api').replace(/^_api\//, 'api/');
 
     if (cleanPath.startsWith('/api/') || cleanPath === '/api' || cleanPath.startsWith('api/')) {
@@ -55,6 +76,13 @@ function getApiUrl(path) {
     return cleanPath;
 }
 window.getApiUrl = getApiUrl;
+
+function normalizeMediaUrl(raw) {
+    const cleaned = cleanRawMediaPath(raw);
+    if (!cleaned) return '';
+    return getApiUrl(cleaned);
+}
+window.normalizeMediaUrl = normalizeMediaUrl;
 
 let controllerConnectedClients = {
     ts1: { connected: false, name: 'Thí sinh 1', lastSeen: 0 },
@@ -768,6 +796,7 @@ function sendToProjector(type, payload = {}) {
     else if (type.startsWith('RA_KHOI_')) round = 'RA_KHOI';
     else if (type.startsWith('VUOT_SONG_')) round = 'VUOT_SONG';
     else if (type.startsWith('VINH_QUANG_')) round = 'VINH_QUANG';
+    else if (type.startsWith('CAU_HOI_PHU_')) round = 'CAU_HOI_PHU';
     else if (type === 'SWITCH_VIEW') {
         if (payload.viewNum === 1) round = 'XUAT_PHAT';
         else if (payload.viewNum === 2) round = 'RA_KHOI';
@@ -862,6 +891,10 @@ function sendToProjector(type, payload = {}) {
                 window.__serverActionApiUnavailable = true;
             }
         }
+    }
+
+    if (type !== 'PING_PROBE' && typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
     }
 }
 
@@ -980,17 +1013,18 @@ async function uploadMediaOptimized(file, targetInputId) {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const res = await fetch(getApiUrl('/api/upload'), { method: 'POST', body: formData });
             const data = await res.json();
             if (data.success && data.url) {
+                const normalizedUrl = normalizeMediaUrl(data.url) || data.url;
                 if (inputEl) {
-                    inputEl.value = data.url;
+                    inputEl.value = normalizedUrl;
                     inputEl.dispatchEvent(new Event('change'));
                 }
                 saveAllData();
                 hideUploadProgress(`Tải xong ${file.name} (${fileSizeMB} MB)`);
                 showToast(`Đã tải lên thành công: ${file.name}`);
-                return data.url;
+                return normalizedUrl;
             }
         } catch (err) {
             console.warn('Single upload error, retaining local blob:', err);
@@ -1033,7 +1067,7 @@ async function uploadMediaOptimized(file, targetInputId) {
                     formData.append('chunkIndex', chunkIndex.toString());
                     formData.append('totalChunks', totalChunks.toString());
 
-                    const res = await fetch('/api/upload-chunk', {
+                    const res = await fetch(getApiUrl('/api/upload-chunk'), {
                         method: 'POST',
                         body: formData
                     });
@@ -1078,7 +1112,7 @@ async function uploadMediaOptimized(file, targetInputId) {
         showUploadProgress(file.name, 99, 'Hoàn tất ghép nối...', '0s');
 
         // Complete and merge on server
-        const completeRes = await fetch('/api/upload-complete', {
+        const completeRes = await fetch(getApiUrl('/api/upload-complete'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1091,14 +1125,15 @@ async function uploadMediaOptimized(file, targetInputId) {
 
         const completeData = await completeRes.json();
         if (completeData.success && completeData.url) {
+            const normalizedUrl = normalizeMediaUrl(completeData.url) || completeData.url;
             if (inputEl) {
-                inputEl.value = completeData.url;
+                inputEl.value = normalizedUrl;
                 inputEl.dispatchEvent(new Event('change'));
             }
             saveAllData();
             hideUploadProgress(`Tải thành công: ${file.name} (${fileSizeMB} MB)`);
             showToast(`⚡ Đã tải lên và tối ưu video thành công: ${file.name}`);
-            return completeData.url;
+            return normalizedUrl;
         } else {
             throw new Error(completeData.error || "Lỗi ghép video");
         }
@@ -1122,18 +1157,44 @@ function triggerFilePicker(targetInputId, acceptType) {
     fileInput.click();
 }
 
+function buildControllerMediaCandidates(rawUrl) {
+    const candidates = [];
+    const cleaned = cleanRawMediaPath(rawUrl);
+    if (!cleaned) return candidates;
+    const primary = normalizeMediaUrl(cleaned);
+    const addCandidate = (u) => {
+        if (u && !candidates.includes(u)) candidates.push(u);
+    };
+    addCandidate(primary);
+    addCandidate(cleaned);
+    if (!/^(https?:|blob:|data:)/i.test(cleaned)) {
+        const parts = cleaned.replace(/^\/+/, '').split('/').filter(Boolean);
+        const fileName = parts.length ? parts[parts.length - 1] : '';
+        if (fileName) {
+            addCandidate(getApiUrl('/Media/' + fileName));
+            addCandidate(getApiUrl('/uploads/' + fileName));
+            addCandidate(getApiUrl('/Images/' + fileName));
+            addCandidate(getApiUrl('/videos/' + fileName));
+            addCandidate(getApiUrl('/assets/' + fileName));
+            addCandidate(getApiUrl('/' + fileName));
+        }
+    }
+    return candidates;
+}
+
 // Quick preview modal / popup for any video or media URL
 function previewVideoModal(inputIdOrUrl) {
-    let url = '';
+    let rawUrl = '';
     const inputEl = document.getElementById(inputIdOrUrl);
     if (inputEl && inputEl.value) {
-        url = inputEl.value.trim();
+        rawUrl = inputEl.value.trim();
     } else if (typeof inputIdOrUrl === 'string') {
-        url = inputIdOrUrl.trim();
+        rawUrl = inputIdOrUrl.trim();
     }
 
+    const url = normalizeMediaUrl(rawUrl);
     if (!url) {
-        showToast('Chưa có đường dẫn hoặc file video để xem thử!');
+        showToast('Chưa có đường dẫn hoặc file media hợp lệ để xem thử!');
         return;
     }
 
@@ -1168,32 +1229,52 @@ function previewVideoModal(inputIdOrUrl) {
                 <button onclick="document.getElementById('video_preview_modal').style.display='none'; const v=document.getElementById('rk_preview_video_tag'); if(v) v.pause();" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: bold;">✕ Đóng</button>
             </div>
             ${mediaTag}
-            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; word-break: break-all;">
+            <div id="rk_preview_url_label" style="font-size: 11px; color: #94a3b8; margin-top: 8px; word-break: break-all;">
                 URL: ${url}
             </div>
         </div>
     `;
     modal.style.display = 'flex';
+
+    const mediaEl = document.getElementById(isImagePreview ? 'rk_preview_image_tag' : 'rk_preview_video_tag');
+    if (mediaEl) {
+        const candidates = buildControllerMediaCandidates(rawUrl);
+        let candidateIdx = 0;
+        mediaEl.onerror = function() {
+            candidateIdx++;
+            if (candidateIdx < candidates.length) {
+                const nextUrl = candidates[candidateIdx];
+                mediaEl.src = nextUrl;
+                const urlLbl = document.getElementById('rk_preview_url_label');
+                if (urlLbl) urlLbl.innerText = `URL: ${nextUrl}`;
+                if (!isImagePreview) {
+                    try { mediaEl.load(); mediaEl.play().catch(() => {}); } catch(e) {}
+                }
+            } else {
+                showToast('Không thể tải file media này! Hãy kiểm tra lại đường dẫn hoặc tải file lên lại.');
+            }
+        };
+    }
 }
 
 function playIntroVideo(inputIdOrDefault) {
-    let src = '';
+    let rawSrc = '';
     const inputEl = document.getElementById(inputIdOrDefault);
     if (inputEl && inputEl.value && inputEl.value.trim()) {
-        src = inputEl.value.trim();
+        rawSrc = inputEl.value.trim();
     } else if (typeof inputIdOrDefault === 'string') {
-        src = inputIdOrDefault.trim();
+        rawSrc = inputIdOrDefault.trim();
     }
 
-    if (!src) {
+    const fullSrc = normalizeMediaUrl(rawSrc);
+    if (!fullSrc) {
         showToast("Chưa chọn file / URL Ảnh hoặc Video Intro!");
         return;
     }
 
-    const srcLower = src.toLowerCase();
+    const srcLower = fullSrc.toLowerCase();
     const isVideo = srcLower.match(/\.(mp4|webm|ogg|mov|m4v)($|\?)/i);
     const mediaType = isVideo ? 'video' : 'image';
-    const fullSrc = typeof getApiUrl === 'function' ? getApiUrl(src) : src;
 
     sendToProjector('PLAY_INTRO_VIDEO', { src: fullSrc, mediaType: mediaType });
     showToast(`Đang phát ${mediaType === 'image' ? 'Ảnh' : 'Video'} Intro trên màn hình máy chiếu!`);
@@ -1308,6 +1389,7 @@ window.toggleVQStar = function(idx) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(starPayload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 
 window.vqCorrectAnswer = function(idx) {
@@ -1871,15 +1953,145 @@ function onAudioSettingsChange() {
 }
 window.onAudioSettingsChange = onAudioSettingsChange;
 
-// Auto initialize audio settings & contestant link previews
-if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAudioSettings();
-            updateAllLinkPreviews();
+// ==========================================
+// LƯU & KHÔI PHỤC TRẠNG THÁI RUNTIME CONTROLLER KHI F5
+// ==========================================
+const CONTROLLER_RUNTIME_KEY = 'ddvq_controller_runtime_v1';
+let __isRestoringControllerRuntime = false;
+let __controllerRuntimeRestored = false;
+
+function hasSavedControllerRuntime() {
+    try {
+        return !!(localStorage.getItem(CONTROLLER_RUNTIME_KEY) || sessionStorage.getItem(CONTROLLER_RUNTIME_KEY));
+    } catch(e) {
+        return false;
+    }
+}
+
+window.saveControllerRuntimeState = function() {
+    if (__isRestoringControllerRuntime) return;
+    if (!__controllerRuntimeRestored && hasSavedControllerRuntime()) return;
+    try {
+        const activeNavIdx = (() => {
+            const navs = document.querySelectorAll('.nav-item');
+            for (let i = 0; i < navs.length; i++) {
+                if (navs[i].classList.contains('active')) return i;
+            }
+            const saved = parseInt(localStorage.getItem('ddvq_controller_active_tab'), 10);
+            return isNaN(saved) ? 0 : saved;
+        })();
+
+        const snapshot = {
+            version: 1,
+            savedAt: Date.now(),
+            activeTab: activeNavIdx,
+            currentActiveRound: window.currentActiveRound || '',
+            currentActiveTimer: window.currentActiveTimer || null,
+            excelFileName: (typeof excelFileName !== 'undefined') ? excelFileName : '',
+            r1: (window.__controllerR1State && typeof window.__controllerR1State.getState === 'function') ? window.__controllerR1State.getState() : null,
+            r2: (window.__controllerR2State && typeof window.__controllerR2State.getState === 'function') ? window.__controllerR2State.getState() : null,
+            r3: (window.__controllerR3State && typeof window.__controllerR3State.getState === 'function') ? window.__controllerR3State.getState() : null,
+            r4: (window.__controllerR4State && typeof window.__controllerR4State.getState === 'function') ? window.__controllerR4State.getState() : null,
+            r5: (window.__controllerR5State && typeof window.__controllerR5State.getState === 'function') ? window.__controllerR5State.getState() : null
+        };
+        const raw = JSON.stringify(snapshot);
+        localStorage.setItem(CONTROLLER_RUNTIME_KEY, raw);
+        sessionStorage.setItem(CONTROLLER_RUNTIME_KEY, raw);
+    } catch(e) {
+        console.warn('saveControllerRuntimeState error:', e);
+    }
+};
+
+window.restoreControllerRuntimeState = function() {
+    __isRestoringControllerRuntime = true;
+    try {
+        const raw = localStorage.getItem(CONTROLLER_RUNTIME_KEY) || sessionStorage.getItem(CONTROLLER_RUNTIME_KEY);
+        if (!raw) return false;
+        const snapshot = JSON.parse(raw);
+        if (!snapshot || typeof snapshot !== 'object') return false;
+
+        if (snapshot.currentActiveRound) {
+            window.currentActiveRound = snapshot.currentActiveRound;
+            try { localStorage.setItem('ddvq_active_round', snapshot.currentActiveRound); } catch(e) {}
+        }
+        if (snapshot.currentActiveTimer && snapshot.currentActiveTimer.targetTime > Date.now()) {
+            window.currentActiveTimer = snapshot.currentActiveTimer;
+        }
+        if (snapshot.r1 && window.__controllerR1State && typeof window.__controllerR1State.restoreState === 'function') {
+            window.__controllerR1State.restoreState(snapshot.r1);
+        }
+        if (snapshot.r2 && window.__controllerR2State && typeof window.__controllerR2State.restoreState === 'function') {
+            window.__controllerR2State.restoreState(snapshot.r2);
+        }
+        if (snapshot.r3 && window.__controllerR3State && typeof window.__controllerR3State.restoreState === 'function') {
+            window.__controllerR3State.restoreState(snapshot.r3);
+        }
+        if (snapshot.r4 && window.__controllerR4State && typeof window.__controllerR4State.restoreState === 'function') {
+            window.__controllerR4State.restoreState(snapshot.r4);
+        }
+        if (snapshot.r5 && window.__controllerR5State && typeof window.__controllerR5State.restoreState === 'function') {
+            window.__controllerR5State.restoreState(snapshot.r5);
+        }
+        if (typeof snapshot.activeTab === 'number' && snapshot.activeTab >= 0 && snapshot.activeTab <= 5 && typeof window.switchTab === 'function') {
+            window.switchTab(snapshot.activeTab, { silentSync: true, skipSave: true });
+        }
+        return true;
+    } catch(e) {
+        console.warn('restoreControllerRuntimeState error:', e);
+        return false;
+    } finally {
+        __isRestoringControllerRuntime = false;
+        __controllerRuntimeRestored = true;
+    }
+};
+
+function bindControllerRuntimeListeners() {
+    const selectors = [
+        '[id^="ts"][id*="_ans_"]',
+        '[id^="ts"][id*="_extra_"]',
+        '#vq_check_5s',
+        '[id^="chp_ts_"]',
+        '[id^="rk_m_"]',
+        '[id^="rk_am_"]',
+        '#vs_hint_image',
+        '[id^="chp_q_"]',
+        '[id^="chp_a_"]'
+    ];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            if (el.dataset.runtimeBound) return;
+            el.dataset.runtimeBound = '1';
+            const evtName = (el.type === 'checkbox' || el.type === 'radio' || el.tagName === 'SELECT') ? 'change' : 'input';
+            el.addEventListener(evtName, () => {
+                if (typeof window.saveControllerRuntimeState === 'function') {
+                    window.saveControllerRuntimeState();
+                }
+            });
+            if (evtName !== 'change') {
+                el.addEventListener('change', () => {
+                    if (typeof window.saveControllerRuntimeState === 'function') {
+                        window.saveControllerRuntimeState();
+                    }
+                });
+            }
         });
-    } else {
+    });
+}
+window.bindControllerRuntimeListeners = bindControllerRuntimeListeners;
+
+// Auto initialize audio settings, contestant link previews & runtime F5 restore
+if (typeof document !== 'undefined') {
+    const onBootExtra = () => {
         loadAudioSettings();
         updateAllLinkPreviews();
+        setTimeout(() => {
+            window.restoreControllerRuntimeState();
+            bindControllerRuntimeListeners();
+        }, 80);
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onBootExtra);
+    } else {
+        onBootExtra();
     }
 }

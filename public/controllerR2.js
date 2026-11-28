@@ -2,17 +2,35 @@
 let currentRKQuestion = 1;
 let rkTimerInterval = null;
 let rkTimeLeft = 20;
+let rkTimerEndAt = 0;
 let rkAnswerStep = 'idle'; // 'idle' | 'counting' | 'ready'
 let rkAnswerCountdownInterval = null;
+let rkAnswerCountdownEndAt = 0;
 
 function getRKQuestionDuration(num) {
     const qNum = parseInt(num, 10) || 1;
     return (qNum === 1 || qNum === 2) ? 20 : 30;
 }
 
+function sanitizeRKMediaInput(raw) {
+    const clean = (raw || '').toString().trim();
+    if (!clean || clean === '...' || clean === '…' || clean === 'null' || clean === 'undefined') return '';
+    if (/^\.\/cau[1-4]\.mp4$/i.test(clean)) return '';
+    return clean;
+}
+
+function normalizeRKMediaUrl(raw) {
+    const clean = sanitizeRKMediaInput(raw);
+    if (!clean) return '';
+    if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+    if (typeof window.normalizeMediaUrl === 'function') return window.normalizeMediaUrl(clean);
+    if (typeof getApiUrl === 'function') return getApiUrl(clean);
+    return clean;
+}
+
 function detectRKMediaType(url, explicitType = '') {
     if (explicitType === 'image' || explicitType === 'video') return explicitType;
-    const clean = (url || '').toString().trim();
+    const clean = sanitizeRKMediaInput(url);
     if (!clean) return 'none';
     if (clean.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i.test(clean)) {
         return 'image';
@@ -31,19 +49,19 @@ function getRKQuestionData(num) {
     const amInput = document.getElementById(`rk_am_${qNum}`);
     const qItem = (gameData.raKhoi && gameData.raKhoi[qNum - 1]) || {};
 
-    let mediaUrl = (mInput && mInput.value.trim()) || qItem.m || qItem.mediaUrl || '';
-    if (mediaUrl.startsWith('blob:') && qItem.m && !qItem.m.startsWith('blob:')) {
-        mediaUrl = qItem.m;
+    let mediaUrl = sanitizeRKMediaInput(mInput ? mInput.value : '') || sanitizeRKMediaInput(qItem.m || qItem.mediaUrl || '');
+    if (mediaUrl.startsWith('blob:') && qItem.m && !qItem.m.startsWith('blob:') && sanitizeRKMediaInput(qItem.m)) {
+        mediaUrl = sanitizeRKMediaInput(qItem.m);
     }
-    if (/^\.\/cau[1-4]\.mp4$/i.test(mediaUrl) && (!mInput || !mInput.value.trim())) {
-        mediaUrl = '';
-    }
-    const explicitType = mInput?.dataset?.mediaType || '';
+    mediaUrl = normalizeRKMediaUrl(mediaUrl);
+
+    const explicitType = mInput?.dataset?.mediaType || qItem.mt || '';
     const mediaType = detectRKMediaType(mediaUrl, explicitType);
 
     const qText = (qInput && qInput.value.trim()) || qItem.q || `Nội dung câu hỏi Tăng Tốc số ${qNum}`;
     const aText = (aInput && aInput.value.trim()) || qItem.a || '';
-    const answerMediaUrl = (amInput && amInput.value.trim()) || qItem.am || '';
+    const rawAm = sanitizeRKMediaInput(amInput ? amInput.value : '') || sanitizeRKMediaInput(qItem.am || '');
+    const answerMediaUrl = normalizeRKMediaUrl(rawAm);
     const duration = getRKQuestionDuration(qNum);
 
     return {
@@ -57,9 +75,20 @@ function getRKQuestionData(num) {
     };
 }
 
+function getRKTotalQuestions() {
+    const list = (typeof gameData !== 'undefined' && Array.isArray(gameData.raKhoi)) ? gameData.raKhoi : [];
+    const q5 = document.getElementById('rk_q_5')?.value?.trim() || list[4]?.q?.trim() || list[4]?.a?.trim() || list[4]?.m?.trim();
+    const q6 = document.getElementById('rk_q_6')?.value?.trim() || list[5]?.q?.trim() || list[5]?.a?.trim() || list[5]?.m?.trim();
+    if (q6) return 6;
+    if (q5) return 5;
+    return 4;
+}
+window.getRKTotalQuestions = getRKTotalQuestions;
+
 function setRKQuestionUI(num) {
     currentRKQuestion = num;
-    for (let i = 1; i <= 4; i++) {
+    if (typeof syncRaKhoiRowVisibility === 'function') syncRaKhoiRowVisibility();
+    for (let i = 1; i <= 6; i++) {
         const btn = document.getElementById(`btn_rk_q${i}`);
         if (btn) {
             if (i === num) {
@@ -81,6 +110,7 @@ function setRKQuestionUI(num) {
 
     clearInterval(rkTimerInterval);
     rkTimerInterval = null;
+    rkTimerEndAt = 0;
     rkTimeLeft = getRKQuestionDuration(num);
 
     const timerBtn = document.getElementById('btn_rk_timer');
@@ -118,15 +148,20 @@ function selectRKQuestion(num) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
+    }
 }
 
 function cycleRKQuestion() {
+    const total = getRKTotalQuestions();
     let next = currentRKQuestion + 1;
-    if (next > 4) next = 1;
+    if (next > total) next = 1;
     selectRKQuestion(next);
 }
 
 function updateTab2Preview() {
+    const total = getRKTotalQuestions();
     const qInput = document.getElementById(`rk_q_${currentRKQuestion}`);
     const aInput = document.getElementById(`rk_a_${currentRKQuestion}`);
     const qItem = (gameData.raKhoi && gameData.raKhoi[currentRKQuestion - 1]) || {};
@@ -137,6 +172,8 @@ function updateTab2Preview() {
     if (titleEl) titleEl.innerText = `VÒNG THI TĂNG TỐC: CÂU HỎI THỨ ${currentRKQuestion}`;
     const qNumEl = document.getElementById('rk_preview_q_num');
     if (qNumEl) qNumEl.innerText = currentRKQuestion;
+    const qTotalEl = document.getElementById('rk_preview_q_total');
+    if (qTotalEl) qTotalEl.innerText = String(total);
     const selectBarTitle = document.getElementById('rk_select_bar_title');
     if (selectBarTitle) selectBarTitle.innerText = `Câu hỏi thứ ${currentRKQuestion}`;
     const qTextEl = document.getElementById('rk_preview_q_text');
@@ -219,22 +256,25 @@ function onClickRKTinhThoiGian() {
     clearInterval(rkTimerInterval);
     const duration = getRKQuestionDuration(currentRKQuestion);
     rkTimeLeft = duration;
+    rkTimerEndAt = Date.now() + duration * 1000;
     const timerEl = document.getElementById('rk_preview_timer');
     if (timerEl) timerEl.innerText = rkTimeLeft;
     const statusEl = document.getElementById('rk_preview_status');
     if (statusEl) statusEl.innerText = rkTimeLeft;
 
     rkTimerInterval = setInterval(() => {
-        rkTimeLeft--;
+        rkTimeLeft = Math.max(0, Math.ceil((rkTimerEndAt - Date.now()) / 1000));
         if (timerEl) timerEl.innerText = rkTimeLeft;
         if (statusEl) statusEl.innerText = rkTimeLeft;
         if (rkTimeLeft <= 0) {
             clearInterval(rkTimerInterval);
             rkTimerInterval = null;
+            rkTimerEndAt = 0;
             if (timerEl) timerEl.innerText = "0";
             if (statusEl) statusEl.innerText = "0";
+            if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         }
-    }, 1000);
+    }, 250);
 
     const qData = getRKQuestionData(currentRKQuestion);
     const payloadTimer = {
@@ -254,6 +294,9 @@ function onClickRKTinhThoiGian() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payloadTimer);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
+    }
     showToast(`Bắt đầu tính thời gian ${duration}s cho Câu ${currentRKQuestion}`);
 }
 
@@ -262,6 +305,7 @@ function resetRKDapAnButton() {
         clearInterval(rkAnswerCountdownInterval);
         rkAnswerCountdownInterval = null;
     }
+    rkAnswerCountdownEndAt = 0;
     rkAnswerStep = 'idle';
     const btn = document.getElementById('btn_rk_dap_an_ts');
     if (btn) {
@@ -346,6 +390,7 @@ function onClickRKDapAnTS() {
             sendSupabaseAction(preparePayload);
         }
 
+        rkAnswerCountdownEndAt = Date.now() + 3000;
         let secLeft = 3;
         if (btn) {
             btn.innerText = `${secLeft}s`;
@@ -355,12 +400,13 @@ function onClickRKDapAnTS() {
         }
 
         rkAnswerCountdownInterval = setInterval(() => {
-            secLeft--;
+            secLeft = Math.max(0, Math.ceil((rkAnswerCountdownEndAt - Date.now()) / 1000));
             if (secLeft > 0) {
                 if (btn) btn.innerText = `${secLeft}s`;
             } else {
                 clearInterval(rkAnswerCountdownInterval);
                 rkAnswerCountdownInterval = null;
+                rkAnswerCountdownEndAt = 0;
                 rkAnswerStep = 'ready';
                 if (btn) {
                     btn.innerText = 'Hiện';
@@ -368,9 +414,11 @@ function onClickRKDapAnTS() {
                     btn.style.color = '#ffffff';
                     btn.style.borderColor = '#047857';
                 }
+                if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
             }
-        }, 1000);
+        }, 250);
 
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         showToast('Đang chuyển sang scene đáp án Tăng tốc trống (3s)...');
         return;
     }
@@ -398,7 +446,8 @@ function onClickRKDapAnTS() {
         }
         const statusEl = document.getElementById('rk_preview_status');
         if (statusEl) statusEl.innerText = rkTimeLeft;
-        showToast('Đang phát graphic đáp án Tăng tốc (sắp xếp nhanh đến chậm)...');
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
+        showToast('Đang phát graphic & đáp án Tăng tốc (sắp xếp nhanh đến chậm)...');
     }
 }
 
@@ -422,6 +471,7 @@ function onClickRKHienDapAn() {
 function onClickRKDatLai() {
     clearInterval(rkTimerInterval);
     rkTimerInterval = null;
+    rkTimerEndAt = 0;
     if (typeof resetRKDapAnButton === 'function') resetRKDapAnButton();
     // Clear contestant inputs on controller
     for (let i = 1; i <= 5; i++) {
@@ -458,6 +508,7 @@ function onClickRKDatLai() {
         });
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã đặt lại vòng Tăng Tốc');
 }
 
@@ -689,6 +740,7 @@ function confirmRKScoreModal() {
     }
 
     closeRKScoreModal();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') {
         if (hasCorrect && results.length > 0) {
             showToast(`Đã cộng điểm Tăng tốc: ${results.join(', ')}`);
@@ -703,5 +755,129 @@ function onClickRKAutoScore() {
     openRKScoreModal();
 }
 window.onClickRKAutoScore = onClickRKAutoScore;
+
+window.__controllerR2State = {
+    getState() {
+        const answers = {};
+        const extras = {};
+        for (let i = 1; i <= 5; i++) {
+            answers[i] = document.getElementById(`ts${i}_ans_rk`)?.value || '';
+            extras[i] = document.getElementById(`ts${i}_extra_rk`)?.value || '';
+        }
+        return {
+            currentRKQuestion,
+            rkTimeLeft,
+            rkTimerRunning: !!rkTimerInterval,
+            rkTimerEndAt,
+            rkAnswerStep,
+            rkAnswerCountdownEndAt,
+            answers,
+            extras
+        };
+    },
+    restoreState(st) {
+        if (!st || typeof st !== 'object') return;
+        clearInterval(rkTimerInterval);
+        rkTimerInterval = null;
+        if (rkAnswerCountdownInterval) {
+            clearInterval(rkAnswerCountdownInterval);
+            rkAnswerCountdownInterval = null;
+        }
+
+        currentRKQuestion = parseInt(st.currentRKQuestion, 10) || 1;
+        if (typeof syncRaKhoiRowVisibility === 'function') syncRaKhoiRowVisibility();
+        for (let i = 1; i <= 6; i++) {
+            const btn = document.getElementById(`btn_rk_q${i}`);
+            if (btn) {
+                if (i === currentRKQuestion) {
+                    btn.style.background = '#2563eb';
+                    btn.style.color = '#ffffff';
+                } else {
+                    btn.style.background = '#80bfff';
+                    btn.style.color = '#002060';
+                }
+            }
+        }
+
+        for (let i = 1; i <= 5; i++) {
+            const ansEl = document.getElementById(`ts${i}_ans_rk`);
+            if (ansEl && st.answers && st.answers[i] !== undefined) ansEl.value = st.answers[i];
+            const extraEl = document.getElementById(`ts${i}_extra_rk`);
+            if (extraEl && st.extras && st.extras[i] !== undefined) extraEl.value = st.extras[i];
+        }
+
+        const duration = getRKQuestionDuration(currentRKQuestion);
+        const timerBtn = document.getElementById('btn_rk_timer');
+        if (timerBtn) {
+            timerBtn.innerText = `${duration}s`;
+            timerBtn.title = `Bắt đầu tính thời gian (${duration}s)`;
+        }
+
+        rkTimerEndAt = Number(st.rkTimerEndAt) || 0;
+        if (st.rkTimerRunning && rkTimerEndAt > Date.now()) {
+            rkTimeLeft = Math.max(0, Math.ceil((rkTimerEndAt - Date.now()) / 1000));
+            rkTimerInterval = setInterval(() => {
+                rkTimeLeft = Math.max(0, Math.ceil((rkTimerEndAt - Date.now()) / 1000));
+                const tEl = document.getElementById('rk_preview_timer');
+                const sEl = document.getElementById('rk_preview_status');
+                if (tEl) tEl.innerText = rkTimeLeft;
+                if (sEl) sEl.innerText = rkTimeLeft;
+                if (rkTimeLeft <= 0) {
+                    clearInterval(rkTimerInterval);
+                    rkTimerInterval = null;
+                    rkTimerEndAt = 0;
+                }
+            }, 250);
+        } else if (st.rkTimerRunning && rkTimerEndAt > 0) {
+            rkTimeLeft = 0;
+            rkTimerEndAt = 0;
+        } else {
+            rkTimeLeft = (st.rkTimeLeft !== undefined) ? Number(st.rkTimeLeft) : duration;
+        }
+
+        rkAnswerStep = st.rkAnswerStep || 'idle';
+        rkAnswerCountdownEndAt = Number(st.rkAnswerCountdownEndAt) || 0;
+        const ansBtn = document.getElementById('btn_rk_dap_an_ts');
+        if (rkAnswerStep === 'counting' && rkAnswerCountdownEndAt > Date.now()) {
+            let secLeft = Math.max(1, Math.ceil((rkAnswerCountdownEndAt - Date.now()) / 1000));
+            if (ansBtn) {
+                ansBtn.innerText = `${secLeft}s`;
+                ansBtn.style.background = '#f59e0b';
+                ansBtn.style.color = '#ffffff';
+                ansBtn.style.borderColor = '#d97706';
+            }
+            rkAnswerCountdownInterval = setInterval(() => {
+                secLeft = Math.max(0, Math.ceil((rkAnswerCountdownEndAt - Date.now()) / 1000));
+                if (secLeft > 0) {
+                    if (ansBtn) ansBtn.innerText = `${secLeft}s`;
+                } else {
+                    clearInterval(rkAnswerCountdownInterval);
+                    rkAnswerCountdownInterval = null;
+                    rkAnswerCountdownEndAt = 0;
+                    rkAnswerStep = 'ready';
+                    if (ansBtn) {
+                        ansBtn.innerText = 'Hiện';
+                        ansBtn.style.background = '#059669';
+                        ansBtn.style.color = '#ffffff';
+                        ansBtn.style.borderColor = '#047857';
+                    }
+                }
+            }, 250);
+        } else if (rkAnswerStep === 'ready' || (rkAnswerStep === 'counting' && rkAnswerCountdownEndAt > 0)) {
+            rkAnswerStep = 'ready';
+            rkAnswerCountdownEndAt = 0;
+            if (ansBtn) {
+                ansBtn.innerText = 'Hiện';
+                ansBtn.style.background = '#059669';
+                ansBtn.style.color = '#ffffff';
+                ansBtn.style.borderColor = '#047857';
+            }
+        } else {
+            resetRKDapAnButton();
+        }
+
+        updateTab2Preview();
+    }
+};
 
 

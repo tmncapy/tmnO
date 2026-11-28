@@ -4,8 +4,96 @@ let vsTimerInterval = null;
 let vsTimeLeft = 15;
 let vsRevealedKeyIndices = [];
 window.vsOpenedPieces = window.vsOpenedPieces || { 1: false, 2: false, 3: false, 4: false, 5: false };
+window.vsLockedContestants = window.vsLockedContestants || { 1: false, 2: false, 3: false, 4: false };
 let vsAnswerStep = 'idle'; // 'idle' | 'counting' | 'ready'
 let vsAnswerCountdownInterval = null;
+let vsTimerEndAt = 0;
+let vsAnswerCountdownEndAt = 0;
+
+function sanitizeVSHintImageInput(raw) {
+    if (raw === undefined || raw === null) return '';
+    const cleaned = String(raw).trim().replace(/^['"]+|['"]+$/g, '');
+    if (!cleaned || cleaned === '...' || cleaned === '…' || cleaned === 'null' || cleaned === 'undefined') return '';
+    if (typeof window !== 'undefined' && typeof window.normalizeMediaUrl === 'function') {
+        return window.normalizeMediaUrl(cleaned);
+    }
+    return cleaned;
+}
+
+function syncVSLockButtonsUI() {
+    if (!window.vsLockedContestants) window.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    for (let i = 1; i <= 4; i++) {
+        const isLocked = !!window.vsLockedContestants[i];
+        const btn = document.getElementById(`btn_vs_lock_${i}`);
+        if (btn) {
+            btn.innerText = isLocked ? 'Mở máy' : 'Khóa máy';
+            btn.style.background = isLocked ? '#dc2626' : '';
+            btn.style.color = isLocked ? '#ffffff' : '';
+            btn.style.borderColor = isLocked ? '#b91c1c' : '';
+        }
+        const ansInp = document.getElementById(`ts${i}_ans_vs`);
+        if (ansInp) {
+            ansInp.disabled = isLocked;
+            ansInp.readOnly = isLocked;
+        }
+    }
+}
+window.syncVSLockButtonsUI = syncVSLockButtonsUI;
+
+function toggleVSContestantLock(idx) {
+    const id = parseInt(idx, 10);
+    if (!id || id < 1 || id > 4) return;
+    if (!window.vsLockedContestants) window.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    window.vsLockedContestants[id] = !window.vsLockedContestants[id];
+    const isLocked = !!window.vsLockedContestants[id];
+    syncVSLockButtonsUI();
+
+    const payload = {
+        type: 'VUOT_SONG_LOCK_CONTESTANT',
+        contestantId: id,
+        locked: isLocked,
+        vsLockedContestants: { ...window.vsLockedContestants },
+        round: 'VUOT_SONG',
+        activeRound: 'VUOT_SONG',
+        timestamp: Date.now()
+    };
+    sendToProjector('VUOT_SONG_LOCK_CONTESTANT', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+    if (typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
+    }
+    if (typeof showToast === 'function') {
+        showToast(isLocked ? `Đã khóa máy Thí sinh ${id}` : `Đã mở máy Thí sinh ${id}`);
+    }
+}
+window.toggleVSContestantLock = toggleVSContestantLock;
+
+function unlockAllVSContestants() {
+    window.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    syncVSLockButtonsUI();
+
+    const payload = {
+        type: 'VUOT_SONG_UNLOCK_ALL',
+        contestantId: 'ALL',
+        vsLockedContestants: { 1: false, 2: false, 3: false, 4: false },
+        round: 'VUOT_SONG',
+        activeRound: 'VUOT_SONG',
+        timestamp: Date.now()
+    };
+    sendToProjector('VUOT_SONG_UNLOCK_ALL', payload);
+    if (typeof sendSupabaseAction === 'function') {
+        sendSupabaseAction(payload);
+    }
+    if (typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
+    }
+    if (typeof showToast === 'function') {
+        showToast('Đã mở lại máy cho tất cả thí sinh');
+    }
+}
+window.unlockAllVSContestants = unlockAllVSContestants;
 
 function removeVietnameseTones(str) {
     if (!str) return '';
@@ -89,6 +177,7 @@ function selectVSRow(row) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã chọn Hàng ngang ${row}`);
 }
 
@@ -124,7 +213,9 @@ function onClickVSShowRows() {
     }
     const hintEl = document.getElementById('vs_hint_image');
     if (hintEl) {
-        gameData.vuotSong.hintImage = hintEl.value.trim();
+        const normalizedHint = sanitizeVSHintImageInput(hintEl.value);
+        gameData.vuotSong.hintImage = normalizedHint;
+        if (hintEl.value !== normalizedHint) hintEl.value = normalizedHint;
     }
     if (typeof saveAllData === 'function') {
         saveAllData(false);
@@ -143,6 +234,7 @@ function onClickVSShowRows() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã hiện hàng ngang Vượt Chướng Ngại Vật trên Projector');
 }
 window.onClickVSShowRows = onClickVSShowRows;
@@ -177,7 +269,9 @@ function onClickVSOpenPiece(pieceNum) {
         if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
             gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "", hintImage: "" };
         }
-        gameData.vuotSong.hintImage = hintEl.value.trim();
+        const normalizedHint = sanitizeVSHintImageInput(hintEl.value);
+        gameData.vuotSong.hintImage = normalizedHint;
+        if (hintEl.value !== normalizedHint) hintEl.value = normalizedHint;
     }
 
     if (!window.vsOpenedPieces) window.vsOpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
@@ -197,6 +291,7 @@ function onClickVSOpenPiece(pieceNum) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(p === 5 ? 'Đã mở mảnh ghép 5 (Ô trung tâm)' : `Đã mở mảnh ghép ${p}`);
 }
 window.onClickVSOpenPiece = onClickVSOpenPiece;
@@ -233,6 +328,7 @@ function onClickVSOpenRowAnswer() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã mở đáp án hàng ngang ${currentVSRow}`);
 }
 window.onClickVSOpenRowAnswer = onClickVSOpenRowAnswer;
@@ -256,6 +352,7 @@ function onClickVSCloseRowAnswer() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã đóng đáp án hàng ngang ${currentVSRow}`);
 }
 window.onClickVSCloseRowAnswer = onClickVSCloseRowAnswer;
@@ -308,6 +405,7 @@ function onClickVSOpenKeywordLetters() {
         newlyOpened: newlyOpened
     });
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã mở thêm ${numToOpen} chữ cái đáp án (${vsRevealedKeyIndices.length}/${totalLen} ô)`);
 }
 
@@ -319,6 +417,7 @@ function onClickVSOpenAllAnswers() {
         vsRevealedKeyIndices.push(i);
     }
     sendToProjector('VUOT_SONG_OPEN_ALL_ANSWERS', { vuotSong: gameData.vuotSong });
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã mở đáp án Vòng thi Vượt Chướng Ngại Vật!');
 }
 
@@ -350,28 +449,34 @@ function onClickVSShowQuestion() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã hiển thị câu hỏi Vượt Chướng Ngại Vật trên Projector & Player');
 }
 
 function onClickVSStartTimer() {
     clearInterval(vsTimerInterval);
+    vsTimerInterval = null;
     vsTimeLeft = 15;
+    vsTimerEndAt = Date.now() + 15000;
     const timerEl = document.getElementById('vs_preview_timer');
     if (timerEl) timerEl.innerText = vsTimeLeft;
     const statusEl = document.getElementById('vs_preview_status');
     if (statusEl) statusEl.innerText = vsTimeLeft;
     
     vsTimerInterval = setInterval(() => {
-        vsTimeLeft--;
+        vsTimeLeft = Math.max(0, Math.ceil((vsTimerEndAt - Date.now()) / 1000));
         if (timerEl) timerEl.innerText = vsTimeLeft;
-        const statusEl = document.getElementById('vs_preview_status');
-        if (statusEl) statusEl.innerText = vsTimeLeft;
+        const stEl = document.getElementById('vs_preview_status');
+        if (stEl) stEl.innerText = vsTimeLeft;
         if (vsTimeLeft <= 0) {
             clearInterval(vsTimerInterval);
+            vsTimerInterval = null;
+            vsTimerEndAt = 0;
             if (timerEl) timerEl.innerText = "0";
-            if (statusEl) statusEl.innerText = "0";
+            if (stEl) stEl.innerText = "0";
+            if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         }
-    }, 1000);
+    }, 250);
 
     const q = currentVSRow === 'center' ? (document.getElementById('vs_q_center')?.value || gameData.vuotSong?.center?.q || "") : (document.getElementById(`vs_q_${currentVSRow}`)?.value || gameData.vuotSong?.[`h${currentVSRow}`]?.q || "");
     const a = currentVSRow === 'center' ? (document.getElementById('vs_a_center')?.value || gameData.vuotSong?.center?.a || "") : (document.getElementById(`vs_a_${currentVSRow}`)?.value || gameData.vuotSong?.[`h${currentVSRow}`]?.a || "");
@@ -389,6 +494,7 @@ function onClickVSStartTimer() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Bắt đầu 15s Vượt Chướng Ngại Vật trên Projector');
 }
 
@@ -396,6 +502,8 @@ function onClickVSReturnToGrid() {
     if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     window.vsQuestionIsShown = false;
     clearInterval(vsTimerInterval);
+    vsTimerInterval = null;
+    vsTimerEndAt = 0;
     const timerEl = document.getElementById('vs_preview_timer');
     if (timerEl) timerEl.innerText = vsTimeLeft;
     const statusEl = document.getElementById('vs_preview_status');
@@ -417,6 +525,7 @@ function onClickVSReturnToGrid() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã quay lại giao diện hàng ngang (giữ nguyên trạng thái chọn & đáp án)');
 }
 
@@ -425,6 +534,7 @@ function resetVSShowAnswersButton() {
         clearInterval(vsAnswerCountdownInterval);
         vsAnswerCountdownInterval = null;
     }
+    vsAnswerCountdownEndAt = 0;
     vsAnswerStep = 'idle';
     const btn = document.getElementById('btn_vs_show_answers');
     if (btn) {
@@ -506,6 +616,7 @@ function onClickVSShowAnswers() {
         }
 
         let secLeft = 3;
+        vsAnswerCountdownEndAt = Date.now() + 3000;
         if (btn) {
             btn.innerText = `${secLeft}s`;
             btn.style.background = '#f59e0b';
@@ -514,12 +625,13 @@ function onClickVSShowAnswers() {
         }
 
         vsAnswerCountdownInterval = setInterval(() => {
-            secLeft--;
+            secLeft = Math.max(0, Math.ceil((vsAnswerCountdownEndAt - Date.now()) / 1000));
             if (secLeft > 0) {
                 if (btn) btn.innerText = `${secLeft}s`;
             } else {
                 clearInterval(vsAnswerCountdownInterval);
                 vsAnswerCountdownInterval = null;
+                vsAnswerCountdownEndAt = 0;
                 vsAnswerStep = 'ready';
                 if (btn) {
                     btn.innerText = 'Hiện';
@@ -527,9 +639,11 @@ function onClickVSShowAnswers() {
                     btn.style.color = '#ffffff';
                     btn.style.borderColor = '#047857';
                 }
+                if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
             }
-        }, 1000);
+        }, 250);
 
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         showToast('Đang chuyển sang màn hình đáp án trống (3s)...');
         return;
     }
@@ -548,6 +662,7 @@ function onClickVSShowAnswers() {
         if (typeof sendSupabaseAction === 'function') {
             sendSupabaseAction(showPayload);
         }
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         showToast('Đang phát graphic & đáp án thí sinh Vượt Chướng Ngại Vật');
     }
 }
@@ -655,6 +770,7 @@ function markVSContestantSubmitted(tsIdx, timeStr) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(flashPayload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 window.markVSContestantSubmitted = markVSContestantSubmitted;
 
@@ -737,6 +853,7 @@ function resetVSContestantBell(tsIdx) {
             sendSupabaseAction(payloadSingle);
             sendSupabaseAction({ ...payloadSingle, type: 'VUOT_SONG_RESET_BELL' });
         }
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         if (typeof showToast === 'function') showToast(`Đã reset nút chuông cho Thí sinh ${tsIdx}`);
     }
 }
@@ -744,12 +861,16 @@ function resetVSContestantBell(tsIdx) {
 function onClickVSDatLai() {
     if (typeof resetVSShowAnswersButton === 'function') resetVSShowAnswersButton();
     resetVSContestantBell('ALL');
+    window.vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
+    syncVSLockButtonsUI();
     window.vsRoundStartTime = Date.now();
     try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
     vsRevealedKeyIndices = [];
     window.vsOpenedPieces = { 1: false, 2: false, 3: false, 4: false, 5: false };
     syncVSPieceButtonsUI();
     clearInterval(vsTimerInterval);
+    vsTimerInterval = null;
+    vsTimerEndAt = 0;
     vsTimeLeft = 15;
     const timerEl = document.getElementById('vs_preview_timer');
     if (timerEl) timerEl.innerText = "15";
@@ -793,6 +914,7 @@ function onClickVSDatLai() {
         });
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã đặt lại vòng Vượt Chướng Ngại Vật');
 }
 
@@ -875,4 +997,155 @@ function onClickVSScoreKeyword() {
 }
 window.onClickVSScoreKeyword = onClickVSScoreKeyword;
 
+window.__controllerR3State = {
+    getState: function() {
+        const answers = {};
+        const extras = {};
+        for (let i = 1; i <= 5; i++) {
+            const aEl = document.getElementById(`ts${i}_ans_vs`);
+            const eEl = document.getElementById(`ts${i}_extra_vs`);
+            if (aEl) answers[i] = aEl.value;
+            if (eEl) extras[i] = eEl.value;
+        }
+        return {
+            currentVSRow,
+            vsOpenedPieces: window.vsOpenedPieces ? { ...window.vsOpenedPieces } : { 1: false, 2: false, 3: false, 4: false, 5: false },
+            vsQuestionIsShown: !!window.vsQuestionIsShown,
+            vsRoundStartTime: window.vsRoundStartTime || 0,
+            vsSubmissions: window.vsSubmissions ? JSON.parse(JSON.stringify(window.vsSubmissions)) : {},
+            vsLockedContestants: window.vsLockedContestants ? { ...window.vsLockedContestants } : { 1: false, 2: false, 3: false, 4: false },
+            vsRevealedKeyIndices: Array.isArray(vsRevealedKeyIndices) ? vsRevealedKeyIndices.slice() : [],
+            vsTimeLeft,
+            vsTimerRunning: !!vsTimerInterval,
+            vsTimerEndAt,
+            vsAnswerStep,
+            vsAnswerCountdownEndAt,
+            answers,
+            extras,
+            previewTitle: document.getElementById('vs_preview_title')?.innerText || '',
+            previewQ: document.getElementById('vs_preview_q_text')?.innerText || '',
+            previewA: document.getElementById('vs_preview_a_text')?.innerText || '',
+            previewStatus: document.getElementById('vs_preview_status')?.innerText || ''
+        };
+    },
+    restoreState: function(st) {
+        if (!st || typeof st !== 'object') return;
+        clearInterval(vsTimerInterval);
+        vsTimerInterval = null;
+        if (vsAnswerCountdownInterval) {
+            clearInterval(vsAnswerCountdownInterval);
+            vsAnswerCountdownInterval = null;
+        }
 
+        currentVSRow = st.currentVSRow !== undefined ? st.currentVSRow : 1;
+        window.vsOpenedPieces = (st.vsOpenedPieces && typeof st.vsOpenedPieces === 'object')
+            ? { 1: !!st.vsOpenedPieces[1], 2: !!st.vsOpenedPieces[2], 3: !!st.vsOpenedPieces[3], 4: !!st.vsOpenedPieces[4], 5: !!st.vsOpenedPieces[5] }
+            : { 1: false, 2: false, 3: false, 4: false, 5: false };
+        window.vsQuestionIsShown = !!st.vsQuestionIsShown;
+        if (st.vsRoundStartTime) window.vsRoundStartTime = Number(st.vsRoundStartTime) || 0;
+        window.vsSubmissions = (st.vsSubmissions && typeof st.vsSubmissions === 'object') ? st.vsSubmissions : {};
+        window.vsLockedContestants = (st.vsLockedContestants && typeof st.vsLockedContestants === 'object')
+            ? { 1: !!st.vsLockedContestants[1], 2: !!st.vsLockedContestants[2], 3: !!st.vsLockedContestants[3], 4: !!st.vsLockedContestants[4] }
+            : { 1: false, 2: false, 3: false, 4: false };
+        vsRevealedKeyIndices = Array.isArray(st.vsRevealedKeyIndices) ? st.vsRevealedKeyIndices.slice() : [];
+
+        const buttons = document.querySelectorAll('#tab2-content .vs-row-btn');
+        buttons.forEach((btn, idx) => {
+            if ((idx + 1 === currentVSRow) || (currentVSRow === 'center' && idx === 4)) {
+                btn.style.background = '#0056b3';
+                btn.style.color = '#fff';
+            } else {
+                btn.style.background = idx === 4 ? '#38bdf8' : '#80bfff';
+                btn.style.color = idx === 4 ? '#fff' : '#002060';
+            }
+        });
+
+        for (let i = 1; i <= 5; i++) {
+            const aEl = document.getElementById(`ts${i}_ans_vs`);
+            const eEl = document.getElementById(`ts${i}_extra_vs`);
+            if (aEl && st.answers && st.answers[i] !== undefined) aEl.value = st.answers[i];
+            if (eEl && st.extras && st.extras[i] !== undefined) eEl.value = st.extras[i];
+        }
+
+        syncVSPieceButtonsUI();
+        updateVSBuzzerLabels();
+        syncVSLockButtonsUI();
+
+        const titleEl = document.getElementById('vs_preview_title');
+        const qTextEl = document.getElementById('vs_preview_q_text');
+        const aTextEl = document.getElementById('vs_preview_a_text');
+        const statusEl = document.getElementById('vs_preview_status');
+        const timerEl = document.getElementById('vs_preview_timer');
+        if (titleEl && st.previewTitle) titleEl.innerText = st.previewTitle;
+        if (qTextEl && st.previewQ) qTextEl.innerText = st.previewQ;
+        if (aTextEl && st.previewA) aTextEl.innerText = st.previewA;
+
+        vsTimerEndAt = Number(st.vsTimerEndAt) || 0;
+        if (st.vsTimerRunning && vsTimerEndAt > Date.now()) {
+            vsTimeLeft = Math.max(0, Math.ceil((vsTimerEndAt - Date.now()) / 1000));
+            if (timerEl) timerEl.innerText = vsTimeLeft;
+            if (statusEl) statusEl.innerText = vsTimeLeft;
+            vsTimerInterval = setInterval(() => {
+                vsTimeLeft = Math.max(0, Math.ceil((vsTimerEndAt - Date.now()) / 1000));
+                if (timerEl) timerEl.innerText = vsTimeLeft;
+                const sEl = document.getElementById('vs_preview_status');
+                if (sEl) sEl.innerText = vsTimeLeft;
+                if (vsTimeLeft <= 0) {
+                    clearInterval(vsTimerInterval);
+                    vsTimerInterval = null;
+                    vsTimerEndAt = 0;
+                }
+            }, 250);
+        } else if (st.vsTimerRunning && vsTimerEndAt > 0) {
+            vsTimeLeft = 0;
+            vsTimerEndAt = 0;
+            if (timerEl) timerEl.innerText = '0';
+            if (statusEl) statusEl.innerText = '0';
+        } else {
+            vsTimeLeft = (st.vsTimeLeft !== undefined) ? Number(st.vsTimeLeft) : 15;
+            if (timerEl) timerEl.innerText = String(vsTimeLeft);
+            if (statusEl) statusEl.innerText = st.previewStatus || String(vsTimeLeft);
+        }
+
+        vsAnswerStep = st.vsAnswerStep || 'idle';
+        vsAnswerCountdownEndAt = Number(st.vsAnswerCountdownEndAt) || 0;
+        const ansBtn = document.getElementById('btn_vs_show_answers');
+        if (vsAnswerStep === 'counting' && vsAnswerCountdownEndAt > Date.now()) {
+            let secLeft = Math.max(1, Math.ceil((vsAnswerCountdownEndAt - Date.now()) / 1000));
+            if (ansBtn) {
+                ansBtn.innerText = `${secLeft}s`;
+                ansBtn.style.background = '#f59e0b';
+                ansBtn.style.color = '#ffffff';
+                ansBtn.style.borderColor = '#d97706';
+            }
+            vsAnswerCountdownInterval = setInterval(() => {
+                secLeft = Math.max(0, Math.ceil((vsAnswerCountdownEndAt - Date.now()) / 1000));
+                if (secLeft > 0) {
+                    if (ansBtn) ansBtn.innerText = `${secLeft}s`;
+                } else {
+                    clearInterval(vsAnswerCountdownInterval);
+                    vsAnswerCountdownInterval = null;
+                    vsAnswerCountdownEndAt = 0;
+                    vsAnswerStep = 'ready';
+                    if (ansBtn) {
+                        ansBtn.innerText = 'Hiện';
+                        ansBtn.style.background = '#059669';
+                        ansBtn.style.color = '#ffffff';
+                        ansBtn.style.borderColor = '#047857';
+                    }
+                }
+            }, 250);
+        } else if (vsAnswerStep === 'ready' || (vsAnswerStep === 'counting' && vsAnswerCountdownEndAt > 0)) {
+            vsAnswerStep = 'ready';
+            vsAnswerCountdownEndAt = 0;
+            if (ansBtn) {
+                ansBtn.innerText = 'Hiện';
+                ansBtn.style.background = '#059669';
+                ansBtn.style.color = '#ffffff';
+                ansBtn.style.borderColor = '#047857';
+            }
+        } else {
+            resetVSShowAnswersButton();
+        }
+    }
+};

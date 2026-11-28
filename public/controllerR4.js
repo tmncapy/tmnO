@@ -1,6 +1,8 @@
 // ControllerR4.js - Round 4: Vinh Quang
 let vqTimerInterval = null;
 let vqTimeLeft = 20;
+let vqTimerEndAt = 0;
+let vqTimerMode = 'main'; // 'main' | '5s' | '25s'
 
 let currentVQPack = 10;
 let currentVQSubject = '';
@@ -14,6 +16,51 @@ let vqBuzzerWinnerTime = '';
 let vqAuto5sTimeout = null;
 let vqQuestionStarUsed = false;
 let vqMainStarDeducted = false;
+
+function startVQDeadlineInterval(durationSec, mode, customEndAt) {
+    clearInterval(vqTimerInterval);
+    const dur = Math.max(0, Number(durationSec) || 0);
+    vqTimerMode = mode || 'main';
+    vqTimerEndAt = customEndAt || (Date.now() + dur * 1000);
+    const timerEl = document.getElementById('vq_preview_timer');
+    const statusEl = document.getElementById('vq_preview_status');
+
+    const tick = () => {
+        const rem = Math.max(0, Math.ceil((vqTimerEndAt - Date.now()) / 1000));
+        vqTimeLeft = rem;
+        if (timerEl) timerEl.innerText = String(rem);
+        if (statusEl) statusEl.innerText = String(rem);
+        if (rem <= 0) {
+            clearInterval(vqTimerInterval);
+            vqTimerInterval = null;
+            vqTimerEndAt = 0;
+            if (timerEl) timerEl.innerText = "0";
+            if (statusEl) statusEl.innerText = "0";
+            if (vqTimerMode === '5s' && vqBuzzerOpen && vqBuzzerWinner === 0) {
+                vqBuzzerOpen = false;
+                const mainIdx = (vqTurnContestant >= 1 && vqTurnContestant <= 4) ? vqTurnContestant : 1;
+                const lockPayload = {
+                    type: 'VINH_QUANG_LOCK_BELLS',
+                    round: 'VQ',
+                    mainContestant: mainIdx,
+                    timestamp: Date.now()
+                };
+                sendToProjector('VINH_QUANG_LOCK_BELLS', lockPayload);
+                if (typeof sendSupabaseAction === 'function') {
+                    sendSupabaseAction(lockPayload);
+                }
+            }
+            if (typeof window.saveControllerRuntimeState === 'function') {
+                window.saveControllerRuntimeState();
+            }
+        }
+    };
+
+    tick();
+    if (vqTimerEndAt > Date.now()) {
+        vqTimerInterval = setInterval(tick, 200);
+    }
+}
 
 function isVQStarActiveForMain(mainIdx) {
     return !!((window.vqStars && window.vqStars[mainIdx - 1]) || vqCenterStarActive);
@@ -84,6 +131,8 @@ function onClickVQTinhThoiGian() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqQuestionStarUsed = false;
@@ -92,23 +141,7 @@ function onClickVQTinhThoiGian() {
 
     const pts = parseInt(currentVQPack, 10);
     const duration = (pts === 30) ? 20 : 15;
-    vqTimeLeft = duration;
-    const timerEl = document.getElementById('vq_preview_timer');
-    if (timerEl) timerEl.innerText = vqTimeLeft;
-    const statusEl = document.getElementById('vq_preview_status');
-    if (statusEl) statusEl.innerText = vqTimeLeft;
-
-    vqTimerInterval = setInterval(() => {
-        vqTimeLeft--;
-        if (timerEl) timerEl.innerText = vqTimeLeft;
-        const statusEl = document.getElementById('vq_preview_status');
-        if (statusEl) statusEl.innerText = vqTimeLeft;
-        if (vqTimeLeft <= 0) {
-            clearInterval(vqTimerInterval);
-            if (timerEl) timerEl.innerText = "0";
-            if (statusEl) statusEl.innerText = "0";
-        }
-    }, 1000);
+    startVQDeadlineInterval(duration, 'main');
 
     const payload = {
         type: 'VINH_QUANG_START_TIMER',
@@ -129,6 +162,7 @@ function onClickVQTinhThoiGian() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Bắt đầu tính thời gian ${duration}s Vinh Quang`);
 }
 
@@ -151,6 +185,7 @@ function onClickVQAnCauHoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã ẩn câu hỏi Vinh Quang trên Projector & Graphic');
 }
 
@@ -158,6 +193,8 @@ function onClickVQ5sTraLoi() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
 
     const mainIdx = (vqTurnContestant >= 1 && vqTurnContestant <= 4) ? vqTurnContestant : 1;
     const basePts = (parseInt(currentVQPack, 10) === 30) ? 30 : 20;
@@ -175,36 +212,7 @@ function onClickVQ5sTraLoi() {
     clearVQBuzzerUI();
     vqBellUnlockTime = Date.now();
 
-    vqTimeLeft = 5;
-    const timerEl = document.getElementById('vq_preview_timer');
-    if (timerEl) timerEl.innerText = "5";
-    const statusEl = document.getElementById('vq_preview_status');
-    if (statusEl) statusEl.innerText = "5";
-
-    vqTimerInterval = setInterval(() => {
-        vqTimeLeft--;
-        if (timerEl) timerEl.innerText = vqTimeLeft;
-        const statusEl = document.getElementById('vq_preview_status');
-        if (statusEl) statusEl.innerText = vqTimeLeft;
-        if (vqTimeLeft <= 0) {
-            clearInterval(vqTimerInterval);
-            if (timerEl) timerEl.innerText = "0";
-            if (statusEl) statusEl.innerText = "0";
-            if (vqBuzzerOpen && vqBuzzerWinner === 0) {
-                vqBuzzerOpen = false;
-                const lockPayload = {
-                    type: 'VINH_QUANG_LOCK_BELLS',
-                    round: 'VQ',
-                    mainContestant: mainIdx,
-                    timestamp: Date.now()
-                };
-                sendToProjector('VINH_QUANG_LOCK_BELLS', lockPayload);
-                if (typeof sendSupabaseAction === 'function') {
-                    sendSupabaseAction(lockPayload);
-                }
-            }
-        }
-    }, 1000);
+    startVQDeadlineInterval(5, '5s');
 
     const contestants = (typeof gameData !== 'undefined' && Array.isArray(gameData.contestants)) ? gameData.contestants : [];
     const payload = {
@@ -222,6 +230,7 @@ function onClickVQ5sTraLoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Bắt đầu 5s giành quyền trả lời!');
 }
 
@@ -229,6 +238,8 @@ function onClickVQDung() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
 
     const basePts = (parseInt(currentVQPack, 10) === 30) ? 30 : 20;
     const mainIdx = (vqTurnContestant >= 1 && vqTurnContestant <= 4) ? vqTurnContestant : 1;
@@ -280,6 +291,7 @@ function onClickVQDung() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (stealerIdx >= 1 && stealerIdx <= 4) {
         const stealerName = contestants[stealerIdx - 1]?.name || `Thí sinh ${stealerIdx}`;
         const mainName = contestants[mainIdx - 1]?.name || `Thí sinh ${mainIdx}`;
@@ -293,6 +305,8 @@ function onClickVQSai() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
 
     const basePts = (parseInt(currentVQPack, 10) === 30) ? 30 : 20;
     const mainIdx = (vqTurnContestant >= 1 && vqTurnContestant <= 4) ? vqTurnContestant : 1;
@@ -340,6 +354,7 @@ function onClickVQSai() {
         sendSupabaseAction(payload);
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (stealerIdx >= 1 && stealerIdx <= 4) {
         const stealerName = contestants[stealerIdx - 1]?.name || `Thí sinh ${stealerIdx}`;
         const penalty = Math.round(basePts / 2);
@@ -434,7 +449,7 @@ function onClickVQChonGoiDiem(pack) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
-
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã chọn Gói ${pack} Điểm: Môn ${currentVQSubject}`);
 }
 
@@ -494,6 +509,7 @@ function onClickVQHienChonGoiDiem() {
     sendToProjector('VINH_QUANG_SHOW_PACKS', payload);
     const statusEl = document.getElementById('vq_preview_status');
     if (statusEl) statusEl.innerText = vqTimeLeft;
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Hiển thị bảng chọn điểm trên Projector & Graphic (Gói ${currentVQPack}Đ - Môn ${currentVQSubject})`);
 }
 
@@ -523,6 +539,7 @@ function onClickVQAnChonGoiDiem() {
     sendToProjector('VINH_QUANG_HIDE_PACK', payload);
     const statusEl = document.getElementById('vq_preview_status');
     if (statusEl) statusEl.innerText = vqTimeLeft;
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã ẩn giao diện chọn gói điểm trên Projector (Chờ bấm Hiện câu hỏi)');
 }
 
@@ -588,6 +605,7 @@ function onClickVQHienCauHoi() {
     }
     const statusEl = document.getElementById('vq_preview_status');
     if (statusEl) statusEl.innerText = vqTimeLeft;
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Hiển thị câu hỏi Vinh Quang trên Projector & Graphic');
 }
 
@@ -596,23 +614,9 @@ function onClickVQ25s() {
         document.activeElement.blur();
     }
     clearInterval(vqTimerInterval);
-    vqTimeLeft = 25;
-    const timerEl = document.getElementById('vq_preview_timer');
-    if (timerEl) timerEl.innerText = "25";
-    const statusEl = document.getElementById('vq_preview_status');
-    if (statusEl) statusEl.innerText = "25";
-
-    vqTimerInterval = setInterval(() => {
-        vqTimeLeft--;
-        if (timerEl) timerEl.innerText = vqTimeLeft;
-        const statusEl = document.getElementById('vq_preview_status');
-        if (statusEl) statusEl.innerText = vqTimeLeft;
-        if (vqTimeLeft <= 0) {
-            clearInterval(vqTimerInterval);
-            if (timerEl) timerEl.innerText = "0";
-            if (statusEl) statusEl.innerText = "0";
-        }
-    }, 1000);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
+    startVQDeadlineInterval(25, '25s');
 
     const payload25s = {
         type: 'VINH_QUANG_START_TIMER',
@@ -631,6 +635,7 @@ function onClickVQ25s() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload25s);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Bắt đầu đếm ngược 25 giây');
 }
 
@@ -665,6 +670,8 @@ function onClickVQHoanThanh() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqQuestionStarUsed = false;
@@ -691,6 +698,7 @@ function onClickVQHoanThanh() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Hoàn thành phần thi của thí sinh!');
 }
 window.onClickVQHoanThanh = onClickVQHoanThanh;
@@ -700,9 +708,12 @@ function onClickVQDatLai() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqTimeLeft = 20;
+    vqTimerMode = 'main';
     const timerEl = document.getElementById('vq_preview_timer');
     if (timerEl) timerEl.innerText = "20";
     const statusEl = document.getElementById('vq_preview_status');
@@ -794,6 +805,7 @@ function onClickVQDatLai() {
         });
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã đặt lại vòng Về Đích');
 }
 
@@ -916,6 +928,7 @@ function recomputeVQSlotQuestionIndices() {
 function onChangeVQSelectMode(mode) {
     currentVQSelectMode = mode || 'ordered';
     recomputeVQSlotQuestionIndices();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 window.onChangeVQSelectMode = onChangeVQSelectMode;
 
@@ -1016,6 +1029,8 @@ window.handleVinhQuangBuzzFromPlayer = function(tsIdx, data) {
     vqBuzzerWinner = id;
     vqBuzzerOpen = false;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     setVQBuzzerWinnerUI(id, bellSecondsStr);
 
     const cName = (typeof gameData !== 'undefined' && gameData.contestants && gameData.contestants[id - 1]?.name)
@@ -1038,6 +1053,7 @@ window.handleVinhQuangBuzzFromPlayer = function(tsIdx, data) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     const timeBadge = bellSecondsStr ? ` (${bellSecondsStr}s)` : '';
     showToast(`🔔 ${cName} giành quyền trả lời nhanh nhất${timeBadge}!`);
 };
@@ -1056,6 +1072,7 @@ function selectVQMainContestant(idx) {
         clearVQBuzzerUI();
         const sel = document.getElementById('vq_turn_contestant');
         if (sel) sel.value = '0';
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         return;
     }
 
@@ -1083,6 +1100,7 @@ function selectVQMainContestant(idx) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Thí sinh thi chính Về Đích: ${name}`);
 }
 window.selectVQMainContestant = selectVQMainContestant;
@@ -1143,6 +1161,7 @@ function onToggleVQSlotPoint(slot, pts) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 window.onToggleVQSlotPoint = onToggleVQSlotPoint;
 
@@ -1150,6 +1169,7 @@ function onSelectVQSlotManual(slot, pts, idx) {
     vqSlotConfigs[slot].points = pts;
     vqSlotConfigs[slot].qIdx = parseInt(idx, 10);
     refreshVQManualRadiosUI();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 window.onSelectVQSlotManual = onSelectVQSlotManual;
 
@@ -1174,6 +1194,7 @@ function selectVQPackageNumber(pkgNum) {
         badge.style.background = '#dbeafe';
         badge.style.color = '#1e40af';
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã chọn Gói ${num} (Về Đích)`);
 }
 window.selectVQPackageNumber = selectVQPackageNumber;
@@ -1182,6 +1203,8 @@ function onClickVQChonGoi() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqQuestionStarUsed = false;
@@ -1231,6 +1254,7 @@ function onClickVQChonGoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Hiển thị bảng chọn gói câu hỏi (Gói ${currentVQPackageNum})`);
 }
 window.onClickVQChonGoi = onClickVQChonGoi;
@@ -1245,6 +1269,8 @@ function onClickVQPackButton() {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqQuestionStarUsed = false;
@@ -1299,6 +1325,7 @@ function onClickVQPackButton() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Chốt gói câu hỏi: ${pickedLabel.join(' - ')}`);
 }
 window.onClickVQPackButton = onClickVQPackButton;
@@ -1307,6 +1334,8 @@ function selectVQQuestionSlot(slot) {
     clearTimeout(vqAuto5sTimeout);
     vqAuto5sTimeout = null;
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
     vqBuzzerOpen = false;
     vqBuzzerWinner = 0;
     vqQuestionStarUsed = false;
@@ -1350,7 +1379,12 @@ function selectVQQuestionSlot(slot) {
     if (badgeSlot) badgeSlot.innerText = `${pts}`;
 
     clearInterval(vqTimerInterval);
+    vqTimerInterval = null;
+    vqTimerEndAt = 0;
+    vqTimerMode = 'main';
     vqTimeLeft = (pts === 30) ? 20 : 15;
+    const timerEl = document.getElementById('vq_preview_timer');
+    if (timerEl) timerEl.innerText = vqTimeLeft;
     const statusEl = document.getElementById('vq_preview_status');
     if (statusEl) statusEl.innerText = vqTimeLeft;
 
@@ -1394,6 +1428,7 @@ function selectVQQuestionSlot(slot) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Mở Câu hỏi thứ ${s} - Gói ${currentVQPackageNum} (${pts} điểm)`);
 }
 window.selectVQQuestionSlot = selectVQQuestionSlot;
@@ -1442,6 +1477,7 @@ function onClickVQCenterStar() {
         }
         showToast(vqCenterStarActive ? 'Đã bật Ngôi sao hy vọng!' : 'Đã tắt Ngôi sao hy vọng');
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 window.onClickVQCenterStar = onClickVQCenterStar;
 
@@ -1460,3 +1496,184 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVQMediaIndicators();
     }, 200);
 });
+
+window.__controllerR4State = {
+    getState: function() {
+        const answers = {};
+        const extras = {};
+        for (let i = 1; i <= 5; i++) {
+            const ansEl = document.getElementById(`ts${i}_ans_vq`);
+            const extEl = document.getElementById(`ts${i}_extra_vq`);
+            if (ansEl) answers[i] = ansEl.value || '';
+            if (extEl) extras[i] = extEl.value || '';
+        }
+        const badge = document.getElementById('vq_current_pack_badge');
+        const titleEl = document.getElementById('vq_preview_title');
+        const qNumEl = document.getElementById('vq_preview_q_num');
+        const qTotalEl = document.getElementById('vq_preview_q_total');
+        const qEl = document.getElementById('vq_preview_q_text');
+        const aEl = document.getElementById('vq_preview_a_text');
+        const chk5s = document.getElementById('vq_check_5s');
+        return {
+            currentVQPack,
+            currentVQSubject,
+            currentVQQuestionText,
+            currentVQAnswerText,
+            currentVQQuestionIndex,
+            vqBuzzerOpen,
+            vqBuzzerWinner,
+            vqBellUnlockTime,
+            vqBuzzerWinnerTime,
+            vqQuestionStarUsed,
+            vqMainStarDeducted,
+            currentVQPackageNum,
+            currentVQSelectMode,
+            currentVQSlot,
+            vqTurnContestant,
+            vqCenterStarActive,
+            vqSlotConfigs: JSON.parse(JSON.stringify(vqSlotConfigs)),
+            vqQuestionIsShown: !!window.vqQuestionIsShown,
+            vqStars: Array.isArray(window.vqStars) ? window.vqStars.slice() : [false, false, false, false],
+            vqTimeLeft,
+            vqTimerEndAt,
+            vqTimerMode,
+            check5s: !!(chk5s && chk5s.checked),
+            answers,
+            extras,
+            packBadgeText: badge ? badge.innerText : '',
+            packBadgeBg: badge ? badge.style.background : '',
+            packBadgeColor: badge ? badge.style.color : '',
+            previewTitle: titleEl ? titleEl.innerText : '',
+            previewQNum: qNumEl ? qNumEl.innerText : '1',
+            previewQTotal: qTotalEl ? qTotalEl.innerText : '3',
+            previewQText: qEl ? qEl.innerText : '',
+            previewAText: aEl ? aEl.innerText : ''
+        };
+    },
+    restoreState: function(st) {
+        if (!st || typeof st !== 'object') return;
+        clearTimeout(vqAuto5sTimeout);
+        vqAuto5sTimeout = null;
+        clearInterval(vqTimerInterval);
+        vqTimerInterval = null;
+
+        currentVQPack = (st.currentVQPack !== undefined) ? st.currentVQPack : 10;
+        currentVQSubject = st.currentVQSubject || '';
+        currentVQQuestionText = st.currentVQQuestionText || '';
+        currentVQAnswerText = st.currentVQAnswerText || '';
+        currentVQQuestionIndex = parseInt(st.currentVQQuestionIndex, 10) || 0;
+        vqBuzzerOpen = !!st.vqBuzzerOpen;
+        vqBuzzerWinner = parseInt(st.vqBuzzerWinner, 10) || 0;
+        vqBellUnlockTime = Number(st.vqBellUnlockTime) || 0;
+        vqBuzzerWinnerTime = st.vqBuzzerWinnerTime || '';
+        vqQuestionStarUsed = !!st.vqQuestionStarUsed;
+        vqMainStarDeducted = !!st.vqMainStarDeducted;
+        currentVQPackageNum = (st.currentVQPackageNum !== undefined) ? st.currentVQPackageNum : null;
+        currentVQSelectMode = st.currentVQSelectMode || 'ordered';
+        currentVQSlot = parseInt(st.currentVQSlot, 10) || 0;
+        vqTurnContestant = parseInt(st.vqTurnContestant, 10) || 0;
+        vqCenterStarActive = !!st.vqCenterStarActive;
+        window.vqQuestionIsShown = !!st.vqQuestionIsShown;
+        if (st.vqSlotConfigs && typeof st.vqSlotConfigs === 'object') {
+            vqSlotConfigs = {
+                1: st.vqSlotConfigs[1] || { points: null, qIdx: null },
+                2: st.vqSlotConfigs[2] || { points: null, qIdx: null },
+                3: st.vqSlotConfigs[3] || { points: null, qIdx: null }
+            };
+        }
+        if (Array.isArray(st.vqStars)) {
+            window.vqStars = [!!st.vqStars[0], !!st.vqStars[1], !!st.vqStars[2], !!st.vqStars[3]];
+            for (let idx = 1; idx <= 4; idx++) {
+                const btn = document.getElementById(`vq_star_btn_${idx}`);
+                if (btn) {
+                    const isActive = !!window.vqStars[idx - 1];
+                    if (isActive) {
+                        btn.style.background = '#f1f5f9';
+                        btn.style.borderColor = '#94a3b8';
+                        btn.style.color = '#0f172a';
+                        btn.innerText = 'STAR ON';
+                    } else {
+                        btn.style.background = '#ffffff';
+                        btn.style.borderColor = '#cbd5e1';
+                        btn.style.color = '#475569';
+                        btn.innerText = 'STAR OFF';
+                    }
+                }
+            }
+        }
+
+        syncVQTurnDropdownNames();
+        const turnSel = document.getElementById('vq_turn_contestant');
+        if (turnSel) turnSel.value = String(vqTurnContestant);
+        const chk5s = document.getElementById('vq_check_5s');
+        if (chk5s) chk5s.checked = !!st.check5s;
+        const modeRadio = document.querySelector(`input[name="vq_select_mode"][value="${currentVQSelectMode}"]`);
+        if (modeRadio) modeRadio.checked = true;
+
+        for (let s = 1; s <= 3; s++) {
+            const pts = vqSlotConfigs[s]?.points;
+            const chk20 = document.getElementById(`vq_slot_${s}_20_chk`);
+            const chk30 = document.getElementById(`vq_slot_${s}_30_chk`);
+            if (chk20) chk20.checked = (pts === 20);
+            if (chk30) chk30.checked = (pts === 30);
+            const badgeSlot = document.getElementById(`vq_q_badge_${s}`);
+            if (badgeSlot) badgeSlot.innerText = pts ? `${pts}` : '';
+            const qBtn = document.getElementById(`btn_vq_q_${s}`);
+            if (qBtn) {
+                qBtn.style.background = (s === currentVQSlot) ? '#2563eb' : '#80c4ff';
+                qBtn.style.color = '#ffffff';
+            }
+        }
+        refreshVQManualRadiosUI();
+        updateVQPackButtonLabel();
+        updateVQMediaIndicators();
+        updateVQCenterStarUI(vqCenterStarActive);
+        updateVQActiveContestantCards(vqTurnContestant);
+
+        const badge = document.getElementById('vq_current_pack_badge');
+        if (badge && st.packBadgeText) {
+            badge.innerText = st.packBadgeText;
+            if (st.packBadgeBg) badge.style.background = st.packBadgeBg;
+            if (st.packBadgeColor) badge.style.color = st.packBadgeColor;
+        }
+        const titleEl = document.getElementById('vq_preview_title');
+        if (titleEl && st.previewTitle) titleEl.innerText = st.previewTitle;
+        const qNumEl = document.getElementById('vq_preview_q_num');
+        if (qNumEl && st.previewQNum) qNumEl.innerText = st.previewQNum;
+        const qTotalEl = document.getElementById('vq_preview_q_total');
+        if (qTotalEl && st.previewQTotal) qTotalEl.innerText = st.previewQTotal;
+        const qEl = document.getElementById('vq_preview_q_text');
+        if (qEl && st.previewQText) qEl.innerText = st.previewQText;
+        const aEl = document.getElementById('vq_preview_a_text');
+        if (aEl && st.previewAText) aEl.innerText = st.previewAText;
+
+        if (st.answers) {
+            for (let i = 1; i <= 5; i++) {
+                const ansEl = document.getElementById(`ts${i}_ans_vq`);
+                if (ansEl && st.answers[i] !== undefined) ansEl.value = st.answers[i];
+            }
+        }
+        if (st.extras) {
+            for (let i = 1; i <= 5; i++) {
+                const extEl = document.getElementById(`ts${i}_extra_vq`);
+                if (extEl && st.extras[i] !== undefined) extEl.value = st.extras[i];
+            }
+        }
+        if (vqBuzzerWinner >= 1 && vqBuzzerWinner <= 4) {
+            setVQBuzzerWinnerUI(vqBuzzerWinner, vqBuzzerWinnerTime);
+        }
+
+        vqTimerMode = st.vqTimerMode || 'main';
+        vqTimerEndAt = Number(st.vqTimerEndAt) || 0;
+        vqTimeLeft = (st.vqTimeLeft !== undefined) ? parseInt(st.vqTimeLeft, 10) : 20;
+        if (vqTimerEndAt > Date.now()) {
+            startVQDeadlineInterval(Math.ceil((vqTimerEndAt - Date.now()) / 1000), vqTimerMode, vqTimerEndAt);
+        } else {
+            vqTimerEndAt = 0;
+            const timerEl = document.getElementById('vq_preview_timer');
+            if (timerEl) timerEl.innerText = String(vqTimeLeft);
+            const statusEl = document.getElementById('vq_preview_status');
+            if (statusEl) statusEl.innerText = String(vqTimeLeft);
+        }
+    }
+};

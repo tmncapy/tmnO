@@ -23,8 +23,9 @@ app.use(compression({
     // CRITICAL: Never compress video, audio, or pre-compressed images
     // This allows instant byte-range streaming for MP4 videos and avoids audio lag
     const url = (req.url || '').toLowerCase();
-    if (url.match(/\.(mp4|webm|ogg|mp3|wav|png|jpg|jpeg|gif|webp|ico|woff|woff2)$/i) || 
-        url.includes('/sounds/') || url.includes('/images/') || url.includes('/uploads/')) {
+    if (url.match(/\.(mp4|webm|ogg|mp3|wav|png|jpg|jpeg|gif|webp|ico|woff|woff2|svg|avif|mov|m4v|mkv)$/i) || 
+        url.includes('/sounds/') || url.includes('/images/') || url.includes('/uploads/') ||
+        url.includes('/media/') || url.includes('/sfx/') || url.includes('/videos/') || url.includes('/assets/')) {
       return false;
     }
     return compression.filter(req, res);
@@ -71,24 +72,39 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
-  // Strip subfolder prefix if present in request (e.g. /DuongDenVinhQuang-main/api/state -> /api/state)
+  // Strip subfolder prefix safely without hijacking asset URLs containing words like 'state' or 'action'
   if (req.url) {
-    if (req.url.includes('/api/')) {
+    if (req.url.includes('\\')) {
+      req.url = req.url.replace(/\\/g, '/');
+    }
+    req.url = req.url.replace(/\/{2,}/g, '/');
+
+    let stripped = req.url;
+    for (let k = 0; k < 3; k++) {
+      const next = stripped.replace(/^\/(?:public|Olympia|DuongDenVinhQuang-main)(?=\/|$)/i, '') || '/';
+      if (next === stripped) break;
+      stripped = next;
+    }
+
+    const qIdx = stripped.indexOf('?');
+    const pathOnly = qIdx >= 0 ? stripped.slice(0, qIdx) : stripped;
+    const queryPart = qIdx >= 0 ? stripped.slice(qIdx) : '';
+
+    if (pathOnly.startsWith('/api/')) {
+      req.url = stripped;
+    } else if (/^\/(action|state|events|buzzer-state)$/i.test(pathOnly)) {
+      req.url = '/api' + pathOnly.toLowerCase() + queryPart;
+    } else if (/^\/upload\.php$/i.test(pathOnly)) {
+      req.url = '/upload.php' + queryPart;
+    } else if (/^\/(uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\//i.test(pathOnly)) {
+      req.url = stripped;
+    } else if (req.url.includes('/api/')) {
       req.url = req.url.substring(req.url.indexOf('/api/'));
-    } else if (req.url.includes('/action')) {
-      req.url = '/api/action';
-    } else if (req.url.includes('/state')) {
-      req.url = '/api/state';
-    } else if (req.url.includes('/events')) {
-      req.url = '/api/events';
-    } else if (req.url.includes('/uploads/')) {
-      req.url = req.url.substring(req.url.indexOf('/uploads/'));
-    } else if (req.url.includes('/sounds/')) {
-      req.url = req.url.substring(req.url.indexOf('/sounds/'));
-    } else if (req.url.includes('/Images/')) {
-      req.url = req.url.substring(req.url.indexOf('/Images/'));
-    } else if (req.url.includes('/images/')) {
-      req.url = req.url.substring(req.url.indexOf('/images/'));
+    } else {
+      const subMediaMatch = req.url.match(/(\/(?:uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\/.*)$/i);
+      if (subMediaMatch) {
+        req.url = subMediaMatch[1];
+      }
     }
   }
   next();
@@ -1420,8 +1436,8 @@ const handleUploadEndpoint = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, error: 'Không tìm thấy file tải lên' });
   }
-  const fileUrl = `uploads/${req.file.filename}`;
-  const fullUrl = `${req.protocol}://${req.get('host')}/${fileUrl}`;
+  const fileUrl = `/uploads/${req.file.filename}`;
+  const fullUrl = `${req.protocol}://${req.get('host')}${fileUrl}`;
   console.log(`📁 [Upload] File uploaded successfully: ${req.file.originalname} -> ${fileUrl} (${(req.file.size / 1024 / 1024).toFixed(2)} MB)`);
   res.json({
     success: true,
@@ -1448,7 +1464,7 @@ const handleListUploads = (req, res) => {
         const stats = fs.statSync(path.join(uploadsDir, file));
         return {
           filename: file,
-          url: `uploads/${file}`,
+          url: `/uploads/${file}`,
           fullUrl: `${req.protocol}://${req.get('host')}/uploads/${file}`,
           size: stats.size,
           mtime: stats.mtimeMs
@@ -1864,65 +1880,111 @@ app.post('/api/broadcast', (req, res) => {
   res.json({ ok: true, wsReceivers: wsClients.size, buzzerState: serverState.buzzerState });
 });
 
-// Robust Case-Insensitive Sound Route & Caching (checking public/sounds and root sounds)
-app.get('/sounds/:filename', (req, res, next) => {
-  const reqName = req.params.filename;
-  const searchDirs = [
-    path.join(__dirname, 'public', 'sounds'),
-    path.join(__dirname, 'sounds')
-  ];
+function getMediaMimeType(filePath) {
+  const ext = path.extname(filePath || '').toLowerCase();
+  const mimeMap = {
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mov': 'video/quicktime',
+    '.m4v': 'video/x-m4v',
+    '.ogv': 'video/ogg',
+    '.avi': 'video/x-msvideo',
+    '.mkv': 'video/x-matroska',
+    '.mp3': 'audio/mpeg',
+    '.wav': 'audio/wav',
+    '.ogg': 'audio/ogg',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.avif': 'image/avif',
+    '.bmp': 'image/bmp'
+  };
+  return mimeMap[ext] || 'application/octet-stream';
+}
 
-  for (const soundsDir of searchDirs) {
-    if (!fs.existsSync(soundsDir)) continue;
-    const exactPath = path.join(soundsDir, reqName);
-    if (fs.existsSync(exactPath)) {
-      try {
-        const stat = fs.statSync(exactPath);
-        if (stat.size === 0) return res.status(204).end();
-      } catch(e) {}
-      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
-      return res.sendFile(exactPath);
+function findMediaFileInDirs(searchDirs, rawSubPath) {
+  let cleanRel = '';
+  try {
+    cleanRel = decodeURIComponent(rawSubPath || '').replace(/^\/+/, '');
+  } catch (e) {
+    cleanRel = (rawSubPath || '').replace(/^\/+/, '');
+  }
+  const baseName = path.basename(cleanRel);
+  if (!baseName) return null;
+
+  for (const dir of searchDirs) {
+    if (!dir || !fs.existsSync(dir)) continue;
+    const candidateExact = path.join(dir, cleanRel);
+    if (fs.existsSync(candidateExact) && fs.statSync(candidateExact).isFile()) {
+      return candidateExact;
+    }
+    const candidateBase = path.join(dir, baseName);
+    if (fs.existsSync(candidateBase) && fs.statSync(candidateBase).isFile()) {
+      return candidateBase;
     }
     try {
-      const files = fs.readdirSync(soundsDir);
-      const match = files.find(f => f.toLowerCase() === reqName.toLowerCase());
+      const files = fs.readdirSync(dir);
+      const match = files.find(f => f.toLowerCase() === baseName.toLowerCase());
       if (match) {
-        const matchPath = path.join(soundsDir, match);
-        const stat = fs.statSync(matchPath);
-        if (stat.size === 0) return res.status(204).end();
-        res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
-        return res.sendFile(matchPath);
+        const matchPath = path.join(dir, match);
+        if (fs.statSync(matchPath).isFile()) return matchPath;
       }
     } catch (e) {}
+  }
+  return null;
+}
+
+const audioSearchDirs = [
+  path.join(__dirname, 'SFX'),
+  path.join(__dirname, 'sounds'),
+  path.join(__dirname, '..', 'SFX'),
+  path.join(__dirname, '..', 'sounds'),
+  uploadsDir
+];
+
+const visualMediaSearchDirs = [
+  path.join(__dirname, 'Media'),
+  path.join(__dirname, 'uploads'),
+  path.join(__dirname, 'assets'),
+  path.join(__dirname, 'Images'),
+  path.join(__dirname, 'images'),
+  path.join(__dirname, 'videos'),
+  path.join(__dirname, '..', 'Media'),
+  path.join(__dirname, '..', 'uploads'),
+  path.join(__dirname, '..', 'Images'),
+  path.join(__dirname, '..', 'images'),
+  path.join(__dirname, '..', 'videos'),
+  __dirname,
+  path.join(__dirname, '..')
+];
+
+// Robust Case-Insensitive Sound Route & Caching (checking SFX, sounds, and uploads)
+app.get(['/sounds/:filename', '/SFX/:filename', '/sfx/:filename'], (req, res, next) => {
+  const found = findMediaFileInDirs(audioSearchDirs, req.params.filename);
+  if (found) {
+    try {
+      const stat = fs.statSync(found);
+      if (stat.size === 0) return res.status(204).end();
+    } catch (e) {}
+    return streamMediaFile(req, res, found, getMediaMimeType(found));
   }
   next();
 });
 
-// Robust Case-Insensitive Images Route & Caching (checking public/Images and root Images)
-app.get(['/Images/:filename', '/images/:filename'], (req, res, next) => {
-  const reqName = req.params.filename;
-  const searchDirs = [
-    path.join(__dirname, 'public', 'Images'),
-    path.join(__dirname, 'public', 'images'),
-    path.join(__dirname, 'Images'),
-    path.join(__dirname, 'images')
-  ];
-
-  for (const imgDir of searchDirs) {
-    if (!fs.existsSync(imgDir)) continue;
-    const exactPath = path.join(imgDir, reqName);
-    if (fs.existsSync(exactPath)) {
-      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
-      return res.sendFile(exactPath);
+// Robust Case-Insensitive Images & Media Route & Caching (checking Media, uploads, Images, assets)
+app.get(['/Images/*', '/images/*', '/Media/*', '/media/*', '/videos/*', '/uploads/*'], (req, res, next) => {
+  const subPath = req.params[0] || '';
+  const found = findMediaFileInDirs(visualMediaSearchDirs, subPath);
+  if (found) {
+    const mime = getMediaMimeType(found);
+    if (mime.startsWith('video/') || mime.startsWith('audio/')) {
+      return streamMediaFile(req, res, found, mime);
     }
-    try {
-      const files = fs.readdirSync(imgDir);
-      const match = files.find(f => f.toLowerCase() === reqName.toLowerCase());
-      if (match) {
-        res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
-        return res.sendFile(path.join(imgDir, match));
-      }
-    } catch (e) {}
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+    return res.sendFile(found);
   }
   next();
 });
@@ -1967,20 +2029,16 @@ function streamMediaFile(req, res, filePath, contentType = 'video/mp4') {
   }
 }
 
-// Dedicated streaming for all MP4 files (Opening.mp4, V1..V4.mp4, cau1..cau4.mp4, uploads)
-app.get(['/*.mp4', '/videos/*.mp4'], (req, res, next) => {
-  const fileName = path.basename(req.path);
-  const potentialPaths = [
-    path.join(__dirname, 'public', 'videos', fileName),
-    path.join(__dirname, 'public', fileName),
-    path.join(__dirname, fileName),
-    path.join(uploadsDir, fileName)
-  ];
-
-  for (const filePath of potentialPaths) {
-    if (fs.existsSync(filePath)) {
-      return streamMediaFile(req, res, filePath, 'video/mp4');
+// Dedicated streaming/fallback for bare media filenames in root (e.g. Opening.mp4, V1.mp4, hint.png, etc.)
+app.get('/*.:ext(mp4|webm|mov|m4v|ogv|png|jpg|jpeg|gif|webp|svg|avif|mp3|wav|ogg)', (req, res, next) => {
+  const found = findMediaFileInDirs([...visualMediaSearchDirs, ...audioSearchDirs], req.path);
+  if (found) {
+    const mime = getMediaMimeType(found);
+    if (mime.startsWith('video/') || mime.startsWith('audio/')) {
+      return streamMediaFile(req, res, found, mime);
     }
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600');
+    return res.sendFile(found);
   }
   next();
 });

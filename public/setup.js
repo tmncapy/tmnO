@@ -45,7 +45,7 @@ let gameData = {
 
 let currentXuatPhatTurn = 0;
 let editingXuatPhatDe = 1;
-let currentVinhQuangPack = 10;
+let currentVinhQuangPack = 1;
 
 // Safely initialize scoreboardThumbnailStates & scoreboardInfoStates early
 window.scoreboardThumbnailStates = window.scoreboardThumbnailStates || { 1: false, 2: false, 3: false, 4: false };
@@ -56,12 +56,27 @@ window.addEventListener('DOMContentLoaded', () => {
     initXuatPhatTurnData();
     renderXuatPhatTurnUI(1);
     initVinhQuangData();
-    renderVinhQuangPackUI(10);
+    renderVinhQuangPackUI(1);
     loadSavedData();
     updateVuotSongState();
-    if (typeof setRKQuestionUI === 'function') {
+    let hasRuntimeSnapshot = false;
+    try {
+        hasRuntimeSnapshot = !!(localStorage.getItem('ddvq_controller_runtime_v1') || sessionStorage.getItem('ddvq_controller_runtime_v1'));
+    } catch(e) {}
+    if (!hasRuntimeSnapshot && typeof setRKQuestionUI === 'function') {
         setRKQuestionUI(1);
     }
+    // Restore room credentials immediately on load
+    try {
+        const savedRoom = localStorage.getItem('ddvq_room_code');
+        const savedAuth = localStorage.getItem('ddvq_room_auth');
+        const rInput = document.getElementById('room_code_input');
+        const aInput = document.getElementById('room_auth_input');
+        const rBadge = document.getElementById('room_code_badge');
+        if (savedRoom && rInput && !rInput.value) rInput.value = savedRoom;
+        if (savedAuth && aInput && !aInput.value) aInput.value = savedAuth;
+        if (savedRoom && rBadge) rBadge.innerText = `Đang hoạt động: ${savedRoom} | Pass: ${savedAuth || '123456'}`;
+    } catch(e) {}
     // Restore Scoreboard Thumbnail & Info States
     try {
         for (let c = 1; c <= 4; c++) {
@@ -97,81 +112,35 @@ try {
     if (tStr) window.currentActiveTimer = JSON.parse(tStr);
 } catch(e) {}
 
-// Switch main tabs (Dành riêng cho máy Controller -> đồng bộ màn hình Thí sinh & MC, KHÔNG làm chuyển view hay ẩn đồ họa trên Projector)
-function onSwitchTabRound(index) {
-    let roundName = 'HE_THONG';
-    if (index === 1) roundName = 'XUAT_PHAT';
-    else if (index === 2) roundName = 'VUOT_SONG';
-    else if (index === 3) roundName = 'RA_KHOI';
-    else if (index === 4) roundName = 'VINH_QUANG';
-    else if (index === 5) roundName = 'CAU_HOI_PHU';
-
-    window.currentActiveRound = roundName;
-    window.currentActiveTimer = null;
-    try {
-        localStorage.setItem('ddvq_active_round', roundName);
-        localStorage.removeItem('ddvq_current_timer');
-    } catch(e) {}
-
-    if (typeof syncContestantsUI === 'function') {
-        syncContestantsUI();
+// Local-only tab refresh: switching Controller tabs NEVER resets state or switches Player/Projector
+function onSwitchTabRound(index, opts = {}) {
+    if (typeof syncContestantsUI === 'function' && !opts.silentSync) {
+        // Only refresh local controller DOM values without re-broadcasting on tab view
+        if (gameData && Array.isArray(gameData.contestants)) {
+            gameData.contestants.forEach((c, i) => {
+                const idx = i + 1;
+                const scoreVal = c.score !== undefined ? c.score : 0;
+                ['ts' + idx + '_score_disp', 'ts' + idx + '_score_disp_rk', 'ts' + idx + '_score_disp_vs', 'ts' + idx + '_score_disp_vq', 'ts' + idx + '_score_disp_chp'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = scoreVal;
+                });
+            });
+        }
     }
 
     if (index === 1) {
-        currentXuatPhatTurn = 0;
-        for (let i = 1; i <= 5; i++) {
-            const btn = document.getElementById(`btn_luot_${i}`);
-            if (btn) btn.classList.remove('active');
-        }
-        if (typeof clearXPBuzzerUI === 'function') clearXPBuzzerUI();
         if (typeof updateTab1Preview === 'function') updateTab1Preview();
     } else if (index === 2) {
-        window.vsRoundStartTime = Date.now();
-        try { localStorage.setItem('s3_round_start_time', window.vsRoundStartTime); } catch(e) {}
-        if (typeof updateVuotSongState === 'function') updateVuotSongState();
+        if (typeof updateVSBuzzerLabels === 'function') updateVSBuzzerLabels();
     } else if (index === 3) {
-        if (typeof setRKQuestionUI === 'function') {
-            setRKQuestionUI(typeof currentRKQuestion !== 'undefined' ? currentRKQuestion : 1);
-        }
-    }
-
-    // Chỉ gửi tín hiệu chuyển vòng cho máy Thí sinh (Player) & Máy MC (Host), không động đến Projector
-    const payload = {
-        type: 'SWITCH_ROUND_PLAYER_MC',
-        round: roundName,
-        activeRound: roundName,
-        tabIndex: index,
-        timestamp: Date.now()
-    };
-    if (typeof sendSupabaseAction === 'function') {
-        sendSupabaseAction(payload);
+        if (typeof updateTab2Preview === 'function') updateTab2Preview();
+    } else if (index === 4) {
+        if (typeof syncVQTurnDropdownNames === 'function') syncVQTurnDropdownNames();
+    } else if (index === 5) {
+        if (typeof updateTab5Preview === 'function') updateTab5Preview();
     }
 }
 window.onSwitchTabRound = onSwitchTabRound;
-
-function switchTab(index) {
-    const navItems = document.querySelectorAll('.nav-item');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    navItems.forEach((item, idx) => {
-        if (idx === index) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
-    });
-
-    tabContents.forEach((content, idx) => {
-        if (idx === index) {
-            content.classList.add('active');
-        } else {
-            content.classList.remove('active');
-        }
-    });
-
-    onSwitchTabRound(index);
-}
-window.switchTab = switchTab;
 
 // Bắt đầu vòng thi: Bấm nút tên vòng thi để chuyển cảnh Thí sinh/MC đồng thời ẩn sạch toàn bộ Graphic trên Projector & Graphic
 window.startRoundAndCleanGraphics = function(roundIndex) {
@@ -272,6 +241,9 @@ window.startRoundAndCleanGraphics = function(roundIndex) {
         sendToProjector('CAU_HOI_PHU_RESET', { round: 'CHP', activeRound: 'CHP' });
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') {
+        window.saveControllerRuntimeState();
+    }
     showToast(`🚀 Đã Bắt đầu Vòng ${roundIndex}: ${label}! Đã chuyển tab Player & ẩn toàn bộ Graphic.`);
 };
 
@@ -334,11 +306,12 @@ function ensureDefaultGameDataSeed() {
     ];
 
     for (let t = 1; t <= 8; t++) {
-        const countForTurn = (t >= 1 && t <= 4) ? 6 : 12;
+        const defaultCount = (t >= 1 && t <= 4) ? 6 : 12;
+        const maxCap = (t >= 1 && t <= 4) ? 6 : 15;
         if (!gameData.xuatPhat[t] || !Array.isArray(gameData.xuatPhat[t])) {
             gameData.xuatPhat[t] = [];
         }
-        while (gameData.xuatPhat[t].length < countForTurn) {
+        while (gameData.xuatPhat[t].length < defaultCount) {
             const idx = gameData.xuatPhat[t].length;
             const src = defaultXPSet1[idx];
             gameData.xuatPhat[t].push({
@@ -346,8 +319,8 @@ function ensureDefaultGameDataSeed() {
                 a: src ? src.a : `Đáp án câu ${idx + 1}`
             });
         }
-        if (gameData.xuatPhat[t].length > countForTurn) {
-            gameData.xuatPhat[t] = gameData.xuatPhat[t].slice(0, countForTurn);
+        if (gameData.xuatPhat[t].length > maxCap) {
+            gameData.xuatPhat[t] = gameData.xuatPhat[t].slice(0, maxCap);
         }
     }
 
@@ -371,47 +344,22 @@ function ensureDefaultGameDataSeed() {
         };
     }
 
-    if (!gameData.vinhQuang || !gameData.vinhQuang[10] || !gameData.vinhQuang[10][0] || !gameData.vinhQuang[10][0].q) {
-        gameData.vinhQuang = {
-            10: [
-                { m: "Lịch sử", q: "Kinh đô đầu tiên của nước ta thời Lạc Long Quân là gì?", a: "Phong Châu" },
-                { m: "Địa lý", q: "Thành phố nào là thủ đô của Việt Nam?", a: "Hà Nội" }
-            ],
-            20: [
-                { m: "Vật lý", q: "Đơn vị đo cường độ dòng điện trong hệ SI là gì?", a: "Ampe (A)" },
-                { m: "Hóa học", q: "Công thức hóa học của nước là gì?", a: "H2O" }
-            ],
-            30: [
-                { m: "Toán học", q: "Số nguyên tố nhỏ nhất là số mấy?", a: "2" },
-                { m: "Văn học", q: "Tác giả của Nam quốc sơn hà là ai?", a: "Lý Thường Kiệt" }
-            ]
-        };
+    if (!gameData.vinhQuang || typeof gameData.vinhQuang !== 'object' || !Array.isArray(gameData.vinhQuang[1])) {
+        gameData.vinhQuang = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+        for (let pt of [1, 2, 3, 4, 5]) {
+            for (let i = 0; i < 6; i++) {
+                gameData.vinhQuang[pt].push({ m: '', q: '', a: '' });
+            }
+        }
     }
 }
 
 // Initialize empty Xuat Phat turns
 function initXuatPhatTurnData() {
-    for (let turn = 1; turn <= 8; turn++) {
-        const maxRows = (turn >= 1 && turn <= 4) ? 6 : 12;
-        if (!gameData.xuatPhat[turn] || !Array.isArray(gameData.xuatPhat[turn])) {
-            gameData.xuatPhat[turn] = [];
-        }
-        while (gameData.xuatPhat[turn].length < maxRows) {
-            const idx = gameData.xuatPhat[turn].length;
-            const src = defaultXPSet1[idx];
-            gameData.xuatPhat[turn].push({
-                q: src ? src.q : `Câu hỏi số ${idx + 1} bộ đề ${turn}`,
-                a: src ? src.a : `Đáp án câu ${idx + 1}`
-            });
-        }
-        if (gameData.xuatPhat[turn].length > maxRows) {
-            gameData.xuatPhat[turn] = gameData.xuatPhat[turn].slice(0, maxRows);
-        }
-    }
     ensureDefaultGameDataSeed();
 }
 
-// Render Xuat Phat rows for editing a set (1..4: max 6 rows, 5..8: 12 rows)
+// Render Xuat Phat rows for editing a set (1..4: max 6 rows, 5..8: up to 15 rows)
 function renderXuatPhatTurnUI(deNum) {
     editingXuatPhatDe = deNum || 1;
     const container = document.getElementById('xuatPhatRows');
@@ -426,7 +374,7 @@ function renderXuatPhatTurnUI(deNum) {
 
     container.innerHTML = '';
     const questions = gameData.xuatPhat[editingXuatPhatDe] || [];
-    const maxRows = (editingXuatPhatDe >= 1 && editingXuatPhatDe <= 4) ? 6 : 12;
+    const maxRows = (editingXuatPhatDe >= 1 && editingXuatPhatDe <= 4) ? 6 : Math.max(15, questions.length);
 
     for (let i = 0; i < maxRows; i++) {
         const item = questions[i] || { q: '', a: '' };
@@ -534,7 +482,11 @@ function updateVuotSongState() {
 
     const hintEl = document.getElementById('vs_hint_image');
     if (hintEl) {
-        gameData.vuotSong.hintImage = hintEl.value.trim();
+        const rawHint = hintEl.value.trim();
+        const cleanHint = rawHint === '...' ? '' : rawHint;
+        gameData.vuotSong.hintImage = (typeof window.normalizeMediaUrl === 'function' && cleanHint)
+            ? window.normalizeMediaUrl(cleanHint)
+            : cleanHint;
     }
 
     if (vsSyncTimeout) clearTimeout(vsSyncTimeout);
@@ -670,7 +622,9 @@ function handleExcelUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    document.getElementById('excelFileName').value = file.name;
+    const excelNameEl = document.getElementById('excelFileName');
+    if (excelNameEl) excelNameEl.value = file.name;
+    gameData.excelFileName = file.name;
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -696,36 +650,138 @@ function handleExcelUpload(event) {
     reader.readAsArrayBuffer(file);
 }
 
+function normalizeExcelText(val) {
+    return (val === null || val === undefined ? '' : String(val))
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toUpperCase();
+}
+
+function normalizeExcelCompact(val) {
+    return normalizeExcelText(val).replace(/[\s_.\-:]+/g, '');
+}
+
+function getWorksheetCellLink(worksheet, r, c) {
+    if (!worksheet || typeof XLSX === 'undefined' || !XLSX.utils || typeof XLSX.utils.encode_cell !== 'function') return '';
+    try {
+        const addr = XLSX.utils.encode_cell({ r, c });
+        const cell = worksheet[addr];
+        if (cell && cell.l && cell.l.Target) {
+            return String(cell.l.Target).trim();
+        }
+    } catch (e) {}
+    return '';
+}
+
+function isExcelMediaLink(val) {
+    const s = (val || '').toString().trim();
+    if (!s || s === '...') return false;
+    return /^(https?:|data:|file:|\/?(?:uploads|Media|media|Images|images|videos|assets)\/)/i.test(s) ||
+        /\.(mp4|webm|mov|m4v|avi|mkv|ogv|png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i.test(s);
+}
+
 function parseExcelWorkbook(workbook) {
-    const sheetNames = workbook.SheetNames;
+    const sheetNames = workbook.SheetNames || [];
 
     sheetNames.forEach(sheetName => {
-        const cleanSheetName = sheetName.trim().toUpperCase();
+        const compactSheet = normalizeExcelCompact(sheetName);
         const worksheet = workbook.Sheets[sheetName];
         const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
-        if (cleanSheetName.includes("XUẤT PHÁT") || cleanSheetName.includes("KHỞI ĐỘNG") || cleanSheetName.includes("XUAT PHAT")) {
-            parseXuatPhatSheet(rawRows);
-        } else if (cleanSheetName.includes("RA KHƠI") || cleanSheetName.includes("RA KHOI")) {
-            parseRaKhoiSheet(rawRows);
-        } else if (cleanSheetName.includes("VƯỢT SÓNG") || cleanSheetName.includes("VUOT SONG") || cleanSheetName.includes("VƯỢT CHƯỚNG NGẠI VẬT")) {
-            parseVuotSongSheet(rawRows);
-        } else if (cleanSheetName.includes("VINH QUANG") || cleanSheetName.includes("VỀ ĐÍCH")) {
-            parseVinhQuangSheet(rawRows);
-        } else if (cleanSheetName.includes("CÂU HỎI PHỤ") || cleanSheetName.includes("CAU HOI PHU")) {
-            parseCauHoiPhuSheet(rawRows);
+        if (compactSheet.includes("KHOIDONG") || compactSheet.includes("XUATPHAT")) {
+            parseXuatPhatSheet(rawRows, worksheet);
+        } else if (compactSheet.includes("TANGTOC") || compactSheet.includes("RAKHOI")) {
+            parseRaKhoiSheet(rawRows, worksheet);
+        } else if (compactSheet.includes("VCNV") || compactSheet.includes("VUOTSONG") || compactSheet.includes("VUOTCHUONGNGAIVAT")) {
+            parseVuotSongSheet(rawRows, worksheet);
+        } else if ((compactSheet.includes("VEDICH") && !compactSheet.includes("PHU")) || compactSheet.includes("VINHQUANG")) {
+            parseVinhQuangSheet(rawRows, worksheet);
+        } else if (compactSheet.includes("VEDICHPHU") || compactSheet.includes("CAUHOIPHU") || compactSheet === "CHP") {
+            parseCauHoiPhuSheet(rawRows, worksheet);
         }
     });
 
-    renderXuatPhatTurnUI(currentXuatPhatTurn);
+    renderXuatPhatTurnUI(editingXuatPhatDe || 1);
     fillRaKhoiInputs();
     fillVuotSongInputs();
-    renderVinhQuangPackUI(currentVinhQuangPack);
+    renderVinhQuangPackUI(currentVinhQuangPack || 1);
     fillCauHoiPhuInputs();
     updateVuotSongState();
+    if (typeof updateTab1Preview === 'function') updateTab1Preview();
+    if (typeof updateTab2Preview === 'function') updateTab2Preview();
+    if (typeof updateVQMediaIndicators === 'function') updateVQMediaIndicators();
+    if (typeof updateTab5Preview === 'function') updateTab5Preview();
+    if (typeof syncContestantsUI === 'function') syncContestantsUI();
 }
 
-function parseXuatPhatSheet(rows) {
+function parseXuatPhatSheet(rows, worksheet) {
+    // Check for multi-column KhoiDong header (Thí sinh 1..5 + Khởi động chung)
+    let headerRowIdx = -1;
+    let colMappings = [];
+
+    for (let r = 0; r < Math.min(3, rows.length); r++) {
+        const row = rows[r] || [];
+        const found = [];
+        for (let c = 0; c < row.length; c++) {
+            const compact = normalizeExcelCompact(row[c]);
+            if (!compact) continue;
+            const tsMatch = compact.match(/^THISINH(\d+)$/);
+            if (tsMatch) {
+                const tsNum = parseInt(tsMatch[1], 10);
+                // Thí sinh 1..4 -> Bộ đề 1..4; Thí sinh 5 -> Bộ đề 6 (vì Bộ đề 5 là Khởi động chung)
+                const targetTurn = (tsNum >= 1 && tsNum <= 4) ? tsNum : (tsNum === 5 ? 6 : tsNum + 1);
+                if (targetTurn >= 1 && targetTurn <= 8) {
+                    found.push({ turn: targetTurn, qCol: c, aCol: c + 1 });
+                }
+            } else if (compact.includes("KHOIDONGCHUNG") || compact.includes("THICHUNG") || compact === "CHUNG") {
+                found.push({ turn: 5, qCol: c, aCol: c + 1 });
+            }
+        }
+        if (found.length > 0) {
+            headerRowIdx = r;
+            colMappings = found;
+            break;
+        }
+    }
+
+    if (headerRowIdx !== -1 && colMappings.length > 0) {
+        const collected = {};
+        colMappings.forEach(m => {
+            collected[m.turn] = [];
+        });
+
+        for (let r = headerRowIdx + 1; r < rows.length; r++) {
+            const row = rows[r];
+            if (!row || row.length === 0) continue;
+            colMappings.forEach(m => {
+                const maxForTurn = (m.turn >= 1 && m.turn <= 4) ? 6 : 15;
+                if (collected[m.turn].length >= maxForTurn) return;
+                const qText = (row[m.qCol] !== undefined && row[m.qCol] !== null ? String(row[m.qCol]) : "").trim();
+                const aText = (row[m.aCol] !== undefined && row[m.aCol] !== null ? String(row[m.aCol]) : "").trim();
+                if (qText || aText) {
+                    collected[m.turn].push({ q: qText, a: aText });
+                }
+            });
+        }
+
+        Object.keys(collected).forEach(turnKey => {
+            const turn = parseInt(turnKey, 10);
+            const items = collected[turn] || [];
+            if (items.length === 0) return;
+            const targetLen = (turn >= 1 && turn <= 4) ? 6 : Math.max(12, Math.min(15, items.length));
+            while (items.length < targetLen) {
+                items.push({ q: '', a: '' });
+            }
+            gameData.xuatPhat[turn] = items.slice(0, (turn >= 1 && turn <= 4) ? 6 : 15);
+        });
+        return;
+    }
+
+    // Fallback: Legacy 3-column XUẤT PHÁT format
     let currentTurn = 1;
     let currentItemIndex = 0;
 
@@ -733,7 +789,7 @@ function parseXuatPhatSheet(rows) {
         const row = rows[r];
         if (!row || row.length < 2) continue;
 
-        const sttDe = row[0] !== undefined && row[0] !== "" ? parseInt(row[0]) : null;
+        const sttDe = row[0] !== undefined && row[0] !== "" ? parseInt(row[0], 10) : null;
         const questionText = (row[1] || "").toString().trim();
         const answerText = (row[2] || "").toString().trim();
 
@@ -744,7 +800,7 @@ function parseXuatPhatSheet(rows) {
             currentItemIndex = 0;
         }
 
-        const maxRows = (currentTurn >= 1 && currentTurn <= 4) ? 6 : 12;
+        const maxRows = (currentTurn >= 1 && currentTurn <= 4) ? 6 : 15;
         if (!gameData.xuatPhat[currentTurn]) {
             gameData.xuatPhat[currentTurn] = [];
             for (let i = 0; i < maxRows; i++) gameData.xuatPhat[currentTurn].push({ q: '', a: '' });
@@ -760,29 +816,168 @@ function parseXuatPhatSheet(rows) {
     }
 }
 
-function parseRaKhoiSheet(rows) {
+function parseRaKhoiSheet(rows, worksheet) {
     if (!Array.isArray(gameData.raKhoi)) {
-        gameData.raKhoi = [ {q:"",a:""}, {q:"",a:""}, {q:"",a:""}, {q:"",a:""} ];
+        gameData.raKhoi = [ {q:"",a:"",m:"",am:""}, {q:"",a:"",m:"",am:""}, {q:"",a:"",m:"",am:""}, {q:"",a:"",m:"",am:""} ];
     }
-    let count = 0;
-    for (let r = 2; r < rows.length && count < 4; r++) {
+
+    // Detect header row (row 0 in new TangToc sheet has B1 blank/Câu hỏi and C1="Đáp án"; legacy has row 1 header)
+    let startRow = 1;
+    if (rows.length > 1) {
+        const r0CompactA = normalizeExcelCompact(rows[0]?.[0]);
+        const r0CompactB = normalizeExcelCompact(rows[0]?.[1]);
+        const r0CompactC = normalizeExcelCompact(rows[0]?.[2]);
+        const r1CompactA = normalizeExcelCompact(rows[1]?.[0]);
+        const r1CompactC = normalizeExcelCompact(rows[1]?.[2]);
+        if (r0CompactC.includes("DAPAN") || r0CompactB.includes("CAUHOI") || r0CompactB.includes("NOIDUNG")) {
+            startRow = 1;
+        } else if (r1CompactA === "CAU" || r1CompactC.includes("DAPAN") || r0CompactA === "RAKHOI") {
+            startRow = 2;
+        }
+    }
+
+    const parsedItems = [];
+    for (let r = startRow; r < rows.length && parsedItems.length < 6; r++) {
         const row = rows[r];
         if (!row || row.length < 2) continue;
 
-        const qText = (row[1] || "").toString().trim();
-        const aText = (row[2] || "").toString().trim();
+        const qText = (row[1] !== undefined && row[1] !== null ? String(row[1]) : "").trim();
+        const aText = (row[2] !== undefined && row[2] !== null ? String(row[2]) : "").trim();
+        const col3 = (row[3] !== undefined && row[3] !== null ? String(row[3]) : "").trim();
+        const col4 = (row[4] !== undefined && row[4] !== null ? String(row[4]) : "").trim();
+        const linkB = getWorksheetCellLink(worksheet, r, 1);
 
         if (qText || aText) {
-            gameData.raKhoi[count] = { q: qText, a: aText, m: "...", am: "..." };
-            count++;
+            const idx = parsedItems.length;
+            const prev = gameData.raKhoi[idx] || {};
+            let nextM = (prev.m && prev.m !== '...') ? prev.m : '';
+            if (isExcelMediaLink(col3)) {
+                nextM = typeof window.normalizeMediaUrl === 'function' ? window.normalizeMediaUrl(col3) : col3;
+            } else if (isExcelMediaLink(linkB)) {
+                nextM = typeof window.normalizeMediaUrl === 'function' ? window.normalizeMediaUrl(linkB) : linkB;
+            }
+
+            const nextAm = isExcelMediaLink(col4)
+                ? (typeof window.normalizeMediaUrl === 'function' ? window.normalizeMediaUrl(col4) : col4)
+                : ((prev.am && prev.am !== '...') ? prev.am : '');
+
+            parsedItems.push({
+                q: qText,
+                a: aText,
+                m: nextM,
+                am: nextAm,
+                mt: prev.mt || ''
+            });
         }
+    }
+
+    if (parsedItems.length > 0) {
+        while (parsedItems.length < 4) {
+            const prev = gameData.raKhoi[parsedItems.length] || {};
+            parsedItems.push({
+                q: '',
+                a: '',
+                m: (prev.m && prev.m !== '...') ? prev.m : '',
+                am: (prev.am && prev.am !== '...') ? prev.am : '',
+                mt: prev.mt || ''
+            });
+        }
+        gameData.raKhoi = parsedItems.slice(0, 6);
     }
 }
 
-function parseVuotSongSheet(rows) {
-    if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
-        gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "" };
+function parseVuotSongSheet(rows, worksheet) {
+    const prevHintImage = (gameData.vuotSong && !Array.isArray(gameData.vuotSong) && gameData.vuotSong.hintImage)
+        ? gameData.vuotSong.hintImage
+        : "";
+    if (!gameData.vuotSong || Array.isArray(gameData.vuotSong) || typeof gameData.vuotSong !== 'object') {
+        gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "", hintImage: prevHintImage };
+    } else {
+        for (let i = 1; i <= 4; i++) {
+            if (!gameData.vuotSong[`h${i}`] || typeof gameData.vuotSong[`h${i}`] !== 'object') {
+                gameData.vuotSong[`h${i}`] = { q: "", a: "" };
+            }
+        }
+        if (!gameData.vuotSong.center || typeof gameData.vuotSong.center !== 'object') {
+            gameData.vuotSong.center = { q: "", a: "" };
+        }
     }
+
+    // Detect VCNV crossword grid format: O CHU / KY TU on left + CAU HOI / NOI DUNG on right (cols Q/R)
+    const row0 = rows[0] || [];
+    let kyTuCol = -1;
+    let qLabelCol = -1;
+    let qContentCol = -1;
+    for (let c = 0; c < row0.length; c++) {
+        const comp = normalizeExcelCompact(row0[c]);
+        if (comp === "KYTU") kyTuCol = c;
+        else if (comp === "CAUHOI") qLabelCol = c;
+        else if (comp === "NOIDUNG") qContentCol = c;
+    }
+
+    const hasNewGridHeader = (kyTuCol !== -1) || (qLabelCol !== -1 && qContentCol !== -1) ||
+        rows.some(r => {
+            const c0 = normalizeExcelCompact(r?.[0]);
+            return c0.includes("TUKHOAVCNV") || c0 === "OCHU";
+        });
+
+    if (hasNewGridHeader) {
+        const gridEndCol = kyTuCol > 0 ? kyTuCol : 15; // default A..O (0..14)
+        const lblCol = qLabelCol !== -1 ? qLabelCol : 16; // default Q
+        const cntCol = qContentCol !== -1 ? qContentCol : (lblCol + 1); // default R
+
+        // Rows 2..5 (indices 1..4) contain crossword letters across A..O
+        for (let i = 1; i <= 4; i++) {
+            const row = rows[i] || [];
+            let word = '';
+            for (let c = 0; c < gridEndCol; c++) {
+                const ch = (row[c] !== undefined && row[c] !== null ? String(row[c]) : "").trim();
+                if (ch) word += ch;
+            }
+            if (!gameData.vuotSong[`h${i}`]) gameData.vuotSong[`h${i}`] = { q: '', a: '' };
+            if (word) {
+                gameData.vuotSong[`h${i}`].a = word;
+            }
+        }
+
+        // Right-side questions table (Hàng 1..4, Trung tâm, Đ.án TT) & Từ khóa VCNV
+        let parsedCenterAns = '';
+        let parsedKeyword = '';
+        for (let r = 1; r < rows.length; r++) {
+            const row = rows[r] || [];
+            const lblCompact = normalizeExcelCompact(row[lblCol]);
+            const contentVal = (row[cntCol] !== undefined && row[cntCol] !== null ? String(row[cntCol]) : "").trim();
+
+            if (lblCompact === "HANG1") gameData.vuotSong.h1.q = contentVal;
+            else if (lblCompact === "HANG2") gameData.vuotSong.h2.q = contentVal;
+            else if (lblCompact === "HANG3") gameData.vuotSong.h3.q = contentVal;
+            else if (lblCompact === "HANG4") gameData.vuotSong.h4.q = contentVal;
+            else if (lblCompact === "TRUNGTAM") gameData.vuotSong.center.q = contentVal;
+            else if (lblCompact === "DANTT" || lblCompact === "DAPANTT" || lblCompact === "DAPANTRUNGTAM") {
+                parsedCenterAns = contentVal;
+                gameData.vuotSong.center.a = contentVal;
+            }
+
+            const colACompact = normalizeExcelCompact(row[0]);
+            if (colACompact.includes("TUKHOAVCNV") || colACompact === "TUKHOA") {
+                let kw = '';
+                for (let c = 1; c < gridEndCol; c++) {
+                    const cellVal = (row[c] !== undefined && row[c] !== null ? String(row[c]) : "").trim();
+                    if (cellVal) kw += cellVal;
+                }
+                if (kw) parsedKeyword = kw;
+            }
+        }
+
+        gameData.vuotSong.keyword = parsedKeyword || parsedCenterAns || gameData.vuotSong.keyword || '';
+        if (!gameData.vuotSong.center.a && parsedKeyword) {
+            gameData.vuotSong.center.a = parsedKeyword;
+        }
+        gameData.vuotSong.hintImage = prevHintImage;
+        return;
+    }
+
+    // Fallback: Legacy 3-column VƯỢT SÓNG format
     let rowIndex = 1;
     for (let r = 2; r < rows.length; r++) {
         const row = rows[r];
@@ -805,68 +1000,179 @@ function parseVuotSongSheet(rows) {
             gameData.vuotSong.keyword = aText || qText;
         }
     }
+    gameData.vuotSong.hintImage = prevHintImage;
 }
 
-function parseVinhQuangSheet(rows) {
+function parseVinhQuangSheet(rows, worksheet) {
     initVinhQuangData();
+
+    // Detect new 5-package VeDich format: Gói câu hỏi 1..5 + Đáp án pairs in header row
+    let headerRowIdx = -1;
+    const packCols = [];
+    for (let r = 0; r < Math.min(3, rows.length); r++) {
+        const row = rows[r] || [];
+        const found = [];
+        for (let c = 0; c < row.length; c++) {
+            const comp = normalizeExcelCompact(row[c]);
+            const m = comp.match(/^GOI(?:CAUHOI)?([1-5])$/);
+            if (m) {
+                found.push({ packNum: parseInt(m[1], 10), qCol: c, aCol: c + 1 });
+            }
+        }
+        if (found.length > 0) {
+            headerRowIdx = r;
+            found.forEach(item => packCols.push(item));
+            break;
+        }
+    }
+
+    if (headerRowIdx !== -1 && packCols.length > 0) {
+        let count20 = 0;
+        let count30 = 0;
+        let lastTier = 20;
+
+        for (let r = headerRowIdx + 1; r < rows.length; r++) {
+            const row = rows[r];
+            if (!row || row.length < 2) continue;
+
+            const colAComp = normalizeExcelCompact(row[0]);
+            const hasAnyContent = packCols.some(pc => {
+                const q = (row[pc.qCol] !== undefined && row[pc.qCol] !== null ? String(row[pc.qCol]) : "").trim();
+                const a = (row[pc.aCol] !== undefined && row[pc.aCol] !== null ? String(row[pc.aCol]) : "").trim();
+                return !!(q || a);
+            });
+            if (!hasAnyContent && !colAComp) continue;
+
+            let targetIdx = -1;
+            if (colAComp.includes("20")) {
+                lastTier = 20;
+                if (count20 < 3) targetIdx = count20++;
+            } else if (colAComp.includes("30")) {
+                lastTier = 30;
+                if (count30 < 3) targetIdx = 3 + (count30++);
+            } else {
+                // Merged label or blank Col A: continue current tier, then move to 30
+                if (lastTier === 20 && count20 < 3) {
+                    targetIdx = count20++;
+                } else if (count30 < 3) {
+                    lastTier = 30;
+                    targetIdx = 3 + (count30++);
+                }
+            }
+
+            if (targetIdx < 0 || targetIdx > 5) continue;
+
+            packCols.forEach(pc => {
+                const qVal = (row[pc.qCol] !== undefined && row[pc.qCol] !== null ? String(row[pc.qCol]) : "").trim();
+                const aVal = (row[pc.aCol] !== undefined && row[pc.aCol] !== null ? String(row[pc.aCol]) : "").trim();
+                const prev = gameData.vinhQuang[pc.packNum]?.[targetIdx] || {};
+                const linkQ = getWorksheetCellLink(worksheet, r, pc.qCol);
+                const nextM = isExcelMediaLink(linkQ)
+                    ? (typeof window.normalizeMediaUrl === 'function' ? window.normalizeMediaUrl(linkQ) : linkQ)
+                    : (prev.m || '');
+                gameData.vinhQuang[pc.packNum][targetIdx] = {
+                    m: nextM,
+                    q: qVal,
+                    a: aVal
+                };
+            });
+        }
+        return;
+    }
+
+    // Legacy fallback: GÓI 10/20/30 ĐIỂM sheet -> distribute into packs 1..5 cleanly
     let questionIndex = 0;
-    for (let r = 0; r < rows.length && questionIndex < 12; r++) {
+    for (let r = 0; r < rows.length && questionIndex < 15; r++) {
         const row = rows[r];
         if (!row || row.length < 2) continue;
+        const colA = normalizeExcelText(row[0]);
+        const colB = normalizeExcelText(row[1]);
+        if (colA.includes("VINH QUANG") || colA.includes("STT") || colA.includes("CAU") || colA.includes("GOI") || colB.includes("GOI 10") || colB.includes("MON HOC")) continue;
 
-        const colA = (row[0] || "").toString().trim().toUpperCase();
-        const colB = (row[1] || "").toString().trim().toUpperCase();
-
-        // Skip title or header rows
-        if (colA.includes("VINH QUANG") || colA.includes("STT") || colA.includes("CÂU") || colA.includes("GÓI") || colB.includes("GÓI 10") || colB.includes("MÔN HỌC")) continue;
-
-        const m10 = (row[1] || "").toString().trim();
-        const q10 = (row[2] || "").toString().trim();
-        const a10 = (row[3] || "").toString().trim();
-
-        const m20 = (row[4] || "").toString().trim();
         const q20 = (row[5] || "").toString().trim();
         const a20 = (row[6] || "").toString().trim();
-
-        const m30 = (row[7] || "").toString().trim();
         const q30 = (row[8] || "").toString().trim();
         const a30 = (row[9] || "").toString().trim();
-
-        if (m10 || q10 || a10) gameData.vinhQuang[10][questionIndex] = { m: m10, q: q10, a: a10 };
-        if (m20 || q20 || a20) gameData.vinhQuang[20][questionIndex] = { m: m20, q: q20, a: a20 };
-        if (m30 || q30 || a30) gameData.vinhQuang[30][questionIndex] = { m: m30, q: q30, a: a30 };
-
+        const packNum = Math.floor(questionIndex / 3) + 1;
+        const subIdx = questionIndex % 3;
+        if (packNum <= 5) {
+            if (q20 || a20) gameData.vinhQuang[packNum][subIdx] = { m: gameData.vinhQuang[packNum][subIdx]?.m || '', q: q20, a: a20 };
+            if (q30 || a30) gameData.vinhQuang[packNum][3 + subIdx] = { m: gameData.vinhQuang[packNum][3 + subIdx]?.m || '', q: q30, a: a30 };
+        }
         questionIndex++;
     }
 }
 
-function parseCauHoiPhuSheet(rows) {
-    let count = 0;
-    for (let r = 2; r < rows.length && count < 3; r++) {
+function parseCauHoiPhuSheet(rows, worksheet) {
+    let startRow = 1;
+    if (rows.length > 0) {
+        const r0B = normalizeExcelCompact(rows[0]?.[1]);
+        const r0C = normalizeExcelCompact(rows[0]?.[2]);
+        const r1A = normalizeExcelCompact(rows[1]?.[0]);
+        const r1C = normalizeExcelCompact(rows[1]?.[2]);
+        if (r0B.includes("CAUHOI") || r0B.includes("NOIDUNG") || r0C.includes("DAPAN")) {
+            startRow = 1;
+        } else if (r1A === "CAU" || r1C.includes("DAPAN") || normalizeExcelCompact(rows[0]?.[0]).includes("CAUHOIPHU")) {
+            startRow = 2;
+        }
+    }
+
+    const parsed = [];
+    for (let r = startRow; r < rows.length && parsed.length < 10; r++) {
         const row = rows[r];
         if (!row || row.length < 2) continue;
 
-        const qText = (row[1] || "").toString().trim();
-        const aText = (row[2] || "").toString().trim();
+        const qText = (row[1] !== undefined && row[1] !== null ? String(row[1]) : "").trim();
+        const aText = (row[2] !== undefined && row[2] !== null ? String(row[2]) : "").trim();
 
         if (qText || aText) {
-            gameData.cauHoiPhu[count] = { q: qText, a: aText };
-            count++;
+            parsed.push({ q: qText, a: aText });
         }
     }
+
+    if (parsed.length > 0) {
+        while (parsed.length < 3) {
+            parsed.push({ q: '', a: '' });
+        }
+        gameData.cauHoiPhu = parsed.slice(0, 10);
+    }
 }
+
+function sanitizeStoredMediaValue(val) {
+    const clean = (val || '').toString().trim();
+    if (!clean || clean === '...' || /^\.\/cau[1-4]\.mp4$/i.test(clean) || clean.startsWith('blob:')) return '';
+    return typeof window.normalizeMediaUrl === 'function' ? window.normalizeMediaUrl(clean) : clean;
+}
+
+function syncRaKhoiRowVisibility() {
+    const list = Array.isArray(gameData.raKhoi) ? gameData.raKhoi : [];
+    const has5 = !!(list[4] && (list[4].q?.trim() || list[4].a?.trim() || list[4].m?.trim()));
+    const has6 = !!(list[5] && (list[5].q?.trim() || list[5].a?.trim() || list[5].m?.trim()));
+    const showCount = has6 ? 6 : (has5 ? 5 : 4);
+
+    for (let i = 5; i <= 6; i++) {
+        const visible = i <= showCount;
+        const sysRow = document.getElementById(`rk_row_${i}`);
+        if (sysRow) sysRow.style.display = visible ? '' : 'none';
+        const btn = document.getElementById(`btn_rk_q${i}`);
+        if (btn) btn.style.display = visible ? 'flex' : 'none';
+    }
+    const qTotalEl = document.getElementById('rk_preview_q_total');
+    if (qTotalEl) qTotalEl.innerText = String(showCount);
+}
+window.syncRaKhoiRowVisibility = syncRaKhoiRowVisibility;
 
 function fillRaKhoiInputs() {
     if (!Array.isArray(gameData.raKhoi)) {
         gameData.raKhoi = [
-            { q: "", a: "", m: "" },
-            { q: "", a: "", m: "" },
-            { q: "", a: "", m: "" },
-            { q: "", a: "", m: "" }
+            { q: "", a: "", m: "", am: "" },
+            { q: "", a: "", m: "", am: "" },
+            { q: "", a: "", m: "", am: "" },
+            { q: "", a: "", m: "", am: "" }
         ];
     }
-    for (let i = 1; i <= 4; i++) {
-        const item = gameData.raKhoi[i - 1] || { q: '', a: '', m: '' };
+    for (let i = 1; i <= 6; i++) {
+        const item = gameData.raKhoi[i - 1] || { q: '', a: '', m: '', am: '' };
         const qEl = document.getElementById(`rk_q_${i}`);
         const aEl = document.getElementById(`rk_a_${i}`);
         const mEl = document.getElementById(`rk_m_${i}`);
@@ -874,16 +1180,21 @@ function fillRaKhoiInputs() {
         if (qEl) qEl.value = item.q || '';
         if (aEl) aEl.value = item.a || '';
         if (mEl) {
-            const cleanedM = (item.m || '').trim();
-            mEl.value = /^\.\/cau[1-4]\.mp4$/i.test(cleanedM) ? '' : cleanedM;
+            const cleanedM = sanitizeStoredMediaValue(item.m);
+            mEl.value = cleanedM;
+            mEl.dataset.mediaType = item.mt || '';
         }
-        if (amEl) amEl.value = item.am || '';
+        if (amEl) {
+            amEl.value = sanitizeStoredMediaValue(item.am);
+        }
     }
+    syncRaKhoiRowVisibility();
+    if (typeof updateTab2Preview === 'function') updateTab2Preview();
 }
 
 function fillVuotSongInputs() {
     if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
-        gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "" };
+        gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "", hintImage: "" };
     }
     for (let i = 1; i <= 4; i++) {
         const item = gameData.vuotSong[`h${i}`] || { q: '', a: '' };
@@ -902,12 +1213,42 @@ function fillVuotSongInputs() {
     if (kw) kw.value = gameData.vuotSong.keyword || '';
 
     const hintEl = document.getElementById('vs_hint_image');
-    if (hintEl) hintEl.value = gameData.vuotSong.hintImage || '';
+    if (hintEl) hintEl.value = sanitizeStoredMediaValue(gameData.vuotSong.hintImage);
 }
+
+function renderSysCHPRows() {
+    const container = document.getElementById('sys_chp_rows');
+    if (!container) return;
+    if (!Array.isArray(gameData.cauHoiPhu)) gameData.cauHoiPhu = [];
+
+    let nonEmptyCount = 0;
+    for (let i = 0; i < Math.min(10, gameData.cauHoiPhu.length); i++) {
+        const it = gameData.cauHoiPhu[i];
+        if (it && ((it.q && it.q.trim()) || (it.a && it.a.trim()))) {
+            nonEmptyCount = i + 1;
+        }
+    }
+    const rowCount = Math.max(3, Math.min(10, Math.max(nonEmptyCount, gameData.cauHoiPhu.length)));
+    container.innerHTML = '';
+    for (let i = 1; i <= rowCount; i++) {
+        const item = gameData.cauHoiPhu[i - 1] || { q: '', a: '' };
+        const row = document.createElement('div');
+        row.className = 'q-row';
+        row.innerHTML = `
+            <span>Câu Phụ ${i}</span>
+            <div><input type="text" id="sys_chp_q_${i}" value="${escapeHtml(item.q || '')}" placeholder="Nội dung câu phụ ${i}" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+            <div><input type="text" id="sys_chp_a_${i}" value="${escapeHtml(item.a || '')}" placeholder="Đáp án" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+        `;
+        container.appendChild(row);
+    }
+}
+window.renderSysCHPRows = renderSysCHPRows;
 
 function fillCauHoiPhuInputs() {
     if (!Array.isArray(gameData.cauHoiPhu)) gameData.cauHoiPhu = [];
-    for (let i = 1; i <= 3; i++) {
+    renderSysCHPRows();
+    const total = Math.max(3, Math.min(10, gameData.cauHoiPhu.length));
+    for (let i = 1; i <= total; i++) {
         const item = gameData.cauHoiPhu[i - 1] || { q: '', a: '' };
         const sysQ = document.getElementById(`sys_chp_q_${i}`);
         const sysA = document.getElementById(`sys_chp_a_${i}`);
@@ -919,6 +1260,7 @@ function fillCauHoiPhuInputs() {
         if (qEl) qEl.value = item.q || '';
         if (aEl) aEl.value = item.a || '';
     }
+    if (typeof renderCHPQuestionButtons === 'function') renderCHPQuestionButtons();
     if (typeof updateTab5Preview === 'function') updateTab5Preview();
 }
 
@@ -951,27 +1293,44 @@ function fillIntroInputs() {
 function saveAllData(notify = false) {
     try {
         if (!Array.isArray(gameData.raKhoi)) gameData.raKhoi = [];
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 6; i++) {
             const qEl = document.getElementById(`rk_q_${i}`);
             const aEl = document.getElementById(`rk_a_${i}`);
             const mEl = document.getElementById(`rk_m_${i}`);
             const amEl = document.getElementById(`rk_am_${i}`);
-            if (qEl || aEl || mEl || amEl) {
-                const qVal = qEl ? qEl.value : (gameData.raKhoi[i - 1]?.q || '');
-                const aVal = aEl ? aEl.value : (gameData.raKhoi[i - 1]?.a || '');
-                const mVal = mEl ? mEl.value.trim() : (gameData.raKhoi[i - 1]?.m || '');
-                const amVal = amEl ? amEl.value : (gameData.raKhoi[i - 1]?.am || '');
+            if (i <= 4 || (qEl && qEl.value.trim()) || (aEl && aEl.value.trim()) || (mEl && mEl.value.trim()) || (amEl && amEl.value.trim())) {
+                const prevItem = gameData.raKhoi[i - 1] || {};
+                const qVal = qEl ? qEl.value : (prevItem.q || '');
+                const aVal = aEl ? aEl.value : (prevItem.a || '');
+                let rawM = mEl ? mEl.value.trim() : (prevItem.m || '');
+                if (rawM === '...') rawM = '';
+                if (rawM.startsWith('blob:') && prevItem.m && !prevItem.m.startsWith('blob:')) {
+                    rawM = prevItem.m;
+                }
+                const mVal = (typeof window.normalizeMediaUrl === 'function' && rawM && !rawM.startsWith('blob:'))
+                    ? window.normalizeMediaUrl(rawM)
+                    : rawM;
+
+                let rawAm = amEl ? amEl.value.trim() : (prevItem.am || '');
+                if (rawAm === '...') rawAm = '';
+                const amVal = (typeof window.normalizeMediaUrl === 'function' && rawAm && !rawAm.startsWith('blob:'))
+                    ? window.normalizeMediaUrl(rawAm)
+                    : rawAm;
+
+                const mtVal = mEl?.dataset?.mediaType || prevItem.mt || '';
                 gameData.raKhoi[i - 1] = {
                     q: qVal,
                     a: aVal,
                     m: mVal,
-                    am: amVal
+                    am: amVal,
+                    mt: mtVal
                 };
             }
         }
+        if (typeof syncRaKhoiRowVisibility === 'function') syncRaKhoiRowVisibility();
 
         if (!gameData.vuotSong || Array.isArray(gameData.vuotSong)) {
-            gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "" };
+            gameData.vuotSong = { h1: {q:"",a:""}, h2: {q:"",a:""}, h3: {q:"",a:""}, h4: {q:"",a:""}, center: {q:"",a:""}, keyword: "", hintImage: "" };
         }
         for (let i = 1; i <= 4; i++) {
             const qEl = document.getElementById(`vs_q_${i}`);
@@ -997,16 +1356,34 @@ function saveAllData(notify = false) {
         }
         const hintEl = document.getElementById('vs_hint_image');
         if (hintEl) {
-            gameData.vuotSong.hintImage = hintEl.value.trim();
+            let rawHint = hintEl.value.trim();
+            if (rawHint === '...') rawHint = '';
+            if (rawHint.startsWith('blob:') && gameData.vuotSong.hintImage && !gameData.vuotSong.hintImage.startsWith('blob:')) {
+                rawHint = gameData.vuotSong.hintImage;
+            }
+            gameData.vuotSong.hintImage = (typeof window.normalizeMediaUrl === 'function' && rawHint && !rawHint.startsWith('blob:'))
+                ? window.normalizeMediaUrl(rawHint)
+                : rawHint;
+        }
+        const excelNameEl = document.getElementById('excelFileName');
+        if (excelNameEl && excelNameEl.value.trim()) {
+            gameData.excelFileName = excelNameEl.value.trim();
         }
 
         initVinhQuangData();
 
         if (!Array.isArray(gameData.cauHoiPhu)) gameData.cauHoiPhu = [];
-        for (let i = 1; i <= 3; i++) {
-            const qVal = document.getElementById(`chp_q_${i}`)?.value || document.getElementById(`sys_chp_q_${i}`)?.value || '';
-            const aVal = document.getElementById(`chp_a_${i}`)?.value || document.getElementById(`sys_chp_a_${i}`)?.value || '';
-            if (qVal || aVal) gameData.cauHoiPhu[i - 1] = { q: qVal, a: aVal };
+        for (let i = 1; i <= 10; i++) {
+            const chpQEl = document.getElementById(`chp_q_${i}`);
+            const sysQEl = document.getElementById(`sys_chp_q_${i}`);
+            const chpAEl = document.getElementById(`chp_a_${i}`);
+            const sysAEl = document.getElementById(`sys_chp_a_${i}`);
+            if (!chpQEl && !sysQEl && !chpAEl && !sysAEl) continue;
+            const qVal = chpQEl?.value ?? sysQEl?.value ?? '';
+            const aVal = chpAEl?.value ?? sysAEl?.value ?? '';
+            if (i <= 3 || qVal.trim() || aVal.trim() || gameData.cauHoiPhu[i - 1]) {
+                gameData.cauHoiPhu[i - 1] = { q: qVal, a: aVal };
+            }
         }
 
         if (!gameData.intros) {
@@ -1237,7 +1614,24 @@ function loadSavedData() {
         if (saved) {
             const parsed = JSON.parse(saved);
             gameData = Object.assign(gameData, parsed);
-            renderXuatPhatTurnUI(currentXuatPhatTurn);
+            if (Array.isArray(gameData.raKhoi)) {
+                gameData.raKhoi = gameData.raKhoi.map(item => {
+                    if (!item || typeof item !== 'object') return { q: '', a: '', m: '', am: '', mt: '' };
+                    return {
+                        ...item,
+                        m: sanitizeStoredMediaValue(item.m),
+                        am: sanitizeStoredMediaValue(item.am)
+                    };
+                });
+            }
+            if (gameData.vuotSong && !Array.isArray(gameData.vuotSong)) {
+                gameData.vuotSong.hintImage = sanitizeStoredMediaValue(gameData.vuotSong.hintImage);
+            }
+            if (gameData.excelFileName) {
+                const excelNameEl = document.getElementById('excelFileName');
+                if (excelNameEl) excelNameEl.value = gameData.excelFileName;
+            }
+            renderXuatPhatTurnUI(editingXuatPhatDe || 1);
             fillRaKhoiInputs();
             fillVuotSongInputs();
             renderVinhQuangPackUI(currentVinhQuangPack);
@@ -1259,6 +1653,30 @@ function loadSavedData() {
     }
 }
 
+function flushAllControllerPersistence() {
+    try {
+        if (debouncedSaveTimeout) {
+            clearTimeout(debouncedSaveTimeout);
+            debouncedSaveTimeout = null;
+        }
+        if (updateContestantNameTimeout) {
+            clearTimeout(updateContestantNameTimeout);
+            updateContestantNameTimeout = null;
+        }
+        if (updateContestantInfoTimeout) {
+            clearTimeout(updateContestantInfoTimeout);
+            updateContestantInfoTimeout = null;
+        }
+        saveAllData(false);
+        if (typeof window.saveControllerRuntimeState === 'function') {
+            window.saveControllerRuntimeState();
+        }
+    } catch(e) {}
+}
+window.flushAllControllerPersistence = flushAllControllerPersistence;
+window.addEventListener('beforeunload', flushAllControllerPersistence);
+window.addEventListener('pagehide', flushAllControllerPersistence);
+
 function resetAllData() {
     if (confirm("Bạn có chắc chắn muốn xóa và thiết lập lại toàn bộ dữ liệu không?")) {
         if (gameData && gameData.contestants) {
@@ -1268,6 +1686,11 @@ function resetAllData() {
         }
         sendToProjector('RESET_ALL_DATA');
         safeRemoveStorage('duong_den_vinh_quang_data');
+        safeRemoveStorage('ddvq_controller_runtime_v1');
+        safeRemoveStorage('ddvq_controller_active_tab');
+        safeRemoveStorage('ddvq_current_timer');
+        safeRemoveStorage('s3_round_start_time');
+        try { sessionStorage.removeItem('ddvq_controller_runtime_v1'); } catch(e) {}
         location.reload();
     }
 }
@@ -1449,71 +1872,119 @@ function exportExcelFile() {
     saveAllData();
     const wb = XLSX.utils.book_new();
 
-    const xpRows = [["XUẤT PHÁT"], ["STT ĐỀ", "NỘI DUNG", "ĐÁP ÁN"]];
-    for (let t = 1; t <= 8; t++) {
-        const turnData = gameData.xuatPhat[t] || [];
-        const maxRows = (t >= 1 && t <= 4) ? 6 : 12;
-        for (let i = 0; i < maxRows; i++) {
-            const q = turnData[i]?.q || '';
-            const a = turnData[i]?.a || '';
-            xpRows.push([i === 0 ? t : "", q, a]);
+    // 1. Sheet KhoiDong
+    const kdRows = [[
+        "",
+        "Thí sinh 1", "Đáp án",
+        "Thí sinh 2", "Đáp án",
+        "Thí sinh 3", "Đáp án",
+        "Thí sinh 4", "Đáp án",
+        "Thí sinh 5", "Đáp án",
+        "Khởi động chung", "Đáp án"
+    ]];
+    for (let i = 0; i < 15; i++) {
+        const row = [`Câu ${i + 1}`];
+        if (i < 6) {
+            for (let t of [1, 2, 3, 4, 6]) {
+                const item = (gameData.xuatPhat[t] && gameData.xuatPhat[t][i]) || { q: "", a: "" };
+                row.push(item.q || "", item.a || "");
+            }
+        } else {
+            for (let k = 0; k < 10; k++) row.push("");
+        }
+        const chungItem = (gameData.xuatPhat[5] && gameData.xuatPhat[5][i]) || { q: "", a: "" };
+        row.push(chungItem.q || "", chungItem.a || "");
+        kdRows.push(row);
+    }
+    const wsKD = XLSX.utils.aoa_to_sheet(kdRows);
+    XLSX.utils.book_append_sheet(wb, wsKD, "KhoiDong");
+
+    // 2. Sheet VCNV
+    const vcnvRows = [];
+    const headerVCNV = Array(18).fill("");
+    headerVCNV[0] = "Ô chữ";
+    headerVCNV[15] = "Ký tự";
+    headerVCNV[16] = "Câu hỏi";
+    headerVCNV[17] = "Nội dung";
+    vcnvRows.push(headerVCNV);
+
+    for (let i = 1; i <= 4; i++) {
+        const row = Array(18).fill("");
+        const ansChars = (gameData.vuotSong[`h${i}`]?.a || "").replace(/\s+/g, '').toUpperCase().split('');
+        for (let c = 0; c < Math.min(15, ansChars.length); c++) {
+            row[c] = ansChars[c];
+        }
+        row[15] = ansChars.length;
+        row[16] = `Hàng ${i}`;
+        row[17] = gameData.vuotSong[`h${i}`]?.q || "";
+        vcnvRows.push(row);
+    }
+
+    const row6VCNV = Array(18).fill("");
+    for (let c = 0; c < 15; c++) row6VCNV[c] = c + 1;
+    row6VCNV[16] = "Trung tâm";
+    row6VCNV[17] = gameData.vuotSong.center?.q || "";
+    vcnvRows.push(row6VCNV);
+
+    const row7VCNV = Array(18).fill("");
+    const kwVal = gameData.vuotSong.keyword || gameData.vuotSong.center?.a || "";
+    row7VCNV[0] = "Từ khóa VCNV";
+    row7VCNV[2] = kwVal;
+    row7VCNV[15] = kwVal.replace(/\s+/g, '').length;
+    row7VCNV[16] = "Đ.án TT";
+    row7VCNV[17] = gameData.vuotSong.center?.a || kwVal;
+    vcnvRows.push(row7VCNV);
+
+    const wsVCNV = XLSX.utils.aoa_to_sheet(vcnvRows);
+    XLSX.utils.book_append_sheet(wb, wsVCNV, "VCNV");
+
+    // 3. Sheet TangToc
+    const ttRows = [["", "", "Đáp án"]];
+    for (let i = 0; i < 6; i++) {
+        const item = (gameData.raKhoi && gameData.raKhoi[i]) || { q: "", a: "", m: "" };
+        ttRows.push([`Câu ${i + 1}`, item.q || "", item.a || ""]);
+    }
+    const wsTT = XLSX.utils.aoa_to_sheet(ttRows);
+    for (let i = 0; i < 6; i++) {
+        const item = (gameData.raKhoi && gameData.raKhoi[i]) || {};
+        if (item.m) {
+            const addr = XLSX.utils.encode_cell({ r: i + 1, c: 1 });
+            if (wsTT[addr]) wsTT[addr].l = { Target: item.m };
         }
     }
-    const wsXP = XLSX.utils.aoa_to_sheet(xpRows);
-    XLSX.utils.book_append_sheet(wb, wsXP, "XUẤT PHÁT");
+    XLSX.utils.book_append_sheet(wb, wsTT, "TangToc");
 
-    const rkRows = [
-        ["RA KHƠI"],
-        ["CÂU", "NỘI DUNG", "ĐÁP ÁN", "GIẢI THÍCH"],
-        [1, gameData.raKhoi[0]?.q || "", gameData.raKhoi[0]?.a || "", ""],
-        [2, gameData.raKhoi[1]?.q || "", gameData.raKhoi[1]?.a || "", ""],
-        [3, gameData.raKhoi[2]?.q || "", gameData.raKhoi[2]?.a || "", ""],
-        [4, gameData.raKhoi[3]?.q || "", gameData.raKhoi[3]?.a || "", ""]
-    ];
-    const wsRK = XLSX.utils.aoa_to_sheet(rkRows);
-    XLSX.utils.book_append_sheet(wb, wsRK, "RA KHƠI");
-
-    const vsRows = [
-        ["VƯỢT SÓNG"],
-        ["CÂU", "NỘI DUNG", "ĐÁP ÁN", "GIẢI THÍCH"],
-        [1, gameData.vuotSong.h1?.q || "", gameData.vuotSong.h1?.a || "", ""],
-        [2, gameData.vuotSong.h2?.q || "", gameData.vuotSong.h2?.a || "", ""],
-        [3, gameData.vuotSong.h3?.q || "", gameData.vuotSong.h3?.a || "", ""],
-        [4, gameData.vuotSong.h4?.q || "", gameData.vuotSong.h4?.a || "", ""],
-        ["ĐÁP ÁN VÒNG THI", gameData.vuotSong.center?.q || "", gameData.vuotSong.keyword || "", ""]
-    ];
-    const wsVS = XLSX.utils.aoa_to_sheet(vsRows);
-    XLSX.utils.book_append_sheet(wb, wsVS, "VƯỢT SÓNG");
-
+    // 4. Sheet VeDich
     initVinhQuangData();
-    const vqRows = [
-        ["VINH QUANG"],
-        ["", "GÓI 10 ĐIỂM", "", "", "GÓI 20 ĐIỂM", "", "", "GÓI 30 ĐIỂM", "", ""],
-        ["CÂU", "MÔN HỌC", "NỘI DUNG", "ĐÁP ÁN", "MÔN HỌC", "NỘI DUNG", "ĐÁP ÁN", "MÔN HỌC", "NỘI DUNG", "ĐÁP ÁN"]
-    ];
-    for (let i = 0; i < 12; i++) {
-        const item10 = gameData.vinhQuang[10][i] || { m: "", q: "", a: "" };
-        const item20 = gameData.vinhQuang[20][i] || { m: "", q: "", a: "" };
-        const item30 = gameData.vinhQuang[30][i] || { m: "", q: "", a: "" };
-        vqRows.push([
-            i + 1,
-            item10.m, item10.q, item10.a,
-            item20.m, item20.q, item20.a,
-            item30.m, item30.q, item30.a
-        ]);
+    const vdRows = [[
+        "",
+        "Gói câu hỏi 1", "Đáp án",
+        "Gói câu hỏi 2", "Đáp án",
+        "Gói câu hỏi 3", "Đáp án",
+        "Gói câu hỏi 4", "Đáp án",
+        "Gói câu hỏi 5", "Đáp án"
+    ]];
+    for (let i = 0; i < 6; i++) {
+        const label = i < 3 ? "Câu 20 điểm" : "Câu 30 điểm";
+        const row = [label];
+        for (let p = 1; p <= 5; p++) {
+            const item = (gameData.vinhQuang[p] && gameData.vinhQuang[p][i]) || { m: "", q: "", a: "" };
+            row.push(item.q || "", item.a || "");
+        }
+        vdRows.push(row);
     }
-    const wsVQ = XLSX.utils.aoa_to_sheet(vqRows);
-    XLSX.utils.book_append_sheet(wb, wsVQ, "VINH QUANG");
+    const wsVD = XLSX.utils.aoa_to_sheet(vdRows);
+    XLSX.utils.book_append_sheet(wb, wsVD, "VeDich");
 
-    const chpRows = [
-        ["CÂU HỎI PHỤ"],
-        ["CÂU", "NỘI DUNG", "ĐÁP ÁN"]
-    ];
-    gameData.cauHoiPhu.forEach((item, idx) => {
-        chpRows.push([idx + 1, item.q, item.a]);
-    });
+    // 5. Sheet VeDichPhu
+    const chpRows = [["", "Câu hỏi", "Đáp án"]];
+    const chpList = Array.isArray(gameData.cauHoiPhu) ? gameData.cauHoiPhu : [];
+    for (let i = 0; i < 10; i++) {
+        const item = chpList[i] || { q: "", a: "" };
+        chpRows.push([`Câu ${i + 1}`, item.q || "", item.a || ""]);
+    }
     const wsCHP = XLSX.utils.aoa_to_sheet(chpRows);
-    XLSX.utils.book_append_sheet(wb, wsCHP, "CÂU HỎI PHỤ");
+    XLSX.utils.book_append_sheet(wb, wsCHP, "VeDichPhu");
 
     XLSX.writeFile(wb, "Bo_De_Duong_Len_Dinh_Olympia.xlsx");
     showToast("Đã xuất file Excel thành công!");
@@ -1623,6 +2094,9 @@ function handleIncomingPlayerAnswer(data) {
                 sendToProjector('PLAYER_SUBMIT_ANSWER', { ...data, _forwarded: true });
             } catch(e) {}
         }
+        if (typeof window.saveControllerRuntimeState === 'function') {
+            window.saveControllerRuntimeState();
+        }
     } else if (data.playerAnswers && typeof data.playerAnswers === 'object') {
         Object.values(data.playerAnswers).forEach(ansObj => {
             if (ansObj && ansObj.contestantId) {
@@ -1661,6 +2135,9 @@ function handleIncomingPlayerAnswer(data) {
                 }
             }
         });
+        if (typeof window.saveControllerRuntimeState === 'function') {
+            window.saveControllerRuntimeState();
+        }
     }
 }
 window.handleIncomingPlayerAnswer = handleIncomingPlayerAnswer;

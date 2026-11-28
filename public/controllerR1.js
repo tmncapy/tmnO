@@ -11,6 +11,8 @@ let xpUnlockDelayTimer = null;
 let xpUnlockCountdownInterval = null;
 let xpUnlockElapsedInterval = null;
 let xpBellUnlockTime = 0;
+let xpTimerEndAt = 0;
+let xpBellDelayUnlockAt = 0;
 
 function setXPBellDelayStatus(text, color) {
     const el = document.getElementById('xp_bell_delay_status');
@@ -42,17 +44,20 @@ function clearXPBellUnlockDelay() {
         xpUnlockElapsedInterval = null;
     }
     xpBellUnlockTime = 0;
+    xpBellDelayUnlockAt = 0;
     setXPBellDelayStatus('');
 }
 
-function scheduleXPTurn5BellUnlock(qText) {
+function scheduleXPTurn5BellUnlock(qText, customUnlockAt) {
     clearXPBellUnlockDelay();
     const delaySec = getXPBellDelaySeconds(qText);
-    const unlockAt = Date.now() + delaySec * 1000;
+    const unlockAt = (customUnlockAt && customUnlockAt > Date.now()) ? customUnlockAt : (Date.now() + delaySec * 1000);
+    const remainingMs = Math.max(50, unlockAt - Date.now());
+    xpBellDelayUnlockAt = unlockAt;
     xpBuzzerOpen = false;
     xpBuzzerWinner = 0;
     clearXPBuzzerUI();
-    setXPBellDelayStatus(`🔒 Mở chuông: ${delaySec}s`, '#fde047');
+    setXPBellDelayStatus(`🔒 Mở chuông: ${Math.max(1, Math.ceil(remainingMs / 1000))}s`, '#fde047');
 
     xpUnlockCountdownInterval = setInterval(() => {
         if (currentXuatPhatTurn !== 5 || !isXuatPhatStarted || xpBuzzerWinner !== 0) {
@@ -69,6 +74,7 @@ function scheduleXPTurn5BellUnlock(qText) {
             xpUnlockCountdownInterval = null;
         }
         xpUnlockDelayTimer = null;
+        xpBellDelayUnlockAt = 0;
         if (currentXuatPhatTurn !== 5 || !isXuatPhatStarted || xpBuzzerWinner !== 0) {
             return;
         }
@@ -97,8 +103,9 @@ function scheduleXPTurn5BellUnlock(qText) {
         if (typeof sendSupabaseAction === 'function') {
             sendSupabaseAction(unlockPayload);
         }
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         showToast('🔔 Chuông đã mở — Thí sinh có thể bấm chuông!');
-    }, delaySec * 1000);
+    }, remainingMs);
 
     return { delaySec, unlockAt };
 }
@@ -141,6 +148,7 @@ function setXPBuzzerWinnerUI(tsIdx, bellTimeStr) {
 function changeXuatPhatDe(val) {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     currentXuatPhatDe = parseInt(val) || 1;
     currentXuatPhatQIndex = 0;
@@ -169,12 +177,14 @@ function changeXuatPhatDe(val) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã chọn Bộ đề ${currentXuatPhatDe}`);
 }
 
 function selectLuotThi(turnIndex) {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     currentXuatPhatTurn = Math.min(5, Math.max(1, parseInt(turnIndex, 10) || 1));
     if (currentXuatPhatTurn >= 1 && currentXuatPhatTurn <= 5) {
@@ -224,7 +234,8 @@ function selectLuotThi(turnIndex) {
         if (typeof sendSupabaseAction === 'function') {
             sendSupabaseAction(payload);
         }
-        showToast('Đã chọn Lượt thi 5 (Lượt thi chung - 12 câu)');
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
+        showToast(`Đã chọn Lượt thi 5 (Lượt thi chung - ${totalQuestions} câu)`);
         return;
     }
 
@@ -252,11 +263,12 @@ function selectLuotThi(turnIndex) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 
 function getXuatPhatTotalQuestions(deIdx) {
     const idx = parseInt(deIdx, 10) || 1;
-    const maxForTurn = (idx >= 1 && idx <= 4) ? 6 : 12;
+    const maxForTurn = (idx >= 1 && idx <= 4) ? 6 : 15;
     const questions = (typeof gameData !== 'undefined' && gameData?.xuatPhat?.[idx]) ? gameData.xuatPhat[idx] : [];
     let nonEmptyCount = 0;
     const limit = Math.min(questions.length, maxForTurn);
@@ -363,6 +375,7 @@ function onClickHienGraphicChonDe() {
 function onClickHienGraphicCauHoi() {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
@@ -396,12 +409,14 @@ function onClickHienGraphicCauHoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã hiện graphic khung Câu Hỏi trên Projector');
 }
 
 function onClickHienCauHoi() {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
@@ -459,6 +474,7 @@ function onClickHienCauHoi() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (turnIdx === 5 && delayInfo) {
         showToast(`Đã hiện Câu 1 — Mở chuông sau ${delayInfo.delaySec}s`);
     } else {
@@ -509,6 +525,7 @@ function handleXuatPhatBuzzFromPlayer(tsIdx, data) {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(lockPayload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`🔔 ${name} đã bấm chuông nhanh nhất${timeBadge}!`);
 }
 
@@ -517,6 +534,7 @@ function onClickTinhThoiGianXP() {
     xuatPhatTimerInterval = null;
     const durationSec = 5;
     const startTime = Date.now();
+    xpTimerEndAt = startTime + durationSec * 1000;
     xuatPhatTimeLeft = durationSec;
 
     const timerEl = document.getElementById('preview_timer');
@@ -542,7 +560,7 @@ function onClickTinhThoiGianXP() {
     }
 
     xuatPhatTimerInterval = setInterval(() => {
-        const rem = Math.max(0, Math.ceil((startTime + durationSec * 1000 - Date.now()) / 1000));
+        const rem = Math.max(0, Math.ceil((xpTimerEndAt - Date.now()) / 1000));
         xuatPhatTimeLeft = rem;
         const tEl = document.getElementById('preview_timer');
         const sEl = document.getElementById('preview_status_text');
@@ -551,10 +569,13 @@ function onClickTinhThoiGianXP() {
         if (rem <= 0) {
             clearInterval(xuatPhatTimerInterval);
             xuatPhatTimerInterval = null;
+            xpTimerEndAt = 0;
+            if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
             showToast('⏰ Hết 5s trả lời!');
         }
     }, 200);
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('⏱️ Bắt đầu tính thời gian 5s trả lời');
 }
 
@@ -596,6 +617,7 @@ function onClickRandomDe() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Đã random chọn Bộ đề ${chosenSet} cho ${name}`);
 }
 
@@ -638,6 +660,7 @@ function onClickDung() {
     }
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     let targetTs = currentXuatPhatTurn;
     if (currentXuatPhatTurn === 5) {
@@ -677,6 +700,7 @@ function onClickDung() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast(`Trả lời ĐÚNG (+10đ cho TS${targetTs})`);
 }
 
@@ -687,6 +711,7 @@ function onClickSai() {
     }
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     const questions = gameData.xuatPhat[currentXuatPhatDe] || [];
     const currentQ = questions[currentXuatPhatQIndex] || { q: '', a: '' };
@@ -730,6 +755,7 @@ function onClickSai() {
     if (typeof sendSupabaseAction === 'function') {
         sendSupabaseAction(payload);
     }
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (currentXuatPhatTurn === 5 && targetTs > 0) {
         showToast(`Trả lời SAI (-5đ của TS${targetTs})`);
     } else {
@@ -740,6 +766,7 @@ function onClickSai() {
 function onClickChuyenCau() {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     const turnIdx = (currentXuatPhatTurn && currentXuatPhatTurn > 0) ? currentXuatPhatTurn : 0;
     const deIdx = currentXuatPhatDe || (turnIdx > 0 ? turnIdx : 1);
@@ -797,6 +824,7 @@ function onClickChuyenCau() {
         if (typeof sendSupabaseAction === 'function') {
             sendSupabaseAction(payload);
         }
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         if (turnIdx === 5 && delayInfo) {
             showToast(`Đã chuyển sang Câu ${qNumNum}/${totalQuestions} — Mở chuông sau ${delayInfo.delaySec}s`);
         } else {
@@ -827,6 +855,7 @@ function resetS1ContestantDe(tsIdx) {
 function onClickDatLaiVongThi() {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     xuatPhatTimeLeft = 60;
     currentXuatPhatQIndex = 0;
@@ -861,6 +890,7 @@ function onClickDatLaiVongThi() {
         sendSupabaseAction({ type: 'RESET_S1_DE', contestantId: 'ALL', timestamp: Date.now() });
     }
 
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã đặt lại vòng thi Xuất Phát');
 }
 
@@ -872,6 +902,7 @@ function onClickDungNhac() {
 function onClickHoanThanh() {
     clearInterval(xuatPhatTimerInterval);
     xuatPhatTimerInterval = null;
+    xpTimerEndAt = 0;
     clearXPBellUnlockDelay();
     isXuatPhatStarted = false;
     xpBuzzerWinner = 0;
@@ -891,6 +922,7 @@ function onClickHoanThanh() {
     if (statusEl) statusEl.innerText = "0";
     const timerEl = document.getElementById('preview_timer');
     if (timerEl) timerEl.innerText = "0";
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     showToast('Đã hoàn thành lượt thi - Đã ẩn màn hình Projector');
 }
 
@@ -901,3 +933,132 @@ function onClickPhatAmThanh() {
         showToast('Đã phát âm thanh hiệu ứng');
     }
 }
+
+window.__controllerR1State = {
+    getState: function() {
+        const extras = {};
+        const buzzBars = {};
+        for (let i = 1; i <= 4; i++) {
+            const eEl = document.getElementById(`ts${i}_extra`);
+            const bEl = document.getElementById(`ts${i}_xp_buzz_bar`);
+            if (eEl) extras[i] = eEl.value;
+            if (bEl) buzzBars[i] = bEl.textContent || '';
+        }
+        const bellEl = document.getElementById('xp_bell_delay_status');
+        return {
+            currentXuatPhatTurn: (typeof currentXuatPhatTurn !== 'undefined') ? currentXuatPhatTurn : 0,
+            currentXuatPhatDe,
+            currentXuatPhatQIndex,
+            isXuatPhatStarted,
+            xuatPhatTimeLeft,
+            xpTimerRunning: !!xuatPhatTimerInterval,
+            xpTimerEndAt,
+            xpBuzzerWinner,
+            xpBuzzerWinnerTime,
+            xpBuzzerOpen,
+            xpBellUnlockTime,
+            xpBellDelayUnlockAt,
+            bellDelayStatusText: bellEl ? bellEl.innerText : '',
+            bellDelayStatusColor: bellEl ? bellEl.style.color : '',
+            extras,
+            buzzBars
+        };
+    },
+    restoreState: function(st) {
+        if (!st || typeof st !== 'object') return;
+        clearInterval(xuatPhatTimerInterval);
+        xuatPhatTimerInterval = null;
+        clearXPBellUnlockDelay();
+
+        if (typeof currentXuatPhatTurn !== 'undefined') {
+            currentXuatPhatTurn = parseInt(st.currentXuatPhatTurn, 10) || 0;
+        }
+        currentXuatPhatDe = parseInt(st.currentXuatPhatDe, 10) || 1;
+        currentXuatPhatQIndex = parseInt(st.currentXuatPhatQIndex, 10) || 0;
+        isXuatPhatStarted = !!st.isXuatPhatStarted;
+        xpBuzzerWinner = parseInt(st.xpBuzzerWinner, 10) || 0;
+        xpBuzzerWinnerTime = st.xpBuzzerWinnerTime || '';
+        xpBuzzerOpen = !!st.xpBuzzerOpen;
+        xpBellUnlockTime = Number(st.xpBellUnlockTime) || 0;
+        xpBellDelayUnlockAt = Number(st.xpBellDelayUnlockAt) || 0;
+
+        for (let i = 1; i <= 5; i++) {
+            const btn = document.getElementById(`btn_luot_${i}`);
+            if (btn) {
+                if (i === currentXuatPhatTurn) btn.classList.add('active');
+                else btn.classList.remove('active');
+            }
+        }
+
+        if (xpBuzzerWinner >= 1 && xpBuzzerWinner <= 4) {
+            setXPBuzzerWinnerUI(xpBuzzerWinner, xpBuzzerWinnerTime);
+        } else {
+            clearXPBuzzerUI();
+        }
+        if (st.extras) {
+            for (let i = 1; i <= 4; i++) {
+                const eEl = document.getElementById(`ts${i}_extra`);
+                if (eEl && st.extras[i] !== undefined && st.extras[i] !== '') {
+                    eEl.value = st.extras[i];
+                }
+            }
+        }
+
+        xuatPhatTimeLeft = (st.xuatPhatTimeLeft !== undefined) ? Number(st.xuatPhatTimeLeft) : 60;
+        updateTab1Preview();
+
+        xpTimerEndAt = Number(st.xpTimerEndAt) || 0;
+        if (st.xpTimerRunning && xpTimerEndAt > Date.now()) {
+            xuatPhatTimeLeft = Math.max(0, Math.ceil((xpTimerEndAt - Date.now()) / 1000));
+            const tEl = document.getElementById('preview_timer');
+            const sEl = document.getElementById('preview_status_text');
+            if (tEl) tEl.innerText = String(xuatPhatTimeLeft);
+            if (sEl) sEl.innerText = String(xuatPhatTimeLeft);
+            xuatPhatTimerInterval = setInterval(() => {
+                const rem = Math.max(0, Math.ceil((xpTimerEndAt - Date.now()) / 1000));
+                xuatPhatTimeLeft = rem;
+                const timerEl2 = document.getElementById('preview_timer');
+                const statusEl2 = document.getElementById('preview_status_text');
+                if (timerEl2) timerEl2.innerText = String(rem);
+                if (statusEl2) statusEl2.innerText = String(rem);
+                if (rem <= 0) {
+                    clearInterval(xuatPhatTimerInterval);
+                    xuatPhatTimerInterval = null;
+                    xpTimerEndAt = 0;
+                }
+            }, 200);
+        } else if (st.xpTimerRunning && xpTimerEndAt > 0) {
+            xuatPhatTimeLeft = 0;
+            xpTimerEndAt = 0;
+            const tEl = document.getElementById('preview_timer');
+            const sEl = document.getElementById('preview_status_text');
+            if (tEl) tEl.innerText = '0';
+            if (sEl) sEl.innerText = '0';
+        }
+
+        if (currentXuatPhatTurn === 5 && isXuatPhatStarted && xpBuzzerWinner === 0) {
+            if (xpBellDelayUnlockAt > Date.now()) {
+                const questions = (typeof gameData !== 'undefined' && gameData?.xuatPhat?.[currentXuatPhatDe]) ? gameData.xuatPhat[currentXuatPhatDe] : [];
+                const currentQ = questions[currentXuatPhatQIndex] || { q: '' };
+                scheduleXPTurn5BellUnlock(currentQ.q || '', xpBellDelayUnlockAt);
+            } else if (xpBuzzerOpen && xpBellUnlockTime > 0) {
+                const elapsed0 = Math.max(0, (Date.now() - xpBellUnlockTime) / 1000);
+                setXPBellDelayStatus(`🔔 Mở chuông: ${elapsed0.toFixed(2)}s`, '#bbf7d0');
+                xpUnlockElapsedInterval = setInterval(() => {
+                    if (currentXuatPhatTurn !== 5 || !xpBuzzerOpen || xpBuzzerWinner !== 0) {
+                        clearInterval(xpUnlockElapsedInterval);
+                        xpUnlockElapsedInterval = null;
+                        return;
+                    }
+                    const elapsed = Math.max(0, (Date.now() - xpBellUnlockTime) / 1000);
+                    setXPBellDelayStatus(`🔔 Mở chuông: ${elapsed.toFixed(2)}s`, '#bbf7d0');
+                }, 100);
+            } else if (st.bellDelayStatusText) {
+                setXPBellDelayStatus(st.bellDelayStatusText, st.bellDelayStatusColor);
+            }
+        } else if (st.bellDelayStatusText) {
+            setXPBellDelayStatus(st.bellDelayStatusText, st.bellDelayStatusColor);
+        }
+    }
+};
+

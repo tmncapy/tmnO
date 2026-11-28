@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="designer-runtime.js?v=20261124k"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124k"></script>
+    <script src="supabase-sync.js?v=20261127a"></script>
     <style>
         @font-face {
             font-family: 'UTM Avo';
@@ -1958,16 +1958,99 @@
             updateRound2CnvCountBox();
         }
 
+        function cleanProjectorMediaPath(rawPath) {
+            if (!rawPath) return '';
+            let clean = String(rawPath).trim();
+            if (!clean || clean === '...' || clean === '…' || clean === 'null' || clean === 'undefined') return '';
+            if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+
+            clean = clean.replace(/^file:\/+/i, '').replace(/\\/g, '/');
+            const folderMatch = clean.match(/\/(?:public\/)?(uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\/(.+)$/i);
+            if (folderMatch) {
+                clean = '/' + folderMatch[1] + '/' + folderMatch[2];
+            } else if (/^(?:[A-Za-z]:\/|\/(?:Users|home|var|tmp|mnt|app|Desktop|Documents|Downloads)\/)/i.test(clean)) {
+                const parts = clean.split('/').filter(Boolean);
+                clean = parts.length ? parts[parts.length - 1] : '';
+            }
+            clean = clean.replace(/^(?:\.\/)+/, '');
+            clean = clean.replace(/^\/?(?:public|DuongDenVinhQuang-main)(?=\/)/i, '');
+            if (clean.startsWith('./')) clean = clean.slice(2);
+            return clean;
+        }
+
+        function buildProjectorMediaCandidates(rawUrl) {
+            const candidates = [];
+            const cleaned = cleanProjectorMediaPath(rawUrl);
+            if (!cleaned) return candidates;
+            const addCandidate = (u) => {
+                if (u && !candidates.includes(u)) candidates.push(u);
+            };
+            const primary = (typeof getApiUrl === 'function') ? getApiUrl(cleaned) : cleaned;
+            addCandidate(primary);
+            addCandidate(cleaned);
+            if (!/^(https?:|blob:|data:)/i.test(cleaned)) {
+                const parts = cleaned.replace(/^\/+/, '').split('/').filter(Boolean);
+                const fileName = parts.length ? parts[parts.length - 1] : '';
+                if (fileName) {
+                    const folders = ['/Media/', '/uploads/', '/Images/', '/videos/', '/assets/', '/'];
+                    folders.forEach(prefix => {
+                        const raw = prefix + fileName;
+                        addCandidate((typeof getApiUrl === 'function') ? getApiUrl(raw) : raw);
+                    });
+                }
+            }
+            return candidates;
+        }
+
+        function attachProjectorMediaFallback(el, rawUrl, onAllFailed, onLoaded) {
+            if (!el) return '';
+            const candidates = buildProjectorMediaCandidates(rawUrl);
+            if (!candidates.length) {
+                el.dataset.fallbackActive = '';
+                el.onerror = null;
+                el.removeAttribute('src');
+                if (typeof onAllFailed === 'function') onAllFailed();
+                return '';
+            }
+            let idx = 0;
+            el.dataset.fallbackActive = '1';
+            el.onerror = function() {
+                idx++;
+                if (idx < candidates.length) {
+                    const nextUrl = candidates[idx];
+                    el.setAttribute('src', nextUrl);
+                    if (el.tagName === 'VIDEO') {
+                        try { el.load(); if (typeof onLoaded === 'function') onLoaded(el); } catch (e) {}
+                    }
+                } else {
+                    el.dataset.fallbackActive = '';
+                    el.onerror = null;
+                    if (typeof onAllFailed === 'function') onAllFailed();
+                }
+            };
+            const firstUrl = candidates[0];
+            if (el.getAttribute('src') !== firstUrl) {
+                el.setAttribute('src', firstUrl);
+                if (el.tagName === 'VIDEO') {
+                    try { el.load(); } catch (e) {}
+                }
+            }
+            return firstUrl;
+        }
+
         function updateRound2HintImage() {
             const hintImg = document.getElementById('vs_hint_img');
             if (!hintImg) return;
-            const hintUrl = (r2VuotSongData && r2VuotSongData.hintImage ? String(r2VuotSongData.hintImage).trim() : '');
-            if (hintUrl) {
-                if (hintImg.getAttribute('src') !== hintUrl) {
-                    hintImg.setAttribute('src', hintUrl);
-                }
+            const rawHintUrl = (r2VuotSongData && r2VuotSongData.hintImage ? String(r2VuotSongData.hintImage).trim() : '');
+            const cleanHintUrl = cleanProjectorMediaPath(rawHintUrl);
+            if (cleanHintUrl) {
+                attachProjectorMediaFallback(hintImg, rawHintUrl, () => {
+                    hintImg.style.display = 'none';
+                });
                 hintImg.style.display = isRound2RowsShown ? 'block' : 'none';
             } else {
+                hintImg.onerror = null;
+                hintImg.dataset.fallbackActive = '';
                 hintImg.style.display = 'none';
                 hintImg.removeAttribute('src');
             }
@@ -2576,6 +2659,7 @@
         const r3MediaImgEl = document.getElementById('r3_media_img');
         if (r3MediaImgEl) {
             r3MediaImgEl.addEventListener('error', () => {
+                if (r3MediaImgEl.dataset.fallbackActive === '1') return;
                 r3MediaImgEl.style.display = 'none';
             });
         }
@@ -2586,32 +2670,34 @@
                 try { r3MediaVidEl.pause(); } catch (e) {}
             });
             r3MediaVidEl.addEventListener('error', () => {
+                if (r3MediaVidEl.dataset.fallbackActive === '1') return;
                 r3MediaVidEl.style.display = 'none';
             });
         }
 
         function detectRound3MediaType(url, explicitType = '') {
             if (explicitType === 'image' || explicitType === 'video') return explicitType;
-            const clean = (url || '').toString().trim();
+            const clean = cleanProjectorMediaPath(url);
             if (!clean) return 'none';
-            if (clean.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|bmp|svg|avif)(\?|#|$)/i.test(clean)) {
+            const cleanNoQuery = clean.split(/[?#]/)[0];
+            if (clean.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(cleanNoQuery)) {
                 return 'image';
             }
-            if (clean.startsWith('data:video/') || /\.(mp4|webm|mov|m4v|avi|mkv|ogv)(\?|#|$)/i.test(clean)) {
+            if (clean.startsWith('data:video/') || /\.(mp4|webm|mov|m4v|avi|mkv|ogv)$/i.test(cleanNoQuery)) {
                 return 'video';
             }
             return 'video';
         }
 
         function normalizeRound3MediaUrl(url) {
-            const clean = (url || '').toString().trim();
+            const clean = cleanProjectorMediaPath(url);
             if (!clean) return '';
             if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
             if (typeof getApiUrl === 'function') {
                 return getApiUrl(clean);
             }
             if (clean.startsWith('./')) return clean.slice(2);
-            return clean.replace(/^\/+/, '');
+            return clean.startsWith('/') ? clean : ('/' + clean);
         }
 
         function clearRound3Timers() {
@@ -2728,9 +2814,9 @@
                 mediaVid.style.display = 'none';
                 try { mediaVid.pause(); } catch (e) {}
             }
-            if (mediaImg.getAttribute('src') !== mediaUrl) {
-                mediaImg.setAttribute('src', mediaUrl);
-            }
+            attachProjectorMediaFallback(mediaImg, mediaUrl, () => {
+                mediaImg.style.display = 'none';
+            });
             mediaImg.style.display = 'block';
             mediaBox.style.display = 'flex';
         }
@@ -2777,7 +2863,11 @@
             const { mediaUrl, mediaType, text } = r3CurrentQuestion;
             if (mediaUrl && mediaType === 'image') {
                 const mediaImg = document.getElementById('r3_media_img');
-                if (mediaImg) mediaImg.setAttribute('src', mediaUrl);
+                if (mediaImg) {
+                    attachProjectorMediaFallback(mediaImg, mediaUrl, () => {
+                        mediaImg.style.display = 'none';
+                    });
+                }
                 r3ImageRevealTimer = setTimeout(() => {
                     r3ImageRevealTimer = null;
                     showRound3MediaImage(mediaUrl);
@@ -2785,8 +2875,9 @@
             } else if (mediaUrl && mediaType === 'video') {
                 const mediaVid = document.getElementById('r3_media_video');
                 if (mediaVid) {
-                    mediaVid.setAttribute('src', mediaUrl);
-                    try { mediaVid.load(); } catch (e) {}
+                    attachProjectorMediaFallback(mediaVid, mediaUrl, () => {
+                        mediaVid.style.display = 'none';
+                    });
                 }
             }
 
@@ -2836,18 +2927,23 @@
                 const mediaVid = document.getElementById('r3_media_video');
                 if (mediaImg) mediaImg.style.display = 'none';
                 if (mediaBox && mediaVid) {
-                    if (mediaVid.getAttribute('src') !== mediaUrl) {
-                        mediaVid.setAttribute('src', mediaUrl);
-                    }
+                    const tryPlayVid = (v) => {
+                        try {
+                            v.muted = true;
+                            v.volume = 0;
+                            v.currentTime = 0;
+                            const vp = v.play();
+                            if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                        } catch (e) {}
+                    };
+                    attachProjectorMediaFallback(mediaVid, mediaUrl, () => {
+                        mediaVid.style.display = 'none';
+                    }, tryPlayVid);
                     mediaVid.muted = true;
                     mediaVid.volume = 0;
                     mediaVid.style.display = 'block';
                     mediaBox.style.display = 'flex';
-                    try {
-                        mediaVid.currentTime = 0;
-                        const vp = mediaVid.play();
-                        if (vp && typeof vp.catch === 'function') vp.catch(() => {});
-                    } catch (e) {}
+                    tryPlayVid(mediaVid);
                 }
             }
         }
@@ -3671,7 +3767,7 @@
                 qBox.style.opacity = '1';
             }
 
-            const defaultTotal = activeTurnIndex === 5 ? 12 : 6;
+            const defaultTotal = activeTurnIndex === 5 ? 15 : 6;
             const totalQ = parseInt(data.totalQuestions, 10) || defaultTotal;
             const qIdx = parseInt(data.questionIndex, 10) || 1;
             playThinkingLoopForQuestion(qIdx, totalQ, true);
@@ -3696,7 +3792,7 @@
                 qBox.style.opacity = '1';
             }
 
-            const defaultTotal = activeTurnIndex === 5 ? 12 : 6;
+            const defaultTotal = activeTurnIndex === 5 ? 15 : 6;
             const totalQ = parseInt(data.totalQuestions, 10) || defaultTotal;
             const qIdx = parseInt(data.questionIndex, 10) || 1;
             playThinkingLoopForQuestion(qIdx, totalQ, false);
@@ -4017,26 +4113,32 @@
             const img = document.getElementById('intro_image_player');
             if (!overlay || !vid || !img) return;
 
-            const rawSrc = data.src || '';
-            const src = (typeof getApiUrl === 'function') ? getApiUrl(rawSrc) : rawSrc;
-            if (!src) return;
+            const rawSrc = cleanProjectorMediaPath(data.src || '');
+            if (!rawSrc) return;
 
             overlay.style.display = 'flex';
             if (data.mediaType === 'image') {
                 vid.style.display = 'none';
                 try { vid.pause(); } catch (e) {}
-                img.src = src;
+                attachProjectorMediaFallback(img, rawSrc, () => {
+                    img.style.display = 'none';
+                });
                 img.style.display = 'block';
             } else {
                 img.style.display = 'none';
-                vid.src = src;
+                const playIntroVid = (v) => {
+                    try {
+                        v.volume = audioSettings.enabled ? audioSettings.volume : 0;
+                        v.currentTime = 0;
+                        const vp = v.play();
+                        if (vp && typeof vp.catch === 'function') vp.catch(() => {});
+                    } catch (e) {}
+                };
+                attachProjectorMediaFallback(vid, rawSrc, () => {
+                    vid.style.display = 'none';
+                }, playIntroVid);
                 vid.style.display = 'block';
-                vid.volume = audioSettings.enabled ? audioSettings.volume : 0;
-                try {
-                    vid.currentTime = 0;
-                    const vp = vid.play();
-                    if (vp && typeof vp.catch === 'function') vp.catch(() => {});
-                } catch (e) {}
+                playIntroVid(vid);
             }
         }
 

@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="controller.css?v=20261126c">
     <script>
-        function switchTab(index) {
+        function switchTab(index, opts = {}) {
             const navItems = document.querySelectorAll('.nav-item');
             const tabContents = document.querySelectorAll('.tab-content');
             navItems.forEach((item, idx) => {
@@ -24,9 +24,9 @@
                 localStorage.setItem('ddvq_controller_active_tab', index.toString());
             } catch(e) {}
             if (typeof window.onSwitchTabRound === 'function') {
-                window.onSwitchTabRound(index);
+                window.onSwitchTabRound(index, opts);
             }
-            if (typeof window.saveControllerRuntimeState === 'function') {
+            if (!opts.skipSave && typeof window.saveControllerRuntimeState === 'function') {
                 window.saveControllerRuntimeState();
             }
         }
@@ -781,6 +781,46 @@
                 </div>
             </div>
 
+            <div class="q-row" id="rk_row_5" style="display: none;">
+                <span>Câu 5</span>
+                <div>
+                    <input type="text" id="rk_q_5" placeholder="Nội dung câu hỏi tăng tốc 5" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
+                    <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_5', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 5">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_5')" title="Xem thử Media Câu 5">👁️ Xem</button>
+                        <input type="text" id="rk_m_5" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 5" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_5');" style="flex: 1;">
+                    </div>
+                </div>
+                <div>
+                    <input type="text" id="rk_a_5" placeholder="Đáp án câu 5" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
+                    <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_5', 'image/*')">Chọn ảnh đáp án</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_5')" title="Xem ảnh đáp án">👁️</button>
+                        <input type="text" id="rk_am_5" placeholder="URL ảnh đáp án (nếu có)" onchange="saveAllData()" style="flex: 1;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="q-row" id="rk_row_6" style="display: none;">
+                <span>Câu 6</span>
+                <div>
+                    <input type="text" id="rk_q_6" placeholder="Nội dung câu hỏi tăng tốc 6" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
+                    <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; font-weight: 700;" onclick="triggerFilePicker('rk_m_6', 'image/*,video/*')" title="Tải lên hình ảnh hoặc video câu 6">⚡ Tải Ảnh/Video</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_m_6')" title="Xem thử Media Câu 6">👁️ Xem</button>
+                        <input type="text" id="rk_m_6" value="" placeholder="Kéo thả hoặc nhập URL ảnh/video câu 6" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();" ondragover="event.preventDefault(); this.style.borderColor='#38bdf8';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; if(event.dataTransfer.files[0]) uploadMediaOptimized(event.dataTransfer.files[0], 'rk_m_6');" style="flex: 1;">
+                    </div>
+                </div>
+                <div>
+                    <input type="text" id="rk_a_6" placeholder="Đáp án câu 6" onchange="saveAllData(); if (typeof updateTab2Preview === 'function') updateTab2Preview();">
+                    <div class="media-btn-group" style="display: flex; gap: 5px; margin-top: 4px; align-items: center;">
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 8px;" onclick="triggerFilePicker('rk_am_6', 'image/*')">Chọn ảnh đáp án</button>
+                        <button class="btn" style="font-size: 11px; white-space: nowrap; padding: 4px 6px; background: #475569; color: white;" onclick="previewVideoModal('rk_am_6')" title="Xem ảnh đáp án">👁️</button>
+                        <input type="text" id="rk_am_6" placeholder="URL ảnh đáp án (nếu có)" onchange="saveAllData()" style="flex: 1;">
+                    </div>
+                </div>
+            </div>
+
             <!-- PHẦN THI VỀ ĐÍCH (VINH QUANG) -->
             <div class="sub-section-title" style="color: #dc2626;">--- Phần thi Về Đích ---</div>
             <div class="packages" style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center; background: #e0f2fe; padding: 10px; border-radius: 6px; flex-wrap: wrap;">
@@ -803,20 +843,23 @@
             </div>
             <div id="tab0_vinhQuangRows" style="margin-bottom: 15px;"></div>
 
-            <div class="q-row">
-                <span>Câu Phụ 1</span>
-                <div><input type="text" id="sys_chp_q_1" placeholder="Nội dung câu phụ 1" onchange="saveAllData()"></div>
-                <div><input type="text" id="sys_chp_a_1" placeholder="Đáp án" onchange="saveAllData()"></div>
-            </div>
-            <div class="q-row">
-                <span>Câu Phụ 2</span>
-                <div><input type="text" id="sys_chp_q_2" placeholder="Nội dung câu phụ 2" onchange="saveAllData()"></div>
-                <div><input type="text" id="sys_chp_a_2" placeholder="Đáp án" onchange="saveAllData()"></div>
-            </div>
-            <div class="q-row">
-                <span>Câu Phụ 3</span>
-                <div><input type="text" id="sys_chp_q_3" placeholder="Nội dung câu phụ 3" onchange="saveAllData()"></div>
-                <div><input type="text" id="sys_chp_a_3" placeholder="Đáp án" onchange="saveAllData()"></div>
+            <div class="sub-section-title" style="color: #0369a1; margin-top: 10px;">--- Phần thi Câu Hỏi Phụ (Về Đích Phụ) ---</div>
+            <div id="sys_chp_rows">
+                <div class="q-row">
+                    <span>Câu Phụ 1</span>
+                    <div><input type="text" id="sys_chp_q_1" placeholder="Nội dung câu phụ 1" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                    <div><input type="text" id="sys_chp_a_1" placeholder="Đáp án" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                </div>
+                <div class="q-row">
+                    <span>Câu Phụ 2</span>
+                    <div><input type="text" id="sys_chp_q_2" placeholder="Nội dung câu phụ 2" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                    <div><input type="text" id="sys_chp_a_2" placeholder="Đáp án" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                </div>
+                <div class="q-row">
+                    <span>Câu Phụ 3</span>
+                    <div><input type="text" id="sys_chp_q_3" placeholder="Nội dung câu phụ 3" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                    <div><input type="text" id="sys_chp_a_3" placeholder="Đáp án" onchange="saveAllData(); if (typeof updateTab5Preview === 'function') updateTab5Preview();"></div>
+                </div>
             </div>
 
             <div class="footer-actions">
@@ -1503,6 +1546,12 @@
                 <div id="btn_rk_q4" class="rk-q-btn luot-thi-btn" onclick="selectRKQuestion(4)" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>Câu hỏi số 4</span> <span class="badge">4</span>
                 </div>
+                <div id="btn_rk_q5" class="rk-q-btn luot-thi-btn" onclick="selectRKQuestion(5)" style="display: none; justify-content: space-between; align-items: center;">
+                    <span>Câu hỏi số 5</span> <span class="badge">5</span>
+                </div>
+                <div id="btn_rk_q6" class="rk-q-btn luot-thi-btn" onclick="selectRKQuestion(6)" style="display: none; justify-content: space-between; align-items: center;">
+                    <span>Câu hỏi số 6</span> <span class="badge">6</span>
+                </div>
             </div>
         </div>
 
@@ -1527,7 +1576,7 @@
                     <div style="flex: 1; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
                             <span id="rk_preview_title">VÒNG THI TĂNG TỐC: CÂU HỎI THỨ 1</span>
-                            <span>CÂU HỎI: <span id="rk_preview_q_num">1</span>/4</span>
+                            <span>CÂU HỎI: <span id="rk_preview_q_num">1</span>/<span id="rk_preview_q_total">4</span></span>
                         </div>
                         <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc;" id="rk_preview_q_text">
                             Nội dung câu hỏi Tăng Tốc số 1...
@@ -2114,14 +2163,16 @@
 
             <!-- RIGHT: CÂU HỎI PHỤ SELECTOR (STANDARDIZED WIDTH 230px) -->
             <div style="width: 230px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;">
-                <div id="btn_chp_q1" class="chp-q-btn luot-thi-btn active" onclick="selectCHPQuestion(1)">
-                    <span>Câu hỏi phụ 1</span> <span class="badge">1</span>
-                </div>
-                <div id="btn_chp_q2" class="chp-q-btn luot-thi-btn" onclick="selectCHPQuestion(2)">
-                    <span>Câu hỏi phụ 2</span> <span class="badge">2</span>
-                </div>
-                <div id="btn_chp_q3" class="chp-q-btn luot-thi-btn" onclick="selectCHPQuestion(3)">
-                    <span>Câu hỏi phụ 3</span> <span class="badge">3</span>
+                <div id="chp_q_btn_list" style="display: flex; flex-direction: column; gap: 6px; max-height: 215px; overflow-y: auto; padding-right: 2px;">
+                    <div id="btn_chp_q1" class="chp-q-btn luot-thi-btn active" onclick="selectCHPQuestion(1)">
+                        <span>Câu hỏi phụ 1</span> <span class="badge">1</span>
+                    </div>
+                    <div id="btn_chp_q2" class="chp-q-btn luot-thi-btn" onclick="selectCHPQuestion(2)">
+                        <span>Câu hỏi phụ 2</span> <span class="badge">2</span>
+                    </div>
+                    <div id="btn_chp_q3" class="chp-q-btn luot-thi-btn" onclick="selectCHPQuestion(3)">
+                        <span>Câu hỏi phụ 3</span> <span class="badge">3</span>
+                    </div>
                 </div>
                 <div id="chp_participants_badge" style="font-size: 12px; font-weight: bold; color: #475569; padding: 4px 2px;">
                     Tham gia: TS1, TS2, TS3, TS4
@@ -2150,7 +2201,7 @@
                     <div style="flex: 1; background: #5b9bd5; border-radius: 4px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px;">
                             <span id="chp_preview_title">VÒNG THI CÂU HỎI PHỤ: CÂU SỐ 1</span>
-                            <span>CÂU HỎI: <span id="chp_current_q_label">1</span>/3</span>
+                            <span>CÂU HỎI: <span id="chp_current_q_label">1</span>/<span id="chp_total_q_label">3</span></span>
                         </div>
                         <div style="font-size: 15px; font-weight: bold; line-height: 1.4; color: #f8fafc;" id="chp_preview_q_text">
                             Nội dung câu hỏi phụ số 1...
@@ -2289,13 +2340,13 @@
 
     <!-- JavaScript Logic split into 6 modular files -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124m"></script>
-    <script src="setup.js?v=20261126d"></script>
-    <script src="setup_extra.js?v=20261126b"></script>
-    <script src="controllerR1.js?v=20261124m"></script>
-    <script src="controllerR2.js?v=20261124m"></script>
-    <script src="controllerR3.js?v=20261124m"></script>
-    <script src="controllerR4.js?v=20261124m"></script>
-    <script src="controllerRExtra.js?v=20261126a"></script>
+    <script src="supabase-sync.js?v=20261127b"></script>
+    <script src="setup.js?v=20261127b"></script>
+    <script src="setup_extra.js?v=20261127b"></script>
+    <script src="controllerR1.js?v=20261127b"></script>
+    <script src="controllerR2.js?v=20261127b"></script>
+    <script src="controllerR3.js?v=20261127b"></script>
+    <script src="controllerR4.js?v=20261127b"></script>
+    <script src="controllerRExtra.js?v=20261127b"></script>
 </body>
 </html>

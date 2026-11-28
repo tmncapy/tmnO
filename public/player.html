@@ -1005,13 +1005,17 @@
                 }
             });
 
-            // Start player session immediately
+            // Start player session & restore F5 snapshot before network sync
+            restorePlayerSnapshot();
             updatePlayerTopBar();
             applyVSPlayerLockUI();
             initSyncConnection();
+            window.addEventListener('beforeunload', savePlayerSnapshot);
+            window.addEventListener('pagehide', savePlayerSnapshot);
         });
 
         function logoutPlayer() {
+            clearPlayerSnapshot();
             localStorage.removeItem('ddvq_player_logged_in');
             window.location.href = 'playerLogin.html';
         }
@@ -1078,6 +1082,268 @@
                 }).catch(() => {});
         }
 
+        let isRestoringPlayerSnapshot = false;
+
+        function getPlayerSnapshotKey() {
+            const room = (currentRoomCode || 'DDVQ2026').toString().trim().toUpperCase();
+            const cid = parseInt(currentContestantId, 10) || 1;
+            return `ddvq_player_state_${room}_${cid}`;
+        }
+
+        function clearPlayerSnapshot() {
+            try {
+                const key = getPlayerSnapshotKey();
+                sessionStorage.removeItem(key);
+                localStorage.removeItem(key);
+            } catch(e) {}
+        }
+
+        function savePlayerSnapshot() {
+            if (isRestoringPlayerSnapshot) return;
+            try {
+                const getTxt = (id) => {
+                    const el = document.getElementById(id);
+                    return el ? (el.innerText || '') : '';
+                };
+                const getBoxMeta = (id) => {
+                    const el = document.getElementById(id);
+                    if (!el) return { text: '', mediaUrl: '', mediaType: '' };
+                    return {
+                        text: el.dataset.qText !== undefined ? el.dataset.qText : (el.querySelector('img,video') ? '' : (el.innerText || '')),
+                        mediaUrl: el.dataset.mediaUrl || '',
+                        mediaType: el.dataset.mediaType || ''
+                    };
+                };
+                const s2Inp = document.getElementById('s2_ans_input');
+                const s3Inp = document.getElementById('s3_ans_input');
+                const s2Stat = document.getElementById('s2_status_bar');
+                const s3Stat = document.getElementById('s3_status_bar');
+                const s2Fb = document.getElementById('s2_bell_feedback');
+                const s1Alert = document.getElementById('s1_5s_alert');
+                const s1Btn = document.getElementById('s1_btn_bell');
+                const s3Btn = document.getElementById('s3_btn_bell');
+
+                const snapshot = {
+                    version: 1,
+                    savedAt: Date.now(),
+                    activeSceneNum,
+                    contestantName,
+                    contestantScore,
+                    currentXuatPhatTurnIndex,
+                    currentS1QuestionIndex,
+                    s1QuestionStates,
+                    s1IsQuestionActive: !!window.s1IsQuestionActive,
+                    s1HasSelectedDeForTurn,
+                    s1ChosenDeMap,
+                    s1AlertVisible: !!(s1Alert && s1Alert.style.display !== 'none'),
+                    labels: {
+                        s1: getTxt('s1_q_label'),
+                        s2: getTxt('s2_row_label'),
+                        s3: getTxt('s3_row_label'),
+                        s4: getTxt('s4_row_label'),
+                        s5: getTxt('s5_row_label')
+                    },
+                    boxes: {
+                        s1: getTxt('s1_q_text'),
+                        s2: getBoxMeta('s2_q_text'),
+                        s3: getTxt('s3_q_text'),
+                        s4: getBoxMeta('s4_q_text'),
+                        s5: getTxt('s5_q_text')
+                    },
+                    inputs: {
+                        s2: {
+                            value: s2Inp ? s2Inp.value : '',
+                            disabled: s2Inp ? !!s2Inp.disabled : true,
+                            placeholder: s2Inp ? (s2Inp.placeholder || '') : ''
+                        },
+                        s3: {
+                            value: s3Inp ? s3Inp.value : '',
+                            disabled: s3Inp ? !!s3Inp.disabled : true,
+                            placeholder: s3Inp ? (s3Inp.placeholder || '') : ''
+                        }
+                    },
+                    statusBars: {
+                        s2Html: s2Stat ? s2Stat.innerHTML : '---',
+                        s2Submitted: !!(s2Stat && s2Stat.classList.contains('submitted')),
+                        s3Html: s3Stat ? s3Stat.innerHTML : '---',
+                        s3Submitted: !!(s3Stat && s3Stat.classList.contains('submitted'))
+                    },
+                    s2FeedbackVisible: !!(s2Fb && s2Fb.style.display !== 'none'),
+                    currentTimerVal,
+                    sceneTimerStartTime,
+                    sceneTimerDuration,
+                    isTimerRunning: !!timerInterval,
+                    isVQ25sActive,
+                    lastVQTimerStartTime,
+                    isBellLocked,
+                    s1FastestBuzzedId,
+                    s1BellUnlockedAt,
+                    s4MainContestant,
+                    s4FastestBuzzedId,
+                    isS4BellOpen,
+                    s4BellUnlockedAt,
+                    s5Participants,
+                    s5Eliminated,
+                    s5IsBellOpen,
+                    s5FastestBuzzedId,
+                    s5BellUnlockedAt,
+                    s5RemainingMs,
+                    s5RightWinnerName,
+                    vsLockedContestants,
+                    s1BtnDisabled: !!(s1Btn && s1Btn.disabled),
+                    s1BtnText: s1Btn ? s1Btn.innerText : '',
+                    s3BtnDisabled: !!(s3Btn && s3Btn.disabled)
+                };
+                const raw = JSON.stringify(snapshot);
+                sessionStorage.setItem(getPlayerSnapshotKey(), raw);
+                localStorage.setItem(getPlayerSnapshotKey(), raw);
+            } catch(e) {}
+        }
+
+        function restorePlayerSnapshot() {
+            isRestoringPlayerSnapshot = true;
+            try {
+                const key = getPlayerSnapshotKey();
+                const raw = sessionStorage.getItem(key) || localStorage.getItem(key);
+                if (!raw) return false;
+                const snap = JSON.parse(raw);
+                if (!snap || typeof snap !== 'object') return false;
+
+                if (snap.contestantName) contestantName = snap.contestantName;
+                if (snap.contestantScore !== undefined) contestantScore = snap.contestantScore;
+                if (snap.currentXuatPhatTurnIndex !== undefined) currentXuatPhatTurnIndex = parseInt(snap.currentXuatPhatTurnIndex, 10) || 0;
+                if (snap.currentS1QuestionIndex !== undefined) currentS1QuestionIndex = parseInt(snap.currentS1QuestionIndex, 10) || 1;
+                if (snap.s1QuestionStates && typeof snap.s1QuestionStates === 'object') s1QuestionStates = snap.s1QuestionStates;
+                window.s1IsQuestionActive = !!snap.s1IsQuestionActive;
+                if (snap.s1HasSelectedDeForTurn) s1HasSelectedDeForTurn = snap.s1HasSelectedDeForTurn;
+                if (snap.s1ChosenDeMap) s1ChosenDeMap = snap.s1ChosenDeMap;
+                if (snap.vsLockedContestants && typeof snap.vsLockedContestants === 'object') {
+                    vsLockedContestants = {
+                        1: !!snap.vsLockedContestants[1],
+                        2: !!snap.vsLockedContestants[2],
+                        3: !!snap.vsLockedContestants[3],
+                        4: !!snap.vsLockedContestants[4]
+                    };
+                }
+
+                isBellLocked = !!snap.isBellLocked;
+                s1FastestBuzzedId = parseInt(snap.s1FastestBuzzedId, 10) || 0;
+                s1BellUnlockedAt = Number(snap.s1BellUnlockedAt) || 0;
+                s4MainContestant = parseInt(snap.s4MainContestant, 10) || 0;
+                s4FastestBuzzedId = parseInt(snap.s4FastestBuzzedId, 10) || 0;
+                isS4BellOpen = !!snap.isS4BellOpen;
+                s4BellUnlockedAt = Number(snap.s4BellUnlockedAt) || 0;
+                if (Array.isArray(snap.s5Participants)) s5Participants = snap.s5Participants;
+                if (Array.isArray(snap.s5Eliminated)) s5Eliminated = snap.s5Eliminated;
+                s5IsBellOpen = !!snap.s5IsBellOpen;
+                s5FastestBuzzedId = parseInt(snap.s5FastestBuzzedId, 10) || 0;
+                s5BellUnlockedAt = Number(snap.s5BellUnlockedAt) || 0;
+                if (snap.s5RemainingMs !== undefined) s5RemainingMs = Math.max(0, Number(snap.s5RemainingMs) || 0);
+                s5RightWinnerName = snap.s5RightWinnerName || '';
+                isVQ25sActive = !!snap.isVQ25sActive;
+                lastVQTimerStartTime = Number(snap.lastVQTimerStartTime) || 0;
+
+                const targetScene = parseInt(snap.activeSceneNum, 10) || 1;
+                activeSceneNum = targetScene;
+                for (let i = 1; i <= 5; i++) {
+                    const sc = document.getElementById(`scene-${i}`);
+                    if (sc) {
+                        if (i === targetScene) sc.classList.add('active');
+                        else sc.classList.remove('active');
+                    }
+                }
+
+                if (snap.labels) {
+                    if (snap.labels.s1) { const el = document.getElementById('s1_q_label'); if (el) el.innerText = snap.labels.s1; }
+                    if (snap.labels.s2) { const el = document.getElementById('s2_row_label'); if (el) el.innerText = snap.labels.s2; }
+                    if (snap.labels.s3) { const el = document.getElementById('s3_row_label'); if (el) el.innerText = snap.labels.s3; }
+                    if (snap.labels.s4) { const el = document.getElementById('s4_row_label'); if (el) el.innerText = snap.labels.s4; }
+                    if (snap.labels.s5) { const el = document.getElementById('s5_row_label'); if (el) el.innerText = snap.labels.s5; }
+                }
+
+                if (snap.boxes) {
+                    const s1Box = document.getElementById('s1_q_text');
+                    if (s1Box && snap.boxes.s1 !== undefined) s1Box.innerText = snap.boxes.s1;
+                    const s2Box = document.getElementById('s2_q_text');
+                    if (s2Box && snap.boxes.s2) renderPlayerMediaQuestion(s2Box, snap.boxes.s2.text, snap.boxes.s2.mediaUrl, snap.boxes.s2.mediaType);
+                    const s3Box = document.getElementById('s3_q_text');
+                    if (s3Box && snap.boxes.s3 !== undefined) s3Box.innerText = snap.boxes.s3;
+                    const s4Box = document.getElementById('s4_q_text');
+                    if (s4Box && snap.boxes.s4) renderPlayerMediaQuestion(s4Box, snap.boxes.s4.text, snap.boxes.s4.mediaUrl, snap.boxes.s4.mediaType);
+                    const s5Box = document.getElementById('s5_q_text');
+                    if (s5Box && snap.boxes.s5 !== undefined) s5Box.innerText = snap.boxes.s5;
+                }
+
+                if (snap.inputs) {
+                    const s2Inp = document.getElementById('s2_ans_input');
+                    if (s2Inp && snap.inputs.s2) {
+                        s2Inp.value = snap.inputs.s2.value || '';
+                        setInputState(2, !snap.inputs.s2.disabled, snap.inputs.s2.placeholder || '');
+                    }
+                    const s3Inp = document.getElementById('s3_ans_input');
+                    if (s3Inp && snap.inputs.s3) {
+                        s3Inp.value = snap.inputs.s3.value || '';
+                        setInputState(3, !snap.inputs.s3.disabled, snap.inputs.s3.placeholder || '');
+                    }
+                }
+
+                if (snap.statusBars) {
+                    const s2Stat = document.getElementById('s2_status_bar');
+                    if (s2Stat && snap.statusBars.s2Html !== undefined) {
+                        s2Stat.innerHTML = snap.statusBars.s2Html;
+                        s2Stat.classList.toggle('submitted', !!snap.statusBars.s2Submitted);
+                    }
+                    const s3Stat = document.getElementById('s3_status_bar');
+                    if (s3Stat && snap.statusBars.s3Html !== undefined) {
+                        s3Stat.innerHTML = snap.statusBars.s3Html;
+                        s3Stat.classList.toggle('submitted', !!snap.statusBars.s3Submitted);
+                    }
+                }
+
+                const s2Fb = document.getElementById('s2_bell_feedback');
+                if (s2Fb) s2Fb.style.display = snap.s2FeedbackVisible ? 'flex' : 'none';
+
+                updateS1CorrectCountUI();
+                updateS1RandomDeButtonUI();
+                applyS1Turn5ModeUI();
+                setS15sAlertVisible(!!snap.s1AlertVisible);
+                if (s1FastestBuzzedId >= 1 && s1FastestBuzzedId <= 4) {
+                    lockS1BellWithWinner(s1FastestBuzzedId);
+                } else if (currentXuatPhatTurnIndex === 5) {
+                    if (snap.s1BtnDisabled) setS1BellWaitingLock(snap.s1BtnText || 'CHỜ MỞ CHUÔNG...');
+                    else resetBellState(1);
+                }
+
+                const s3Btn = document.getElementById('s3_btn_bell');
+                if (s3Btn && snap.s3BtnDisabled && !isCurrentPlayerVSLocked()) {
+                    s3Btn.classList.add('pressed');
+                    s3Btn.disabled = true;
+                    s3Btn.style.opacity = '0.4';
+                }
+                applyVSPlayerLockUI();
+                updateS4BellLockState();
+                updateS5BellLockState();
+
+                if (snap.isTimerRunning && snap.sceneTimerStartTime > 0 && snap.sceneTimerDuration > 0) {
+                    const remMs = (snap.sceneTimerStartTime + snap.sceneTimerDuration * 1000) - Date.now();
+                    if (remMs > 0) {
+                        startSceneTimer(targetScene, snap.sceneTimerDuration, snap.sceneTimerStartTime, targetScene === 4 && !isVQ25sActive);
+                    } else {
+                        stopSceneTimer(targetScene, 0);
+                    }
+                } else if (snap.currentTimerVal !== undefined) {
+                    currentTimerVal = parseInt(snap.currentTimerVal, 10) || 0;
+                    updateTimerDisplay(targetScene, currentTimerVal);
+                }
+                return true;
+            } catch(e) {
+                console.warn('restorePlayerSnapshot error:', e);
+                return false;
+            } finally {
+                isRestoringPlayerSnapshot = false;
+            }
+        }
+
         // Switch active scene (1 to 5)
         function switchScene(sceneNum) {
             const prevScene = activeSceneNum;
@@ -1106,6 +1372,7 @@
             if (sceneNum === 3) {
                 applyVSPlayerLockUI();
             }
+            savePlayerSnapshot();
         }
 
         let isBellLocked = true;
@@ -1299,6 +1566,133 @@
             }
         }
 
+        function cleanPlayerMediaPath(rawPath) {
+            if (!rawPath) return '';
+            let clean = String(rawPath).trim();
+            if (!clean || clean === '...' || clean === '…' || clean === 'null' || clean === 'undefined') return '';
+            if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+
+            clean = clean.replace(/^file:\/+/i, '').replace(/\\/g, '/');
+            const folderMatch = clean.match(/\/(?:public\/)?(uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\/(.+)$/i);
+            if (folderMatch) {
+                clean = '/' + folderMatch[1] + '/' + folderMatch[2];
+            } else if (/^(?:[A-Za-z]:\/|\/(?:Users|home|var|tmp|mnt|app|Desktop|Documents|Downloads)\/)/i.test(clean)) {
+                const parts = clean.split('/').filter(Boolean);
+                clean = parts.length ? parts[parts.length - 1] : '';
+            }
+            clean = clean.replace(/^(?:\.\/)+/, '');
+            clean = clean.replace(/^\/?(?:public|DuongDenVinhQuang-main)(?=\/)/i, '');
+            if (clean.startsWith('./')) clean = clean.slice(2);
+            return clean;
+        }
+
+        function resolvePlayerMediaUrl(rawPath) {
+            const clean = cleanPlayerMediaPath(rawPath);
+            if (!clean) return '';
+            if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+            if (typeof getApiUrl === 'function') return getApiUrl(clean);
+            return clean.startsWith('/') ? clean : ('/' + clean);
+        }
+
+        function detectPlayerMediaType(url, explicitType = '') {
+            if (explicitType === 'image' || explicitType === 'video') return explicitType;
+            const clean = cleanPlayerMediaPath(url);
+            if (!clean) return 'none';
+            const cleanNoQuery = clean.split(/[?#]/)[0];
+            if (clean.startsWith('data:image/') || /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(cleanNoQuery)) {
+                return 'image';
+            }
+            if (clean.startsWith('data:video/') || /\.(mp4|webm|mov|m4v|avi|mkv|ogv)$/i.test(cleanNoQuery)) {
+                return 'video';
+            }
+            return 'image';
+        }
+
+        function buildPlayerMediaCandidates(rawUrl) {
+            const candidates = [];
+            const cleaned = cleanPlayerMediaPath(rawUrl);
+            if (!cleaned) return candidates;
+            const addCandidate = (u) => {
+                if (u && !candidates.includes(u)) candidates.push(u);
+            };
+            addCandidate(resolvePlayerMediaUrl(cleaned));
+            addCandidate(cleaned);
+            if (!/^(https?:|blob:|data:)/i.test(cleaned)) {
+                const parts = cleaned.replace(/^\/+/, '').split('/').filter(Boolean);
+                const fileName = parts.length ? parts[parts.length - 1] : '';
+                if (fileName) {
+                    ['/Media/', '/uploads/', '/Images/', '/videos/', '/assets/', '/'].forEach(prefix => {
+                        const raw = prefix + fileName;
+                        addCandidate(typeof getApiUrl === 'function' ? getApiUrl(raw) : raw);
+                    });
+                }
+            }
+            return candidates;
+        }
+
+        function attachPlayerMediaFallback(el, rawUrl) {
+            if (!el) return;
+            const candidates = buildPlayerMediaCandidates(rawUrl);
+            if (!candidates.length) return;
+            let idx = 0;
+            el.onerror = function() {
+                idx++;
+                if (idx < candidates.length) {
+                    el.src = candidates[idx];
+                    if (el.tagName === 'VIDEO') {
+                        try { el.load(); el.play().catch(() => {}); } catch(e) {}
+                    }
+                } else {
+                    el.onerror = null;
+                    el.style.display = 'none';
+                }
+            };
+            el.src = candidates[0];
+        }
+
+        function renderPlayerMediaQuestion(boxEl, qText, rawMediaUrl, explicitMediaType) {
+            if (!boxEl) return;
+            const cleanText = (qText || '').toString().trim();
+            const cleanMedia = cleanPlayerMediaPath(rawMediaUrl);
+            const mediaType = cleanMedia ? detectPlayerMediaType(cleanMedia, explicitMediaType) : 'none';
+
+            boxEl.dataset.qText = cleanText;
+            boxEl.dataset.mediaUrl = cleanMedia;
+            boxEl.dataset.mediaType = mediaType;
+            boxEl.innerHTML = '';
+
+            if (!cleanText && !cleanMedia) {
+                return;
+            }
+            if (cleanText) {
+                const txtDiv = document.createElement('div');
+                txtDiv.style.cssText = 'width:100%;text-align:center;' + (cleanMedia ? 'margin-bottom:8px;flex-shrink:0;' : '');
+                txtDiv.innerText = cleanText;
+                boxEl.appendChild(txtDiv);
+            }
+            if (cleanMedia) {
+                boxEl.style.flexDirection = 'column';
+                if (mediaType === 'video') {
+                    const vid = document.createElement('video');
+                    vid.controls = true;
+                    vid.autoplay = true;
+                    vid.muted = true;
+                    vid.playsInline = true;
+                    vid.style.cssText = 'max-height:' + (cleanText ? '75%' : '100%') + ';max-width:100%;object-fit:contain;border-radius:6px;background:#000;';
+                    attachPlayerMediaFallback(vid, cleanMedia);
+                    boxEl.appendChild(vid);
+                } else {
+                    const img = document.createElement('img');
+                    img.alt = 'Media Question';
+                    img.style.cssText = 'max-height:' + (cleanText ? '75%' : '100%') + ';max-width:100%;object-fit:contain;border-radius:6px;';
+                    attachPlayerMediaFallback(img, cleanMedia);
+                    boxEl.appendChild(img);
+                }
+            } else {
+                boxEl.style.flexDirection = '';
+            }
+        }
+
         // Handle Realtime Sync Messages from Controller / Server
         function handleIncomingSyncMessage(data) {
             if (!data) return;
@@ -1450,12 +1844,16 @@
                 applyVSPlayerLockUI();
             }
 
-            // Switch Round
-            if (data.type === 'SWITCH_ROUND' || data.type === 'SWITCH_ROUND_PLAYER_MC' || data.type === 'VIEW_SELECT' || data.type === 'SELECT_VIEW' || data.activeRound || data.round) {
+            // Switch Round (Ignore Controller tab switch SWITCH_ROUND_PLAYER_MC and HE_THONG)
+            if (data.type === 'SWITCH_ROUND_PLAYER_MC') {
+                // Không chuyển màn hình Player khi Controller đổi tab
+            } else if (data.type === 'SWITCH_ROUND' || data.type === 'VIEW_SELECT' || data.type === 'SELECT_VIEW' || data.activeRound || data.round) {
                 const round = (data.activeRound || data.round || '').toString().toUpperCase();
                 const viewNum = parseInt(data.viewNum || data.view || data.roundIndex || 0, 10);
 
-                if (round === 'XUAT_PHAT' || round === 'KHOI_DONG' || round === 'KD' || viewNum === 1) {
+                if (round === 'HE_THONG') {
+                    // Tab Hệ thống không làm Player chuyển màn hình
+                } else if (round === 'XUAT_PHAT' || round === 'KHOI_DONG' || round === 'KD' || viewNum === 1) {
                     switchScene(1);
                 } else if (round === 'RA_KHOI' || round === 'TANG_TOC' || round === 'TT' || viewNum === 2) {
                     switchScene(2);
@@ -1476,6 +1874,67 @@
                 s4FastestBuzzedId = parseInt(data.vqBuzzerWinner, 10) || 0;
                 isS4BellOpen = !!data.vqBuzzerOpen && !data.vqBuzzerLocked && s4FastestBuzzedId === 0;
                 updateS4BellLockState();
+            }
+
+            // Hydrate currentQuestion & playerAnswers from initial/full state snapshots
+            if (data.currentQuestion && typeof data.currentQuestion === 'object') {
+                const cq = data.currentQuestion;
+                const cqRound = (cq.round || data.activeRound || '').toString().toUpperCase();
+                if ((cqRound === 'XUAT_PHAT' || activeSceneNum === 1) && data.xpQuestionShown && cq.questionText) {
+                    const s1Box = document.getElementById('s1_q_text') || document.getElementById('s1_question_text');
+                    if (s1Box) s1Box.innerText = cq.questionText;
+                    window.s1IsQuestionActive = true;
+                    if (cq.questionIndex) {
+                        currentS1QuestionIndex = parseInt(cq.questionIndex, 10) || 1;
+                        const lbl = document.getElementById('s1_q_label');
+                        if (lbl) lbl.innerText = `Câu hỏi số ${currentS1QuestionIndex}`;
+                    }
+                } else if ((cqRound === 'RA_KHOI' || cqRound === 'TANG_TOC') && (cq.questionText || cq.mediaUrl)) {
+                    const s2Box = document.getElementById('s2_q_text');
+                    renderPlayerMediaQuestion(s2Box, cq.questionText, cq.mediaUrl, cq.mediaType);
+                    if (cq.questionIndex !== undefined) {
+                        const rLabel = document.getElementById('s2_row_label');
+                        if (rLabel) rLabel.innerText = `Câu hỏi Tăng Tốc số ${cq.questionIndex}`;
+                    }
+                } else if ((cqRound === 'VUOT_SONG' || cqRound === 'VCNV') && data.vsQuestionShown && cq.questionText) {
+                    const s3Box = document.getElementById('s3_q_text');
+                    if (s3Box) s3Box.innerText = cq.questionText;
+                    const rIdx = cq.row !== undefined ? cq.row : cq.questionIndex;
+                    if (rIdx !== undefined) {
+                        const rowLabel = document.getElementById('s3_row_label');
+                        if (rowLabel) rowLabel.innerText = `Hàng ngang số ${rIdx}`;
+                    }
+                } else if ((cqRound === 'VINH_QUANG' || cqRound === 'VE_DICH') && data.vqQuestionShown && (cq.questionText || cq.mediaUrl)) {
+                    const s4Box = document.getElementById('s4_q_text');
+                    renderPlayerMediaQuestion(s4Box, cq.questionText, cq.mediaUrl, cq.mediaType);
+                    if (cq.questionIndex !== undefined) {
+                        const rLabel = document.getElementById('s4_row_label');
+                        if (rLabel) rLabel.innerText = `Câu hỏi Về Đích số ${cq.questionIndex}`;
+                    }
+                }
+            }
+            if (data.playerAnswers && typeof data.playerAnswers === 'object') {
+                const cid = parseInt(currentContestantId, 10) || 1;
+                const rkAns = data.playerAnswers[`ts${cid}_RK`] || (data.playerAnswers[`ts${cid}`]?.round === 'RK' ? data.playerAnswers[`ts${cid}`] : null);
+                if (rkAns && rkAns.answer !== undefined) {
+                    const s2Stat = document.getElementById('s2_status_bar');
+                    if (s2Stat) {
+                        const dispTime = Number(rkAns.time || 0).toFixed(2);
+                        s2Stat.style.whiteSpace = 'nowrap';
+                        s2Stat.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;line-height:1.45;padding:1px 0;">${escapePlayerHtml(rkAns.answer)}</span><span style="flex-shrink:0;white-space:pre;line-height:1.45;"> (${dispTime})</span>`;
+                        s2Stat.classList.add('submitted');
+                    }
+                }
+                const vsAns = data.playerAnswers[`ts${cid}_VS`] || (data.playerAnswers[`ts${cid}`]?.round === 'VS' ? data.playerAnswers[`ts${cid}`] : null);
+                if (vsAns && vsAns.answer !== undefined && !vsAns.isVongThi) {
+                    const s3Stat = document.getElementById('s3_status_bar');
+                    if (s3Stat) {
+                        const dispTime = Number(vsAns.time || 0).toFixed(2);
+                        s3Stat.style.whiteSpace = 'nowrap';
+                        s3Stat.innerHTML = `<span style="overflow:hidden;text-overflow:ellipsis;white-space:pre;min-width:0;line-height:1.45;padding:1px 0;">${escapePlayerHtml(vsAns.answer)}</span><span style="flex-shrink:0;white-space:pre;line-height:1.45;"> (${dispTime})</span>`;
+                        s3Stat.classList.add('submitted');
+                    }
+                }
             }
 
             // Restore Round 5 (Câu hỏi phụ) state on state snapshot
@@ -1717,14 +2176,7 @@
                     clearPlayerSceneUI(2);
                 } else {
                     const s2Box = document.getElementById('s2_q_text');
-                    if (data.questionText) {
-                        if (s2Box) s2Box.innerText = data.questionText;
-                    } else if (data.mediaUrl) {
-                        const resolvedMediaUrl = (typeof getApiUrl === 'function') ? getApiUrl(data.mediaUrl) : data.mediaUrl;
-                        if (s2Box) s2Box.innerHTML = `<img src="${resolvedMediaUrl}" alt="Media Question" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px;">`;
-                    } else {
-                        if (s2Box) s2Box.innerText = '';
-                    }
+                    renderPlayerMediaQuestion(s2Box, data.questionText, data.mediaUrl, data.mediaType);
                     if (data.questionIndex !== undefined) {
                         const rLabel = document.getElementById('s2_row_label');
                         if (rLabel) rLabel.innerText = `Câu hỏi Tăng Tốc số ${data.questionIndex}`;
@@ -1888,16 +2340,13 @@
                     const s4Box = document.getElementById('s4_q_text');
                     const isVQShown = (data.vqQuestionShown === true) || isVQShowQ || isVQ25sTimer || isVQOtherTimer;
                     if (isVQShown && !isVQLockEvent) {
-                        if (data.questionText) {
-                            if (s4Box) s4Box.innerText = data.questionText;
-                        } else if (data.mediaUrl) {
-                            const resolvedMediaUrl = (typeof getApiUrl === 'function') ? getApiUrl(data.mediaUrl) : data.mediaUrl;
-                            if (s4Box) s4Box.innerHTML = `<img src="${resolvedMediaUrl}" alt="Media Question" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px;">`;
+                        if (data.questionText || data.mediaUrl) {
+                            renderPlayerMediaQuestion(s4Box, data.questionText, data.mediaUrl, data.mediaType);
                         } else if (isVQShowQ) {
-                            if (s4Box) s4Box.innerText = '';
+                            renderPlayerMediaQuestion(s4Box, '', '', '');
                         }
                     } else if (isVQLockEvent && data.type !== 'VINH_QUANG_SHOW_ANSWERS' && data.type !== 'VINH_QUANG_RIGHT' && data.type !== 'VINH_QUANG_WRONG') {
-                        if (s4Box) s4Box.innerText = '🔒 [Đang chờ MC phát lệnh HIỆN CÂU HỎI...]';
+                        renderPlayerMediaQuestion(s4Box, '🔒 [Đang chờ MC phát lệnh HIỆN CÂU HỎI...]', '', '');
                     }
 
                     if (data.questionIndex !== undefined) {
@@ -2041,6 +2490,7 @@
             }
 
             if (data.type === 'RESET_ALL_DATA' || data.type === 'RESET') {
+                clearPlayerSnapshot();
                 vsLockedContestants = { 1: false, 2: false, 3: false, 4: false };
                 saveVSLockedState();
                 resetS1CorrectCount();
@@ -2078,6 +2528,8 @@
                 if (!data.round || data.round === 'VQ') resetBellState(4);
                 if (!data.round || data.round === 'CHP') resetBellState(5);
             }
+
+            savePlayerSnapshot();
         }
 
         // Helper to reset buzzer button state
@@ -2318,6 +2770,7 @@
                     applyVSPlayerLockUI();
                 }
             }
+            savePlayerSnapshot();
         }
 
         function submitPlayerAnswer(roundKey, isAutoTyping = false) {
@@ -2415,6 +2868,7 @@
                     body: JSON.stringify(payload)
                 }).catch(() => {});
             }
+            savePlayerSnapshot();
         }
 
         // Ring Bell function for Khởi Động, Vượt Chướng Ngại Vật, Về Đích & Câu Hỏi Phụ
@@ -2547,6 +3001,7 @@
                     body: JSON.stringify(payload)
                 }).catch(() => {});
             }
+            savePlayerSnapshot();
         }
 
         let s1HasSelectedDeForTurn = { 1: false, 2: false, 3: false, 4: false };
@@ -2633,6 +3088,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             }).catch(() => {});
+            savePlayerSnapshot();
         }
 
         window.addEventListener('keydown', function(e) {
@@ -2659,6 +3115,6 @@
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-sync.js?v=20261124e"></script>
+    <script src="supabase-sync.js?v=20261127a"></script>
 </body>
 </html>

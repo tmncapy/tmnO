@@ -44,6 +44,31 @@ function getAppBasePath() {
 }
 window.getAppBasePath = getAppBasePath;
 
+function cleanRawMediaPath(rawPath) {
+    if (!rawPath) return '';
+    let clean = String(rawPath).trim();
+    if (!clean || clean === '...' || clean === 'null' || clean === 'undefined') return '';
+    if (/^(https?:|blob:|data:)/i.test(clean)) return clean;
+
+    // Strip file:// URI prefix and convert Windows backslashes
+    clean = clean.replace(/^file:\/+/i, '').replace(/\\/g, '/');
+
+    // If absolute OS path (e.g. C:/.../public/Media/foo.mp4 or /Users/.../uploads/bar.png), extract relative web media segment
+    const folderMatch = clean.match(/\/(?:public\/)?(uploads|Media|media|SFX|sfx|sounds|Images|images|videos|assets)\/(.+)$/i);
+    if (folderMatch) {
+        clean = '/' + folderMatch[1] + '/' + folderMatch[2];
+    } else if (/^(?:[A-Za-z]:\/|\/(?:Users|home|var|tmp|mnt|app|Desktop|Documents|Downloads)\/)/i.test(clean)) {
+        const parts = clean.split('/').filter(Boolean);
+        clean = parts.length ? parts[parts.length - 1] : '';
+    }
+
+    // Strip leading ./ and redundant public/ or DuongDenVinhQuang-main/ prefixes
+    clean = clean.replace(/^(?:\.\/)+/, '');
+    clean = clean.replace(/^\/?(?:public|DuongDenVinhQuang-main)(?=\/)/i, '');
+    if (clean.startsWith('./')) clean = clean.slice(2);
+    return clean;
+}
+
 function getApiUrl(path) {
     if (typeof window !== 'undefined' && typeof window.getApiUrl === 'function' && window.getApiUrl !== getApiUrl) {
         return window.getApiUrl(path);
@@ -55,6 +80,9 @@ function getApiUrl(path) {
         return path;
     }
 
+    let cleanPath = cleanRawMediaPath(path);
+    if (!cleanPath) return '';
+
     let customHost = (typeof localStorage !== 'undefined' && localStorage.getItem('ddvq_server_host')) || 
         (typeof URLSearchParams !== 'undefined' && window.location ? new URLSearchParams(window.location.search).get('server') : null);
 
@@ -62,21 +90,17 @@ function getApiUrl(path) {
         let cleanCustom = customHost.replace(/\/$/, '');
         cleanCustom = cleanCustom.replace(/\/DuongDenVinhQuang-main\/?$/i, '');
         
-        let cleanP = path.startsWith('/') ? path : '/' + path;
+        let cleanP = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
         cleanP = cleanP.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^\/_api$/, '/api');
         return cleanCustom + cleanP;
     }
 
     if (window.location.protocol === 'file:' || !window.location.host) {
-        let cleanP = path.startsWith('/') ? path : '/' + path;
+        let cleanP = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
         cleanP = cleanP.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^\/_api$/, '/api');
         return 'http://localhost:3000' + cleanP;
     }
 
-    let cleanPath = path;
-    if (cleanPath.startsWith('./')) {
-        cleanPath = cleanPath.substring(2);
-    }
     cleanPath = cleanPath.replace(/^\/_api\//, '/api/').replace(/^_\/api\//, '/api/').replace(/^_\/api$/, '/api').replace(/^_api\//, 'api/');
 
     if (cleanPath.startsWith('/api/') || cleanPath === '/api' || cleanPath.startsWith('api/')) {
@@ -102,6 +126,13 @@ function getApiUrl(path) {
     return cleanPath;
 }
 window.getApiUrl = getApiUrl;
+
+function normalizeMediaUrl(raw) {
+    const cleaned = cleanRawMediaPath(raw);
+    if (!cleaned) return '';
+    return getApiUrl(cleaned);
+}
+window.normalizeMediaUrl = normalizeMediaUrl;
 
 function getWsUrl() {
     if (typeof window !== 'undefined' && typeof window.getWsUrl === 'function' && window.getWsUrl !== getWsUrl) {

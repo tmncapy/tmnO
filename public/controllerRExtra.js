@@ -14,6 +14,40 @@ let chpParticipants = [1, 2, 3, 4];
 let chpQuestionDone = false;
 let chpShowActive = false;
 
+function getCHPTotalQuestions() {
+    const list = (typeof gameData !== 'undefined' && Array.isArray(gameData.cauHoiPhu)) ? gameData.cauHoiPhu : [];
+    let nonEmptyCount = 0;
+    for (let i = 0; i < Math.min(10, list.length); i++) {
+        const it = list[i];
+        if (it && ((it.q && it.q.trim()) || (it.a && it.a.trim()))) {
+            nonEmptyCount = i + 1;
+        }
+    }
+    return Math.max(3, Math.min(10, Math.max(nonEmptyCount, currentCHPQuestion || 1)));
+}
+window.getCHPTotalQuestions = getCHPTotalQuestions;
+
+function renderCHPQuestionButtons() {
+    const listEl = document.getElementById('chp_q_btn_list');
+    const total = getCHPTotalQuestions();
+    if (listEl) {
+        listEl.innerHTML = '';
+        for (let i = 1; i <= total; i++) {
+            const btn = document.createElement('div');
+            btn.id = `btn_chp_q${i}`;
+            btn.className = 'chp-q-btn luot-thi-btn' + (i === currentCHPQuestion ? ' active' : '');
+            btn.onclick = () => selectCHPQuestion(i);
+            btn.style.background = (i === currentCHPQuestion) ? '#2563eb' : '#80bfff';
+            btn.style.color = (i === currentCHPQuestion) ? '#ffffff' : '#002060';
+            btn.innerHTML = `<span>Câu hỏi phụ ${i}</span> <span class="badge">${i}</span>`;
+            listEl.appendChild(btn);
+        }
+    }
+    const totalLabel = document.getElementById('chp_total_q_label');
+    if (totalLabel) totalLabel.innerText = String(total);
+}
+window.renderCHPQuestionButtons = renderCHPQuestionButtons;
+
 function getCHPQuestionItem(num) {
     const idx = num || currentCHPQuestion || 1;
     const qInput = document.getElementById(`chp_q_${idx}`) || document.getElementById(`sys_chp_q_${idx}`);
@@ -25,24 +59,14 @@ function getCHPQuestionItem(num) {
 }
 
 function selectCHPQuestion(num) {
-    currentCHPQuestion = num;
+    currentCHPQuestion = Math.max(1, Math.min(10, parseInt(num, 10) || 1));
     chpShowActive = false;
     chpEliminated = [];
-    for (let i = 1; i <= 3; i++) {
-        const btn = document.getElementById(`btn_chp_q${i}`);
-        if (btn) {
-            if (i === num) {
-                btn.style.background = '#2563eb';
-                btn.style.color = '#ffffff';
-            } else {
-                btn.style.background = '#80bfff';
-                btn.style.color = '#002060';
-            }
-        }
-    }
+    renderCHPQuestionButtons();
     const label = document.getElementById('chp_current_q_label');
-    if (label) label.innerText = num;
+    if (label) label.innerText = currentCHPQuestion;
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 
 function getCHPSelectedParticipants() {
@@ -72,6 +96,7 @@ function updateCHPParticipants() {
     }
 
     syncCHPContestantCardStates();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 }
 
 function syncCHPContestantCardStates() {
@@ -155,6 +180,11 @@ function syncCHPContestantCardStates() {
 
 function updateTab5Preview() {
     const { qText, aText } = getCHPQuestionItem(currentCHPQuestion);
+    const total = getCHPTotalQuestions();
+    const label = document.getElementById('chp_current_q_label');
+    if (label) label.innerText = String(currentCHPQuestion);
+    const totalLabel = document.getElementById('chp_total_q_label');
+    if (totalLabel) totalLabel.innerText = String(total);
 
     const titleEl = document.getElementById('chp_preview_title');
     if (titleEl) {
@@ -228,6 +258,7 @@ function startCHPCountdownLoop() {
 
             syncCHPContestantCardStates();
             updateTab5Preview();
+            if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
             if (typeof showToast === 'function') showToast('Hết 15 giây Câu Hỏi Phụ!');
         }
     }, 50);
@@ -277,6 +308,7 @@ function onClickCHPShowQuestion() {
 
     updateCHPParticipants();
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') showToast(`Đã bắt đầu Câu Hỏi Phụ ${currentCHPQuestion} & mở chuông (${participants.length} thí sinh)`);
 }
 
@@ -332,6 +364,7 @@ function onClickCHPStartTimer() {
     syncCHPContestantCardStates();
     updateTab5Preview();
     startCHPCountdownLoop();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
 
     if (typeof showToast === 'function') showToast('Bắt đầu 15s Câu Hỏi Phụ (Video 0_15sExtra.mp4 & Nhạc 4_20.mp3)');
 }
@@ -390,6 +423,7 @@ window.handleCHPBuzzFromPlayer = function(tsIdx, data) {
 
     syncCHPContestantCardStates();
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') showToast(`🔔 ${cName} đã bấm chuông Câu Hỏi Phụ!`);
 };
 
@@ -422,6 +456,7 @@ function onClickCHPRight() {
 
     syncCHPContestantCardStates();
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') {
         showToast(winnerId ? `✅ ${cName} trả lời ĐÚNG Câu Hỏi Phụ (không thay đổi điểm)!` : '✅ Chấm ĐÚNG Câu Hỏi Phụ');
     }
@@ -465,6 +500,7 @@ function onClickCHPWrong() {
 
     syncCHPContestantCardStates();
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') {
         if (allEliminated) {
             showToast(`❌ ${cName || 'Thí sinh'} trả lời SAI - Toàn bộ thí sinh đã bị loại!`);
@@ -524,14 +560,17 @@ function onClickCHPContinue() {
     updateTab5Preview();
     if (chpTimerStarted) {
         startCHPCountdownLoop();
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         if (typeof showToast === 'function') showToast('▶ Tiếp tục 15s & mở chuông cho các thí sinh còn lại');
     } else {
+        if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
         if (typeof showToast === 'function') showToast('▶ Mở lại chuông cho các thí sinh còn lại');
     }
 }
 
 function importCHPFromSystem() {
-    for (let i = 1; i <= 3; i++) {
+    const total = getCHPTotalQuestions();
+    for (let i = 1; i <= total; i++) {
         const sysQ = document.getElementById(`sys_chp_q_${i}`)?.value || (gameData.cauHoiPhu?.[i - 1]?.q) || '';
         const sysA = document.getElementById(`sys_chp_a_${i}`)?.value || (gameData.cauHoiPhu?.[i - 1]?.a) || '';
         const chpQ = document.getElementById(`chp_q_${i}`);
@@ -541,9 +580,11 @@ function importCHPFromSystem() {
         if (!gameData.cauHoiPhu) gameData.cauHoiPhu = [];
         gameData.cauHoiPhu[i - 1] = { q: sysQ, a: sysA };
     }
+    renderCHPQuestionButtons();
     if (typeof saveAllData === 'function') saveAllData();
     if (typeof updateTab5Preview === 'function') updateTab5Preview();
-    if (typeof showToast === 'function') showToast('Đã nhập 3 câu hỏi phụ từ Tab Hệ Thống!');
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
+    if (typeof showToast === 'function') showToast(`Đã nhập ${total} câu hỏi phụ từ Tab Hệ Thống!`);
 }
 
 function onClickCHPReset() {
@@ -576,10 +617,123 @@ function onClickCHPReset() {
 
     updateCHPParticipants();
     updateTab5Preview();
+    if (typeof window.saveControllerRuntimeState === 'function') window.saveControllerRuntimeState();
     if (typeof showToast === 'function') showToast('Đã đặt lại phần thi Câu Hỏi Phụ');
 }
 
+window.__controllerR5State = {
+    getState: function() {
+        const checkedParticipants = {};
+        const extras = {};
+        for (let i = 1; i <= 4; i++) {
+            const cb = document.getElementById(`chp_ts_${i}`);
+            const eEl = document.getElementById(`ts${i}_extra_chp`);
+            checkedParticipants[i] = cb ? !!cb.checked : true;
+            if (eEl) extras[i] = eEl.value;
+        }
+        const questions = {};
+        for (let i = 1; i <= 10; i++) {
+            const qEl = document.getElementById(`chp_q_${i}`);
+            const aEl = document.getElementById(`chp_a_${i}`);
+            if (qEl || aEl) {
+                questions[i] = {
+                    q: qEl ? qEl.value : '',
+                    a: aEl ? aEl.value : ''
+                };
+            }
+        }
+        return {
+            currentCHPQuestion,
+            chpParticipants: Array.isArray(chpParticipants) ? chpParticipants.slice() : [1, 2, 3, 4],
+            chpEliminated: Array.isArray(chpEliminated) ? chpEliminated.slice() : [],
+            chpRemainingMs,
+            chpTimerRunning,
+            chpTimerStarted,
+            chpLastTickAt,
+            chpBuzzerOpen,
+            chpBuzzerWinner,
+            chpLastRightWinner,
+            chpBellUnlockedAt,
+            chpQuestionDone,
+            chpShowActive,
+            checkedParticipants,
+            extras,
+            questions
+        };
+    },
+    restoreState: function(st) {
+        if (!st || typeof st !== 'object') return;
+        stopCHPCountdownLoop();
+
+        currentCHPQuestion = parseInt(st.currentCHPQuestion, 10) || 1;
+        chpParticipants = Array.isArray(st.chpParticipants) ? st.chpParticipants.slice() : [1, 2, 3, 4];
+        chpEliminated = Array.isArray(st.chpEliminated) ? st.chpEliminated.slice() : [];
+        chpTimerStarted = !!st.chpTimerStarted;
+        chpBuzzerOpen = !!st.chpBuzzerOpen;
+        chpBuzzerWinner = parseInt(st.chpBuzzerWinner, 10) || 0;
+        chpLastRightWinner = parseInt(st.chpLastRightWinner, 10) || 0;
+        chpBellUnlockedAt = Number(st.chpBellUnlockedAt) || 0;
+        chpQuestionDone = !!st.chpQuestionDone;
+        chpShowActive = !!st.chpShowActive;
+
+        let remMs = (st.chpRemainingMs !== undefined) ? Math.max(0, Number(st.chpRemainingMs) || 0) : 15000;
+        const wasRunning = !!st.chpTimerRunning;
+        const lastTick = Number(st.chpLastTickAt) || 0;
+        if (wasRunning && lastTick > 0) {
+            remMs = Math.max(0, remMs - Math.max(0, Date.now() - lastTick));
+        }
+        chpRemainingMs = remMs;
+
+        if (st.checkedParticipants) {
+            for (let i = 1; i <= 4; i++) {
+                const cb = document.getElementById(`chp_ts_${i}`);
+                if (cb && st.checkedParticipants[i] !== undefined) cb.checked = !!st.checkedParticipants[i];
+            }
+        }
+        if (st.extras) {
+            for (let i = 1; i <= 4; i++) {
+                const eEl = document.getElementById(`ts${i}_extra_chp`);
+                if (eEl && st.extras[i] !== undefined) eEl.value = st.extras[i];
+            }
+        }
+        if (st.questions) {
+            for (let i = 1; i <= 10; i++) {
+                if (!st.questions[i]) continue;
+                const qEl = document.getElementById(`chp_q_${i}`);
+                const aEl = document.getElementById(`chp_a_${i}`);
+                if (qEl && st.questions[i].q) qEl.value = st.questions[i].q;
+                if (aEl && st.questions[i].a) aEl.value = st.questions[i].a;
+            }
+        }
+
+        renderCHPQuestionButtons();
+        const label = document.getElementById('chp_current_q_label');
+        if (label) label.innerText = currentCHPQuestion;
+
+        if (wasRunning && chpRemainingMs <= 0) {
+            chpRemainingMs = 0;
+            chpTimerRunning = false;
+            chpBuzzerOpen = false;
+            chpQuestionDone = true;
+        }
+
+        updateCHPParticipants();
+        updateTab5Preview();
+
+        if (wasRunning && chpRemainingMs > 0) {
+            startCHPCountdownLoop();
+        }
+    }
+};
+
 window.addEventListener('DOMContentLoaded', () => {
-    updateCHPParticipants();
-    selectCHPQuestion(1);
+    let hasRuntimeSnapshot = false;
+    try {
+        hasRuntimeSnapshot = !!(localStorage.getItem('ddvq_controller_runtime_v1') || sessionStorage.getItem('ddvq_controller_runtime_v1'));
+    } catch(e) {}
+    if (!hasRuntimeSnapshot) {
+        updateCHPParticipants();
+        selectCHPQuestion(1);
+    }
 });
+
